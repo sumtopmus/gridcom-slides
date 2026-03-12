@@ -26,9 +26,55 @@ Each slide is a sandboxed `<iframe>` pointing to its HTML file. The viewer sends
 ## Adding a Presentation
 
 1. Copy `presentations/_template/` → `presentations/<id>/`
-2. Edit `presentation.json` — set `id` (must match folder name), `title`, `slides` array
+2. Edit `presentation.json` — set `id` (must match folder name), `title`, `theme`, `slides` array
 3. Write each slide as a standalone `<!DOCTYPE html>` document
 4. `npm run dev` — the card appears on the homepage automatically
+
+**When asked to add a presentation, ask which theme to use** (see Themes section below).
+
+## Themes
+
+Reusable slide themes live in `themes/`. Each theme provides:
+- CSS design tokens (`--theme-bg`, `--theme-color`, `--theme-accent`, etc.)
+- Animated background (`.bg` + `.grid-lines` layers — place as first children of `<body>`)
+- **Fixed visual appearance** — unaffected by the viewer's dark/light/system interface color mode
+
+| Theme | File | Appearance |
+| ----- | ---- | ---------- |
+| `aurora` | `themes/aurora.css` | Always dark — deep background, indigo/violet gradient |
+| `eclipse` | `themes/eclipse.css` | Always light — bright background, soft indigo/violet gradient |
+
+> **Presentation themes vs. interface color mode:** The viewer's dark/light/system toggle only changes the viewer chrome (control bar, overlays). It has no effect on the slide content — a presentation's look is determined solely by the theme declared in `presentation.json`.
+
+**Using a theme in a slide:**
+
+```html
+<link rel="stylesheet" href="../../themes/aurora.css" />
+```
+
+Then add as the first children of `<body>`:
+
+```html
+<div class="bg"></div>
+<div class="grid-lines"></div>
+```
+
+All content wrappers need `position: relative; z-index: 1` to stack above the background layers.
+
+**`theme-listener.js`** listens for `slideEnter` and `slideTheme` postMessages from the viewer and applies `data-theme="dark|light"` on `<html>`, enabling the viewer's color mode switch to affect the slide background.
+
+**Available design tokens** (set by the theme CSS on `html`):
+
+| Token | Purpose |
+| ----- | ------- |
+| `--theme-bg` | Page background |
+| `--theme-color` | Primary text |
+| `--theme-color-secondary` | Secondary text |
+| `--theme-color-muted` | Muted/hint text |
+| `--theme-accent` | Accent / highlight color (indigo) |
+| `--theme-accent-alt` | Accent variant |
+| `--theme-surface` | Card / panel background |
+| `--theme-border` | Border color |
 
 ## Key Files
 
@@ -42,6 +88,9 @@ Each slide is a sandboxed `<iframe>` pointing to its HTML file. The viewer sends
 | `src/viewer/NavigationController.ts` | Keyboard + click + swipe input |
 | `presentations/demo/` | Working 3-slide demo |
 | `presentations/_template/` | Starter template |
+| `themes/aurora.css` | Aurora slide theme — dark gradient (CSS + design tokens) |
+| `themes/eclipse.css` | Eclipse slide theme — light gradient (CSS + design tokens) |
+| `themes/theme-listener.js` | Optional postMessage handler for custom adaptive themes |
 
 ## Slide Lifecycle API
 
@@ -67,6 +116,7 @@ window.addEventListener('message', (e) => {
 | `←` / `↑` | Previous slide |
 | `f` | Toggle fullscreen |
 | `g` | Slide grid overview |
+| `t` | Cycle color mode (dark → light → system) |
 | `Esc` | Exit grid / exit fullscreen / back to index |
 
 ## Safari Notes

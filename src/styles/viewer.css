@@ -405,10 +405,17 @@ kbd {
   min-width: 1.5rem;
 }
 
-/* ── Light theme overrides ─────────────────────────────────────────────────── */
+/* ── Presentation-theme stage background ──────────────────────────────────── */
+/* Matches the canvas-stage background to the slide content so no flash        */
+/* appears between slides during transitions. Independent of interface mode.   */
 
-html.theme-light #viewer-root,
-html.theme-light #canvas-stage {
+#canvas-stage[data-presentation-theme="eclipse"] {
+  background: #fafafa;
+}
+
+/* ── Light interface theme overrides ──────────────────────────────────────── */
+
+html.theme-light #viewer-root {
   background: #f0f0f0;
 }
 
@@ -429,8 +436,7 @@ html.theme-light #kbd-hint {
 }
 
 @media (prefers-color-scheme: light) {
-  html.theme-system #viewer-root,
-  html.theme-system #canvas-stage {
+  html.theme-system #viewer-root {
     background: #f0f0f0;
   }
 

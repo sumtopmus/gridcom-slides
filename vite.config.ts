@@ -66,6 +66,15 @@ export const presentations: PresentationMeta[] = ${JSON.stringify(presentations,
         fs.cpSync(presentationsDir, outDir, { recursive: true })
         console.log('[registry] Copied presentations/ → dist/presentations/')
       }
+
+      // Copy themes/ verbatim into dist/ — referenced by slide HTML files
+      // via relative paths (../../themes/<theme>.css).
+      const themesDir = path.resolve(__dirname, 'themes')
+      const themesOutDir = path.resolve(__dirname, 'dist/themes')
+      if (fs.existsSync(themesDir)) {
+        fs.cpSync(themesDir, themesOutDir, { recursive: true })
+        console.log('[registry] Copied themes/ → dist/themes/')
+      }
     },
     configureServer(server) {
       server.watcher.add(presentationsDir)

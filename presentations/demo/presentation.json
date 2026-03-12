@@ -5,6 +5,7 @@
   "author": "You",
   "date": "2026-03-11",
   "tags": ["demo", "visualization"],
+  "theme": "aurora",
   "slides": [
     { "file": "slide-01.html", "title": "Title", "transition": "fade" },
     { "file": "slide-02.html", "title": "Key Points", "transition": "slide-left" },
