@@ -138,6 +138,7 @@ html, body {
   background: rgba(9, 9, 11, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  position: relative;
 }
 
 .ctrl-btn {
@@ -181,6 +182,7 @@ html, body {
   background: rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-sm);
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 #theme-thumb {
@@ -219,11 +221,17 @@ html, body {
 }
 
 #nav-cluster {
-  flex: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.75rem;
+  pointer-events: none;
+}
+
+#nav-cluster > * {
+  pointer-events: auto;
 }
 
 #slide-counter {
