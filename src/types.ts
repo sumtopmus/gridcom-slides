@@ -27,6 +27,5 @@ export interface ViewerState {
 
 // postMessage payloads sent from viewer → slide iframe
 export type SlideMessage =
-  | { type: 'slideEnter'; index: number; direction: 'forward' | 'backward' | 'initial'; theme: 'dark' | 'light' }
+  | { type: 'slideEnter'; index: number; direction: 'forward' | 'backward' | 'initial' }
   | { type: 'slideExit'; index: number; direction: 'forward' | 'backward' | 'initial' }
-  | { type: 'slideTheme'; theme: 'dark' | 'light' }

@@ -4,11 +4,26 @@
   "description": "Demo presentation using the Aurora theme — dark background with animated indigo/violet gradient.",
   "author": "You",
   "date": "2026-03-11",
-  "tags": ["demo"],
+  "tags": [
+    "demo",
+    "aurora"
+  ],
   "theme": "aurora",
   "slides": [
-    { "file": "slide-01.html", "title": "Title", "transition": "fade" },
-    { "file": "slide-02.html", "title": "Key Points", "transition": "slide-left" },
-    { "file": "slide-03.html", "title": "Visualization", "transition": "slide-left" }
+    {
+      "file": "slide-01.html",
+      "title": "Title",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-02.html",
+      "title": "Key Points",
+      "transition": "slide-left"
+    },
+    {
+      "file": "slide-03.html",
+      "title": "Visualization",
+      "transition": "slide-left"
+    }
   ]
 }

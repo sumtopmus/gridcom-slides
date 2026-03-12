@@ -43,12 +43,6 @@ function getBasePath(id: string): string {
   return `${import.meta.env.BASE_URL}presentations/${id}/`
 }
 
-function resolvedTheme(): 'dark' | 'light' {
-  if (colorMode === 'light') return 'light'
-  if (colorMode === 'dark') return 'dark'
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-}
-
 function sendSlideMessage(iframe: HTMLIFrameElement, msg: SlideMessage) {
   iframe.contentWindow?.postMessage(msg, '*')
 }
@@ -110,7 +104,6 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
       type: 'slideEnter',
       index,
       direction,
-      theme: resolvedTheme(),
     })
 
     // Kick off old slide exit
@@ -187,9 +180,6 @@ function applyColorMode(): void {
   const index = ['light', 'system', 'dark'].indexOf(colorMode)
   themeSwitch.style.setProperty('--theme-index', String(index))
   themeOpts.forEach((btn) => btn.classList.toggle('active', btn.dataset.mode === colorMode))
-  if (activeIframe) {
-    sendSlideMessage(activeIframe, { type: 'slideTheme', theme: resolvedTheme() })
-  }
 }
 
 function setColorMode(mode: ColorMode): void {

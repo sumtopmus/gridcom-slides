@@ -62,8 +62,6 @@ Then add as the first children of `<body>`:
 
 All content wrappers need `position: relative; z-index: 1` to stack above the background layers.
 
-**`theme-listener.js`** listens for `slideEnter` and `slideTheme` postMessages from the viewer and applies `data-theme="dark|light"` on `<html>`, enabling the viewer's color mode switch to affect the slide background.
-
 **Available design tokens** (set by the theme CSS on `html`):
 
 | Token | Purpose |
@@ -87,11 +85,11 @@ All content wrappers need `position: relative; z-index: 1` to stack above the ba
 | `src/viewer.ts` | Viewer orchestrator (navigation, fullscreen, grid, URL state) |
 | `src/viewer/FullscreenController.ts` | Safari webkit-prefix fullscreen wrapper |
 | `src/viewer/NavigationController.ts` | Keyboard + click + swipe input |
-| `presentations/demo/` | Working 3-slide demo |
+| `presentations/demo-aurora/` | Demo presentation using the Aurora theme |
+| `presentations/demo-eclipse/` | Demo presentation using the Eclipse theme |
 | `presentations/_template/` | Starter template |
 | `themes/aurora.css` | Aurora slide theme — dark gradient (CSS + design tokens) |
 | `themes/eclipse.css` | Eclipse slide theme — light gradient (CSS + design tokens) |
-| `themes/theme-listener.js` | Optional postMessage handler for custom adaptive themes |
 
 ## Slide Lifecycle API
 
