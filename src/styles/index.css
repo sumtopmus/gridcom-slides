@@ -102,6 +102,12 @@ main {
   transform-origin: top left;
   pointer-events: none;
   border: none;
+  opacity: 0;
+  transition: opacity var(--transition-slow);
+}
+
+.card-thumbnail iframe.loaded {
+  opacity: 1;
 }
 
 .card-thumbnail-overlay {

@@ -72,6 +72,14 @@ function init() {
   }
 
   grid.innerHTML = presentations.map(renderCard).join('')
+
+  // Fade each thumbnail iframe in once its content is ready, so the card
+  // placeholder background shows instead of a blank white document flash.
+  grid.querySelectorAll<HTMLIFrameElement>('.card-thumbnail iframe').forEach((iframe) => {
+    iframe.addEventListener('load', () => {
+      iframe.classList.add('loaded')
+    }, { once: true })
+  })
 }
 
 init()

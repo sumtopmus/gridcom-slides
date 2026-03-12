@@ -13,13 +13,42 @@
     />
     <link rel="stylesheet" href="/src/styles/global.css" />
     <link rel="stylesheet" href="/src/styles/viewer.css" />
+    <!-- Apply stored color mode before first paint to prevent dark/light flash -->
+    <script>
+      (function () {
+        var m = localStorage.getItem('colorMode')
+        document.documentElement.classList.add(
+          m === 'light' || m === 'system' ? 'theme-' + m : 'theme-dark'
+        )
+        document.documentElement.style.setProperty(
+          '--theme-index',
+          m === 'light' ? '0' : m === 'system' ? '1' : '2'
+        )
+      })()
+    </script>
   </head>
   <body>
     <div id="viewer-root">
+      <!-- Restore fixed-canvas layout before first paint so no layout jump -->
+      <script>
+        if (localStorage.getItem('fixedCanvas') === '1')
+          document.getElementById('viewer-root').classList.add('fixed-canvas')
+      </script>
 
       <!-- Slide area -->
       <div id="slide-container">
-        <div id="canvas-stage"></div>
+        <div id="canvas-stage">
+          <!-- Restore presentation theme background before first paint so no color flash -->
+          <script>
+            (function () {
+              var m = location.hash.match(/^#\/([^/]+)/)
+              if (m && localStorage.getItem('lastPresentationId') === m[1]) {
+                var t = localStorage.getItem('lastPresentationTheme')
+                if (t) document.getElementById('canvas-stage').dataset.presentationTheme = t
+              }
+            })()
+          </script>
+        </div>
       </div>
 
       <!-- Keyboard hint (fades after a few seconds) -->
@@ -47,7 +76,7 @@
           </a>
 
           <div id="nav-cluster">
-            <button id="btn-prev" class="ctrl-btn" title="Previous slide (←)">
+            <button id="btn-prev" class="ctrl-btn" title="Previous slide (←)" disabled>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"/>
               </svg>

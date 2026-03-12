@@ -255,6 +255,13 @@ function buildGrid(): void {
       <span class="grid-thumb-num">${i + 1}</span>
       ${slide.title ? `<span class="grid-thumb-label">${slide.title}</span>` : ''}
     `
+    const thumbIframe = thumb.querySelector('iframe')
+    if (thumbIframe) {
+      thumbIframe.addEventListener('load', () => {
+        thumbIframe.classList.add('loaded')
+      }, { once: true })
+    }
+
     thumb.addEventListener('click', () => {
       const dir = i > currentIndex ? 'forward' : 'backward'
       goTo(i, dir)
@@ -343,6 +350,8 @@ function init(): void {
 
   currentPresentation = presentation
   canvasStage.dataset.presentationTheme = presentation.theme ?? ''
+  localStorage.setItem('lastPresentationId', presentation.id)
+  localStorage.setItem('lastPresentationTheme', presentation.theme ?? '')
   const startIndex = Math.max(0, Math.min(parsed.slideIndex, presentation.slides.length - 1))
   loadSlide(startIndex, 'initial')
 }

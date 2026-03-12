@@ -53,6 +53,7 @@ html, body {
   width: min(100cqw, calc(100cqh * 16 / 9));
   height: min(100cqh, calc(100cqw * 9 / 16));
   box-shadow: 0 0 0 1px rgba(255,255,255,0.06);
+  background: #111;
 }
 
 /* Slide transitions */
@@ -123,10 +124,10 @@ html, body {
 }
 
 #progress-fill {
+  width: 0;
   height: 100%;
   background: var(--color-accent);
   transition: width var(--transition-base);
-  min-width: 0;
 }
 
 #controls {
@@ -165,7 +166,8 @@ html, body {
   pointer-events: none;
 }
 
-.ctrl-btn.active {
+.ctrl-btn.active,
+#viewer-root.fixed-canvas #btn-canvas {
   background: rgba(99, 102, 241, 0.2);
   color: var(--color-accent);
 }
@@ -315,6 +317,12 @@ html, body {
   transform-origin: top left;
   pointer-events: none;
   border: none;
+  opacity: 0;
+  transition: opacity var(--transition-slow);
+}
+
+.grid-thumb iframe.loaded {
+  opacity: 1;
 }
 
 .grid-thumb-label {
@@ -408,8 +416,10 @@ kbd {
 /* ── Presentation-theme stage background ──────────────────────────────────── */
 /* Matches the canvas-stage background to the slide content so no flash        */
 /* appears between slides during transitions. Independent of interface mode.   */
+/* Specificity (0,2,1) — same as #viewer-root.fixed-canvas #canvas-stage,     */
+/* but declared later so it wins even in fixed-canvas mode.                    */
 
-#canvas-stage[data-presentation-theme="eclipse"] {
+#viewer-root #canvas-stage[data-presentation-theme="eclipse"] {
   background: #fafafa;
 }
 
@@ -420,6 +430,10 @@ html.theme-light #viewer-root {
 }
 
 html.theme-light #viewer-root.fixed-canvas #slide-container {
+  background: #e4e4e7;
+}
+
+html.theme-light #viewer-root.fixed-canvas #canvas-stage {
   background: #e4e4e7;
 }
 
@@ -441,6 +455,10 @@ html.theme-light #kbd-hint {
   }
 
   html.theme-system #viewer-root.fixed-canvas #slide-container {
+    background: #e4e4e7;
+  }
+
+  html.theme-system #viewer-root.fixed-canvas #canvas-stage {
     background: #e4e4e7;
   }
 
