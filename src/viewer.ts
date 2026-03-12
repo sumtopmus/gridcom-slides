@@ -36,6 +36,7 @@ const iconExpand = document.getElementById('icon-expand')!
 const iconCompress = document.getElementById('icon-compress')!
 const viewerChrome = document.getElementById('viewer-chrome')!
 const kbdHint = document.getElementById('kbd-hint')!
+const btnHelp = document.getElementById('btn-help') as HTMLButtonElement
 
 // ── Utilities ──────────────────────────────────────────────────────────────
 
@@ -111,6 +112,11 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
       previousIframe.classList.remove('entering')
       previousIframe.classList.add('leaving')
     }
+
+    // Forward wheel events from inside the slide iframe to the parent navigator
+    try {
+      iframe.contentWindow?.addEventListener('wheel', (e) => nav.handleWheel(e), { passive: true })
+    } catch { /* cross-origin guard */ }
 
     // Hand opacity back to CSS and start enter animation
     iframe.style.opacity = ''
@@ -188,9 +194,12 @@ function setColorMode(mode: ColorMode): void {
   applyColorMode()
 }
 
-function cycleColorMode(): void {
-  const order: ColorMode[] = ['light', 'system', 'dark']
-  setColorMode(order[(order.indexOf(colorMode) + 1) % order.length])
+function toggleMode(): void {
+  setColorMode(colorMode === 'dark' ? 'light' : 'dark')
+}
+
+function toggleSystem(): void {
+  setColorMode(colorMode === 'system' ? 'light' : 'system')
 }
 
 themeOpts.forEach((btn) => btn.addEventListener('click', () => setColorMode(btn.dataset.mode as ColorMode)))
@@ -304,7 +313,32 @@ function exit(): void {
 
 // ── Keyboard hint ──────────────────────────────────────────────────────────
 
-setTimeout(() => kbdHint.classList.add('hidden'), 4000)
+let kbdHintTimer: ReturnType<typeof setTimeout> | null = null
+
+function showKbdHint(autohide = false): void {
+  if (kbdHintTimer) clearTimeout(kbdHintTimer)
+  kbdHint.classList.remove('hidden')
+  btnHelp.classList.add('active')
+  if (autohide) {
+    kbdHintTimer = setTimeout(() => {
+      kbdHint.classList.add('hidden')
+      btnHelp.classList.remove('active')
+      kbdHintTimer = null
+    }, 4000)
+  }
+}
+
+function toggleKbdHint(): void {
+  if (kbdHintTimer) {
+    clearTimeout(kbdHintTimer)
+    kbdHintTimer = null
+  }
+  const visible = !kbdHint.classList.contains('hidden')
+  kbdHint.classList.toggle('hidden', visible)
+  btnHelp.classList.toggle('active', !visible)
+}
+
+btnHelp.addEventListener('click', toggleKbdHint)
 
 // ── Progress bar ───────────────────────────────────────────────────────────
 
@@ -317,7 +351,10 @@ const nav = new NavigationController({
   prev,
   toggleFullscreen: () => fullscreen.toggle(),
   toggleGrid,
-  toggleTheme: cycleColorMode,
+  toggleMode,
+  toggleSystem,
+  toggleHint: toggleKbdHint,
+  toggleCanvas: toggleFixedCanvas,
   exit,
 })
 nav.attach()
@@ -354,6 +391,7 @@ function init(): void {
   localStorage.setItem('lastPresentationTheme', presentation.theme ?? '')
   const startIndex = Math.max(0, Math.min(parsed.slideIndex, presentation.slides.length - 1))
   loadSlide(startIndex, 'initial')
+  showKbdHint(true)
 }
 
 // Handle external hash changes (browser back/forward)

@@ -27,8 +27,38 @@ function setColorMode(mode: ColorMode): void {
   applyColorMode()
 }
 
+function toggleMode(): void {
+  setColorMode(colorMode === 'dark' ? 'light' : 'dark')
+}
+
+function toggleSystem(): void {
+  setColorMode(colorMode === 'system' ? 'light' : 'system')
+}
+
 themeOpts.forEach((btn) => btn.addEventListener('click', () => setColorMode(btn.dataset.mode as ColorMode)))
 applyColorMode()
+
+// ── Keyboard hint ──────────────────────────────────────────────────────────
+
+const kbdHint = document.getElementById('kbd-hint')!
+const btnHelp = document.getElementById('btn-help') as HTMLButtonElement
+
+function toggleKbdHint(): void {
+  const visible = !kbdHint.classList.contains('hidden')
+  kbdHint.classList.toggle('hidden', visible)
+  btnHelp.classList.toggle('active', !visible)
+}
+
+btnHelp.addEventListener('click', toggleKbdHint)
+
+document.addEventListener('keydown', (e) => {
+  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+  switch (e.key) {
+    case 'm': case 'M': toggleMode(); break
+    case 's': case 'S': toggleSystem(); break
+    case 'h': case 'H': case '?': toggleKbdHint(); break
+  }
+})
 
 function formatDate(iso?: string): string {
   if (!iso) return ''
