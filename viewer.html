@@ -18,7 +18,9 @@
     <div id="viewer-root">
 
       <!-- Slide area -->
-      <div id="slide-container"></div>
+      <div id="slide-container">
+        <div id="canvas-stage"></div>
+      </div>
 
       <!-- Keyboard hint (fades after a few seconds) -->
       <div id="kbd-hint">
@@ -54,6 +56,14 @@
           <button id="btn-next" class="ctrl-btn" title="Next slide (→)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+
+          <button id="btn-canvas" class="ctrl-btn" title="Fixed 16∶9 canvas">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="6" width="20" height="12" rx="1.5"/>
+              <line x1="2" y1="9" x2="22" y2="9" stroke-width="0.75" stroke-dasharray="2 2"/>
+              <line x1="2" y1="15" x2="22" y2="15" stroke-width="0.75" stroke-dasharray="2 2"/>
             </svg>
           </button>
 

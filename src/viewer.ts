@@ -11,15 +11,19 @@ let currentPresentation: PresentationMeta | null = null
 let currentIndex = 0
 let activeIframe: HTMLIFrameElement | null = null
 let gridVisible = false
+let isFixedCanvas = localStorage.getItem('fixedCanvas') === '1'
 
 // ── DOM refs ───────────────────────────────────────────────────────────────
 
 const slideContainer = document.getElementById('slide-container')!
+const canvasStage = document.getElementById('canvas-stage')!
+const viewerRoot = document.getElementById('viewer-root')!
 const gridOverlay = document.getElementById('grid-overlay')!
 const gridSlides = document.getElementById('grid-slides')!
 const btnPrev = document.getElementById('btn-prev') as HTMLButtonElement
 const btnNext = document.getElementById('btn-next') as HTMLButtonElement
 const btnFullscreen = document.getElementById('btn-fullscreen') as HTMLButtonElement
+const btnCanvas = document.getElementById('btn-canvas') as HTMLButtonElement
 const iconExpand = document.getElementById('icon-expand')!
 const iconCompress = document.getElementById('icon-compress')!
 const viewerChrome = document.getElementById('viewer-chrome')!
@@ -65,7 +69,10 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
   iframe.src = src
   iframe.title = slide.title ?? `Slide ${index + 1}`
   iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-modals')
-  iframe.classList.add('entering')
+
+  // Keep hidden while loading — prevents the white blank document from being
+  // revealed by the fade-in animation before content is ready.
+  iframe.style.opacity = '0'
 
   // Choose transition
   const transition: TransitionType = slide.transition ?? 'fade'
@@ -82,30 +89,33 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
     slideContainer.className = ''
   }
 
-  // Mark previous as leaving
-  if (previousIframe) {
-    previousIframe.classList.remove('entering')
-    previousIframe.classList.add('leaving')
-  }
-
-  // Send enter once loaded
+  // Once loaded: start old exit + new enter simultaneously so transition
+  // always plays over real content, never over a blank white document.
   iframe.addEventListener('load', () => {
     sendSlideMessage(iframe, {
       type: 'slideEnter',
       index,
       direction,
     })
-    iframe.classList.remove('entering')
-    // Remove old iframe after transition
+
+    // Kick off old slide exit
     if (previousIframe) {
-      const delay = transition === 'none' ? 0 : 350
-      setTimeout(() => {
-        previousIframe.remove()
-      }, delay)
+      previousIframe.classList.remove('entering')
+      previousIframe.classList.add('leaving')
     }
+
+    // Hand opacity back to CSS and start enter animation
+    iframe.style.opacity = ''
+    iframe.classList.add('entering')
+
+    const delay = transition === 'none' ? 0 : 350
+    setTimeout(() => {
+      iframe.classList.remove('entering')
+      previousIframe?.remove()
+    }, delay)
   }, { once: true })
 
-  slideContainer.appendChild(iframe)
+  canvasStage.appendChild(iframe)
   activeIframe = iframe
   document.title = `${currentPresentation.title} — ${slide.title ?? index + 1}`
 }
@@ -141,7 +151,7 @@ function updateNavButtons(): void {
 // ── Fullscreen ─────────────────────────────────────────────────────────────
 
 const fullscreen = new FullscreenController(
-  document.getElementById('viewer-root')!,
+  viewerRoot,
   (isFs) => {
     iconExpand.style.display = isFs ? 'none' : ''
     iconCompress.style.display = isFs ? '' : 'none'
@@ -153,6 +163,27 @@ const fullscreen = new FullscreenController(
 if (!fullscreen.supported) {
   btnFullscreen.style.display = 'none'
 }
+
+// ── Fixed canvas ───────────────────────────────────────────────────────────
+
+function applyFixedCanvas(): void {
+  if (isFixedCanvas) {
+    viewerRoot.classList.add('fixed-canvas')
+    btnCanvas.classList.add('active')
+  } else {
+    viewerRoot.classList.remove('fixed-canvas')
+    btnCanvas.classList.remove('active')
+  }
+}
+
+function toggleFixedCanvas(): void {
+  isFixedCanvas = !isFixedCanvas
+  localStorage.setItem('fixedCanvas', isFixedCanvas ? '1' : '0')
+  applyFixedCanvas()
+}
+
+btnCanvas.addEventListener('click', toggleFixedCanvas)
+applyFixedCanvas()
 
 // ── Chrome auto-hide ───────────────────────────────────────────────────────
 

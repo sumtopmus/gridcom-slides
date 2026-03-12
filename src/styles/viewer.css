@@ -20,15 +20,39 @@ html, body {
   position: relative;
   flex: 1;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  container-type: size;
 }
 
-#slide-container iframe {
+/* Canvas stage — hosts the iframes */
+#canvas-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+#canvas-stage iframe {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   border: none;
   background: transparent;
+}
+
+/* Fixed 16:9 canvas mode */
+#viewer-root.fixed-canvas #slide-container {
+  background: #111;
+}
+
+#viewer-root.fixed-canvas #canvas-stage {
+  aspect-ratio: 16 / 9;
+  width: min(100cqw, calc(100cqh * 16 / 9));
+  height: min(100cqh, calc(100cqw * 9 / 16));
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06);
 }
 
 /* Slide transitions */
@@ -139,6 +163,11 @@ html, body {
   opacity: 0.3;
   cursor: default;
   pointer-events: none;
+}
+
+.ctrl-btn.active {
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--color-accent);
 }
 
 #slide-counter {
