@@ -170,6 +170,52 @@ html, body {
   color: var(--color-accent);
 }
 
+/* Theme segmented slider */
+#theme-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+#theme-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: rgba(99, 102, 241, 0.25);
+  transform: translateX(calc(var(--theme-index, 2) * 34px));
+  transition: transform var(--transition-base);
+  pointer-events: none;
+}
+
+.theme-opt {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.theme-opt:hover {
+  color: var(--color-text-primary);
+}
+
+.theme-opt.active {
+  color: var(--color-accent);
+}
+
 #slide-counter {
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -351,4 +397,50 @@ kbd {
   font-size: 0.7rem;
   color: var(--color-text-secondary);
   min-width: 1.5rem;
+}
+
+/* ── Light theme overrides ─────────────────────────────────────────────────── */
+
+html.theme-light #viewer-root,
+html.theme-light #canvas-stage {
+  background: #f0f0f0;
+}
+
+html.theme-light #viewer-root.fixed-canvas #slide-container {
+  background: #e4e4e7;
+}
+
+html.theme-light #controls {
+  background: rgba(250, 250, 250, 0.9);
+}
+
+html.theme-light #grid-overlay {
+  background: rgba(244, 244, 245, 0.97);
+}
+
+html.theme-light #kbd-hint {
+  background: rgba(250, 250, 250, 0.9);
+}
+
+@media (prefers-color-scheme: light) {
+  html.theme-system #viewer-root,
+  html.theme-system #canvas-stage {
+    background: #f0f0f0;
+  }
+
+  html.theme-system #viewer-root.fixed-canvas #slide-container {
+    background: #e4e4e7;
+  }
+
+  html.theme-system #controls {
+    background: rgba(250, 250, 250, 0.9);
+  }
+
+  html.theme-system #grid-overlay {
+    background: rgba(244, 244, 245, 0.97);
+  }
+
+  html.theme-system #kbd-hint {
+    background: rgba(250, 250, 250, 0.9);
+  }
 }

@@ -7,11 +7,17 @@ import { NavigationController } from './viewer/NavigationController'
 
 // ── State ──────────────────────────────────────────────────────────────────
 
+type ColorMode = 'dark' | 'light' | 'system'
+
 let currentPresentation: PresentationMeta | null = null
 let currentIndex = 0
 let activeIframe: HTMLIFrameElement | null = null
 let gridVisible = false
 let isFixedCanvas = localStorage.getItem('fixedCanvas') === '1'
+let colorMode: ColorMode = (() => {
+  const stored = localStorage.getItem('colorMode')
+  return stored === 'light' || stored === 'system' ? stored : 'dark'
+})()
 
 // ── DOM refs ───────────────────────────────────────────────────────────────
 
@@ -24,6 +30,8 @@ const btnPrev = document.getElementById('btn-prev') as HTMLButtonElement
 const btnNext = document.getElementById('btn-next') as HTMLButtonElement
 const btnFullscreen = document.getElementById('btn-fullscreen') as HTMLButtonElement
 const btnCanvas = document.getElementById('btn-canvas') as HTMLButtonElement
+const themeSwitch = document.getElementById('theme-switch')!
+const themeOpts = Array.from(document.querySelectorAll<HTMLButtonElement>('.theme-opt'))
 const iconExpand = document.getElementById('icon-expand')!
 const iconCompress = document.getElementById('icon-compress')!
 const viewerChrome = document.getElementById('viewer-chrome')!
@@ -164,6 +172,30 @@ if (!fullscreen.supported) {
   btnFullscreen.style.display = 'none'
 }
 
+// ── Color mode ─────────────────────────────────────────────────────────────
+
+function applyColorMode(): void {
+  document.documentElement.classList.remove('theme-dark', 'theme-light', 'theme-system')
+  document.documentElement.classList.add(`theme-${colorMode}`)
+  const index = ['light', 'system', 'dark'].indexOf(colorMode)
+  themeSwitch.style.setProperty('--theme-index', String(index))
+  themeOpts.forEach((btn) => btn.classList.toggle('active', btn.dataset.mode === colorMode))
+}
+
+function setColorMode(mode: ColorMode): void {
+  colorMode = mode
+  localStorage.setItem('colorMode', colorMode)
+  applyColorMode()
+}
+
+function cycleColorMode(): void {
+  const order: ColorMode[] = ['light', 'system', 'dark']
+  setColorMode(order[(order.indexOf(colorMode) + 1) % order.length])
+}
+
+themeOpts.forEach((btn) => btn.addEventListener('click', () => setColorMode(btn.dataset.mode as ColorMode)))
+applyColorMode()
+
 // ── Fixed canvas ───────────────────────────────────────────────────────────
 
 function applyFixedCanvas(): void {
@@ -278,6 +310,7 @@ const nav = new NavigationController({
   prev,
   toggleFullscreen: () => fullscreen.toggle(),
   toggleGrid,
+  toggleTheme: cycleColorMode,
   exit,
 })
 nav.attach()

@@ -3,6 +3,7 @@ export interface NavCallbacks {
   prev: () => void
   toggleFullscreen: () => void
   toggleGrid: () => void
+  toggleTheme: () => void
   exit: () => void
 }
 
@@ -59,6 +60,10 @@ export class NavigationController {
       case 'g':
       case 'G':
         this.callbacks.toggleGrid()
+        break
+      case 't':
+      case 'T':
+        this.callbacks.toggleTheme()
         break
       case 'Escape':
         this.callbacks.exit()
