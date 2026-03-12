@@ -35,6 +35,7 @@ Each slide is a sandboxed `<iframe>` pointing to its HTML file. The viewer sends
 ## Themes
 
 Reusable slide themes live in `themes/`. Each theme provides:
+
 - CSS design tokens (`--theme-bg`, `--theme-color`, `--theme-accent`, etc.)
 - Animated background (`.bg` + `.grid-lines` layers — place as first children of `<body>`)
 - **Fixed visual appearance** — unaffected by the viewer's dark/light/system interface color mode

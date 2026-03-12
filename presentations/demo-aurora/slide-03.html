@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visualization</title>
+  <link rel="stylesheet" href="../../themes/aurora.css" />
+  <style>
+
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      gap: 1.5rem;
+    }
+
+    .header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.2rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.25);
+      color: #4ade80;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    h2 {
+      font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .chart-area {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 720px;
+      background: var(--theme-surface);
+      border: 1px solid var(--theme-border);
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+
+    .chart-title {
+      font-size: 0.8rem;
+      color: var(--theme-color-muted);
+      margin-bottom: 1rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.75rem;
+      height: 160px;
+    }
+
+    .bar-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .bar {
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+      height: 0;
+      transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+
+    .bar::after {
+      content: attr(data-value);
+      position: absolute;
+      top: -1.4rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      color: var(--theme-color-secondary);
+      font-family: monospace;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.3s ease 0.8s;
+    }
+
+    .bar.shown::after { opacity: 1; }
+
+    .bar-label {
+      font-size: 0.7rem;
+      color: var(--theme-color-muted);
+      text-align: center;
+    }
+
+    .legend {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--theme-color-muted);
+    }
+
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="header">
+    <span class="tag">Live Canvas</span>
+    <h2>Inline visualizations, zero dependencies</h2>
+  </div>
+
+  <div class="chart-area">
+    <div class="chart-title">Monthly active presentations</div>
+    <div class="bars" id="bars"></div>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#6366f1"></div>
+        <span>Views</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#22c55e"></div>
+        <span>Unique visitors</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const data = [
+      { label: 'Oct', views: 38, unique: 22 },
+      { label: 'Nov', views: 52, unique: 31 },
+      { label: 'Dec', views: 47, unique: 28 },
+      { label: 'Jan', views: 71, unique: 45 },
+      { label: 'Feb', views: 88, unique: 60 },
+      { label: 'Mar', views: 95, unique: 72 },
+    ]
+
+    const maxVal = Math.max(...data.flatMap(d => [d.views, d.unique]))
+
+    function build() {
+      const container = document.getElementById('bars')
+      container.innerHTML = ''
+      data.forEach(d => {
+        const group = document.createElement('div')
+        group.className = 'bar-group'
+
+        const innerBars = document.createElement('div')
+        innerBars.style.cssText = 'display:flex;gap:3px;align-items:flex-end;width:100%;height:100%'
+
+        const b1 = document.createElement('div')
+        b1.className = 'bar'
+        b1.dataset.value = String(d.views)
+        b1.style.background = 'linear-gradient(to top, #4f46e5, #818cf8)'
+        b1.style.flex = '1'
+        b1.dataset.target = String((d.views / maxVal) * 100)
+
+        const b2 = document.createElement('div')
+        b2.className = 'bar'
+        b2.dataset.value = String(d.unique)
+        b2.style.background = 'linear-gradient(to top, #16a34a, #4ade80)'
+        b2.style.flex = '1'
+        b2.dataset.target = String((d.unique / maxVal) * 100)
+
+        innerBars.append(b1, b2)
+
+        const label = document.createElement('div')
+        label.className = 'bar-label'
+        label.textContent = d.label
+
+        group.append(innerBars, label)
+        container.appendChild(group)
+      })
+    }
+
+    function animateIn() {
+      document.querySelectorAll('.bar').forEach(bar => {
+        bar.style.height = '0'
+        bar.classList.remove('shown')
+        void bar.offsetWidth
+        const target = bar.dataset.target ?? '0'
+        requestAnimationFrame(() => {
+          bar.style.height = `${target}%`
+          bar.classList.add('shown')
+        })
+      })
+    }
+
+    build()
+    window.addEventListener('load', animateIn)
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === 'slideEnter') animateIn()
+    })
+  </script>
+</body>
+</html>
