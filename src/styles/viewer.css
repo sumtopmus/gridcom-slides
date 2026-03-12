@@ -216,12 +216,18 @@ html, body {
   color: var(--color-accent);
 }
 
+#nav-cluster {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
 #slide-counter {
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--color-text-muted);
-  flex: 1;
-  text-align: center;
   user-select: none;
 }
 
