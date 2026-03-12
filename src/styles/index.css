@@ -35,6 +35,91 @@
   padding-bottom: 0.25rem;
 }
 
+/* Bottom bar */
+#bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.6rem 1rem;
+  background: rgba(9, 9, 11, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--color-border);
+}
+
+html.theme-light #bottom-bar,
+html.theme-system #bottom-bar {
+  background: rgba(250, 250, 250, 0.9);
+}
+
+@media (prefers-color-scheme: light) {
+  html.theme-system #bottom-bar {
+    background: rgba(250, 250, 250, 0.9);
+  }
+}
+
+/* Theme segmented slider */
+#theme-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+html.theme-light #theme-switch,
+html.theme-system #theme-switch {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+@media (prefers-color-scheme: light) {
+  html.theme-system #theme-switch {
+    background: rgba(0, 0, 0, 0.06);
+  }
+}
+
+#theme-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: rgba(99, 102, 241, 0.25);
+  transform: translateX(calc(var(--theme-index, 2) * 34px));
+  transition: transform var(--transition-base);
+  pointer-events: none;
+}
+
+.theme-opt {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.theme-opt:hover {
+  color: var(--color-text-primary);
+}
+
+.theme-opt.active {
+  color: var(--color-accent);
+}
+
 .presentation-count span {
   color: var(--color-accent);
   font-weight: 600;
@@ -44,7 +129,7 @@
 main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem 4rem;
+  padding: 0 2rem 6rem;
 }
 
 .presentations-grid {

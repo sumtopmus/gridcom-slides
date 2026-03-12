@@ -1,6 +1,35 @@
 import { presentations } from './registry'
 import type { PresentationMeta } from './types'
 
+// ── Color mode ──────────────────────────────────────────────────────────────
+
+type ColorMode = 'dark' | 'light' | 'system'
+
+let colorMode: ColorMode = (() => {
+  const stored = localStorage.getItem('colorMode')
+  return stored === 'light' || stored === 'system' ? stored : 'dark'
+})()
+
+const themeSwitch = document.getElementById('theme-switch')!
+const themeOpts = Array.from(document.querySelectorAll<HTMLButtonElement>('.theme-opt'))
+
+function applyColorMode(): void {
+  document.documentElement.classList.remove('theme-dark', 'theme-light', 'theme-system')
+  document.documentElement.classList.add(`theme-${colorMode}`)
+  const index = ['light', 'system', 'dark'].indexOf(colorMode)
+  themeSwitch.style.setProperty('--theme-index', String(index))
+  themeOpts.forEach((btn) => btn.classList.toggle('active', btn.dataset.mode === colorMode))
+}
+
+function setColorMode(mode: ColorMode): void {
+  colorMode = mode
+  localStorage.setItem('colorMode', colorMode)
+  applyColorMode()
+}
+
+themeOpts.forEach((btn) => btn.addEventListener('click', () => setColorMode(btn.dataset.mode as ColorMode)))
+applyColorMode()
+
 function formatDate(iso?: string): string {
   if (!iso) return ''
   const d = new Date(iso)
