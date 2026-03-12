@@ -1,0 +1,12 @@
+{
+  "id": "my-talk",
+  "title": "My Talk",
+  "description": "A short description of what this presentation is about.",
+  "author": "Your Name",
+  "date": "2026-01-01",
+  "tags": ["topic"],
+  "slides": [
+    { "file": "slide-01.html", "title": "Title", "transition": "fade" },
+    { "file": "slide-02.html", "title": "Content", "transition": "slide-left" }
+  ]
+}
