@@ -3,6 +3,10 @@ export interface NavCallbacks {
   prev: () => void
   toggleFullscreen: () => void
   toggleGrid: () => void
+  toggleMode: () => void
+  toggleSystem: () => void
+  toggleHint: () => void
+  toggleCanvas: () => void
   exit: () => void
 }
 
@@ -11,6 +15,7 @@ export class NavigationController {
   private pointerStartX = 0
   private pointerStartY = 0
   private readonly SWIPE_THRESHOLD = 60
+  private wheelCooldown = false
 
   constructor(callbacks: NavCallbacks) {
     this.callbacks = callbacks
@@ -27,10 +32,12 @@ export class NavigationController {
     const slideContainer = document.getElementById('slide-container')!
     slideContainer.addEventListener('pointerdown', this._onPointerDown)
     slideContainer.addEventListener('pointerup', this._onPointerUp)
+    document.addEventListener('wheel', this._onWheel, { passive: true })
   }
 
   detach(): void {
     document.removeEventListener('keydown', this._onKeyDown)
+    document.removeEventListener('wheel', this._onWheel)
   }
 
   private _onKeyDown = (e: KeyboardEvent) => {
@@ -49,6 +56,7 @@ export class NavigationController {
         break
       case 'ArrowLeft':
       case 'ArrowUp':
+      case 'Backspace':
         e.preventDefault()
         this.callbacks.prev()
         break
@@ -60,11 +68,46 @@ export class NavigationController {
       case 'G':
         this.callbacks.toggleGrid()
         break
+      case 'm':
+      case 'M':
+        this.callbacks.toggleMode()
+        break
+      case 's':
+      case 'S':
+        this.callbacks.toggleSystem()
+        break
+      case 'h':
+      case 'H':
+      case '?':
+        this.callbacks.toggleHint()
+        break
+      case 'c':
+      case 'C':
+        this.callbacks.toggleCanvas()
+        break
       case 'Escape':
         this.callbacks.exit()
         break
     }
   }
+
+  handleWheel(e: WheelEvent): void {
+    if (this.wheelCooldown) return
+    // For pixel-mode (touchpad): require a meaningful delta to filter drift
+    const delta = e.deltaMode === WheelEvent.DOM_DELTA_PIXEL ? e.deltaY : e.deltaY * 40
+    if (Math.abs(delta) < 5) return
+
+    this.wheelCooldown = true
+    setTimeout(() => { this.wheelCooldown = false }, 100)
+
+    if (delta > 0) {
+      this.callbacks.next()
+    } else {
+      this.callbacks.prev()
+    }
+  }
+
+  private _onWheel = (e: WheelEvent) => this.handleWheel(e)
 
   private _onPointerDown = (e: PointerEvent) => {
     this.pointerStartX = e.clientX

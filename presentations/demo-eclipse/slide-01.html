@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Title Slide</title>
+  <link rel="stylesheet" href="../../themes/eclipse.css" />
+  <style>
+
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      max-width: 800px;
+    }
+
+    .eyebrow {
+      font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--theme-accent);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    h1 {
+      font-size: clamp(2.5rem, 7vw, 5.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.0;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      transform: translateY(16px);
+    }
+
+    .subtitle {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      color: var(--theme-color-muted);
+      font-weight: 400;
+      line-height: 1.5;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    .meta {
+      margin-top: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--theme-color-muted);
+      opacity: 0;
+    }
+
+    .meta-sep { color: var(--theme-border); }
+
+    .animate { animation: slideUp 0.6s ease forwards; }
+
+    @keyframes slideUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="content">
+    <p class="eyebrow">Presentation Platform</p>
+    <h1>HTML Slides,<br>Unlimited Power</h1>
+    <p class="subtitle">Author rich, interactive presentations in raw HTML, CSS &amp; TypeScript.<br>No framework lock-in. Full creative control.</p>
+    <div class="meta">
+      <span>Demo Presentation</span>
+      <span class="meta-sep">·</span>
+      <span>March 2026</span>
+      <span class="meta-sep">·</span>
+      <span>3 slides</span>
+    </div>
+  </div>
+
+  <script>
+    function animateIn() {
+      document.querySelectorAll('.eyebrow, h1, .subtitle, .meta').forEach((el, i) => {
+        el.style.animationDelay = `${i * 0.12}s`
+        el.classList.remove('animate')
+        void el.offsetWidth
+        el.classList.add('animate')
+      })
+    }
+
+    window.addEventListener('load', animateIn)
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === 'slideEnter') animateIn()
+    })
+  </script>
+</body>
+</html>

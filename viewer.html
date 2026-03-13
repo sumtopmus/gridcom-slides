@@ -1,93 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Viewer</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/src/styles/global.css" />
-    <link rel="stylesheet" href="/src/styles/viewer.css" />
-  </head>
-  <body>
-    <div id="viewer-root">
 
-      <!-- Slide area -->
-      <div id="slide-container"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Viewer</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles/global.css" />
+  <link rel="stylesheet" href="/src/styles/viewer.css" />
+  <!-- Apply stored color mode before first paint to prevent dark/light flash -->
+  <script>
+    (function () {
+      var m = localStorage.getItem('colorMode')
+      document.documentElement.classList.add(
+        m === 'light' || m === 'system' ? 'theme-' + m : 'theme-dark'
+      )
+      document.documentElement.style.setProperty(
+        '--theme-index',
+        m === 'light' ? '0' : m === 'system' ? '1' : '2'
+      )
+    })()
+  </script>
+</head>
 
-      <!-- Keyboard hint (fades after a few seconds) -->
-      <div id="kbd-hint">
-        <div class="kbd-row"><kbd>→</kbd><kbd>Space</kbd> Next</div>
-        <div class="kbd-row"><kbd>←</kbd> Prev</div>
-        <div class="kbd-row"><kbd>f</kbd> Fullscreen</div>
-        <div class="kbd-row"><kbd>g</kbd> Grid overview</div>
-        <div class="kbd-row"><kbd>Esc</kbd> Back</div>
+<body>
+  <div id="viewer-root">
+    <!-- Restore fixed-canvas layout before first paint so no layout jump -->
+    <script>
+      if (localStorage.getItem('fixedCanvas') === '1')
+        document.getElementById('viewer-root').classList.add('fixed-canvas')
+    </script>
+
+    <!-- Slide area -->
+    <div id="slide-container">
+      <div id="canvas-stage">
+        <!-- Restore presentation theme background before first paint so no color flash -->
+        <script>
+              (function () {
+                var m = location.hash.match(/^#\/([^/]+)/)
+                if (m && localStorage.getItem('lastPresentationId') === m[1]) {
+                  var t = localStorage.getItem('lastPresentationTheme')
+                  if (t) document.getElementById('canvas-stage').dataset.presentationTheme = t
+                }
+              })()
+        </script>
+        <div id="slide-scaler"></div>
       </div>
+    </div>
 
-      <!-- Control chrome -->
-      <div id="viewer-chrome">
-        <div id="progress-bar">
-          <div id="progress-fill"></div>
-        </div>
-        <nav id="controls">
-          <a href="index.html" id="btn-back" title="Back to index">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12"/>
-              <polyline points="12 19 5 12 12 5"/>
-            </svg>
-            All
-          </a>
+    <!-- Keyboard hint (toggled by ? button) -->
+    <div id="kbd-hint">
+      <div class="kbd-row"><kbd>→</kbd><kbd>Space</kbd> Next</div>
+      <div class="kbd-row"><kbd>←</kbd><kbd>⌫</kbd> Prev</div>
+      <div class="kbd-row"><kbd>f</kbd> Fullscreen</div>
+      <div class="kbd-row"><kbd>g</kbd> Grid overview</div>
+      <div class="kbd-row"><kbd>c</kbd> Fixed canvas</div>
+      <div class="kbd-row"><kbd>m</kbd> Light / dark mode</div>
+      <div class="kbd-row"><kbd>s</kbd> System mode</div>
+      <div class="kbd-row"><kbd>h</kbd> Help panel</div>
+      <div class="kbd-row"><kbd>Esc</kbd> Back</div>
+    </div>
 
-          <button id="btn-prev" class="ctrl-btn" title="Previous slide (←)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 18 9 12 15 6"/>
+    <!-- Control chrome -->
+    <div id="viewer-chrome">
+      <div id="progress-bar">
+        <div id="progress-fill"></div>
+      </div>
+      <nav id="controls">
+        <a href="index.html" id="btn-back" title="Back to index">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+          </svg>
+          All
+        </a>
+
+        <div id="nav-cluster">
+          <button id="btn-prev" class="icon-btn" title="Previous slide (←)" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
 
           <span id="slide-counter">— / —</span>
 
-          <button id="btn-next" class="ctrl-btn" title="Next slide (→)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"/>
+          <button id="btn-next" class="icon-btn" title="Next slide (→)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
-
-          <button id="btn-grid" class="ctrl-btn" title="Slide grid (g)">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-              <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-            </svg>
-          </button>
-
-          <button id="btn-fullscreen" class="ctrl-btn" title="Toggle fullscreen (f)">
-            <svg id="icon-expand" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-              <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
-            </svg>
-            <svg id="icon-compress" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
-              <polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/>
-              <line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/>
-            </svg>
-          </button>
-        </nav>
-      </div>
-
-      <!-- Slide grid overlay -->
-      <div id="grid-overlay">
-        <div id="grid-header">
-          <span id="grid-title">All Slides</span>
-          <button id="btn-close-grid" title="Close (Esc or g)">✕</button>
         </div>
-        <div id="grid-slides"></div>
-      </div>
 
+        <div id="theme-switch" title="Color mode (t)">
+          <span id="theme-thumb"></span>
+          <button class="theme-opt" data-mode="light" title="Light">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          </button>
+          <button class="theme-opt" data-mode="system" title="System">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+          </button>
+          <button class="theme-opt" data-mode="dark" title="Dark">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
+        </div>
+
+        <button id="btn-canvas" class="icon-btn" title="Fixed 16∶9 canvas">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="6" width="20" height="12" rx="1.5" />
+            <line x1="2" y1="9" x2="22" y2="9" stroke-width="0.75" stroke-dasharray="2 2" />
+            <line x1="2" y1="15" x2="22" y2="15" stroke-width="0.75" stroke-dasharray="2 2" />
+          </svg>
+        </button>
+
+        <button id="btn-grid" class="icon-btn" title="Slide grid (g)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+          </svg>
+        </button>
+
+        <button id="btn-help" class="icon-btn" title="Keyboard shortcuts (?)">?</button>
+
+        <button id="btn-fullscreen" class="icon-btn" title="Toggle fullscreen (f)">
+          <svg id="icon-expand" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 3 21 3 21 9" />
+            <polyline points="9 21 3 21 3 15" />
+            <line x1="21" y1="3" x2="14" y2="10" />
+            <line x1="3" y1="21" x2="10" y2="14" />
+          </svg>
+          <svg id="icon-compress" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <polyline points="4 14 10 14 10 20" />
+            <polyline points="20 10 14 10 14 4" />
+            <line x1="10" y1="14" x2="3" y2="21" />
+            <line x1="21" y1="3" x2="14" y2="10" />
+          </svg>
+        </button>
+      </nav>
     </div>
 
-    <script type="module" src="/src/viewer.ts"></script>
-  </body>
+    <!-- Slide grid overlay -->
+    <div id="grid-overlay">
+      <div id="grid-header">
+        <span id="grid-title">All Slides</span>
+        <button id="btn-close-grid" title="Close (Esc or g)">✕</button>
+      </div>
+      <div id="grid-slides"></div>
+    </div>
+
+  </div>
+
+  <script type="module" src="/src/viewer.ts"></script>
+</body>
+
 </html>

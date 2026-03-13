@@ -1,0 +1,30 @@
+{
+  "id": "demo-eclipse",
+  "title": "Demo — Eclipse",
+  "description": "Demo presentation using the Eclipse theme — bright background with animated soft indigo/violet gradient.",
+  "author": "Claude",
+  "authorUrl": "https://github.com/claude",
+  "date": "2026-03-11",
+  "tags": [
+    "demo",
+    "eclipse"
+  ],
+  "theme": "eclipse",
+  "slides": [
+    {
+      "file": "slide-01.html",
+      "title": "Title",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-02.html",
+      "title": "Key Points",
+      "transition": "slide-left"
+    },
+    {
+      "file": "slide-03.html",
+      "title": "Visualization",
+      "transition": "slide-left"
+    }
+  ]
+}

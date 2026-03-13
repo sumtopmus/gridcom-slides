@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Key Points</title>
+  <link rel="stylesheet" href="../../themes/aurora.css" />
+  <style>
+
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+    }
+
+    .slide {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .header {
+      grid-column: 1 / -1;
+      margin-bottom: 0.5rem;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.2rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(99,102,241,0.12);
+      border: 1px solid rgba(99,102,241,0.3);
+      color: var(--theme-accent-alt);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .card {
+      background: var(--theme-surface);
+      border: 1px solid var(--theme-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: border-color 0.2s;
+    }
+
+    .card:hover {
+      border-color: rgba(99,102,241,0.4);
+    }
+
+    .card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--theme-color);
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--theme-color-muted);
+      line-height: 1.6;
+    }
+
+    .animate-in {
+      animation: cardIn 0.5s ease forwards;
+    }
+
+    @keyframes cardIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="slide">
+    <div class="header">
+      <span class="tag">Features</span>
+      <h2>Everything you need,<br>nothing you don't</h2>
+    </div>
+
+    <div class="card" data-delay="0">
+      <span class="card-icon">🖼️</span>
+      <div class="card-title">iframe isolation</div>
+      <p class="card-desc">Each slide is a sandboxed iframe. Full CSS isolation, arbitrary scripts, zero bleed between slides.</p>
+    </div>
+
+    <div class="card" data-delay="1">
+      <span class="card-icon">⌨️</span>
+      <div class="card-title">Keyboard-first navigation</div>
+      <p class="card-desc">Arrow keys, Space, F for fullscreen, G for grid overview. Everything reachable without a mouse.</p>
+    </div>
+
+    <div class="card" data-delay="2">
+      <span class="card-icon">🔗</span>
+      <div class="card-title">Shareable URLs</div>
+      <p class="card-desc">Every slide has a unique URL. Navigate directly to any slide with <code style="color:var(--theme-accent-alt);font-size:0.8em">#/demo/2</code>.</p>
+    </div>
+
+    <div class="card" data-delay="3">
+      <span class="card-icon">✨</span>
+      <div class="card-title">Lifecycle hooks</div>
+      <p class="card-desc">Slides receive <code style="color:var(--theme-accent-alt);font-size:0.8em">slideEnter</code> and <code style="color:var(--theme-accent-alt);font-size:0.8em">slideExit</code> events via postMessage. Trigger animations on cue.</p>
+    </div>
+  </div>
+
+  <script>
+    function animateCards() {
+      document.querySelectorAll('.card').forEach((card) => {
+        const delay = parseInt(card.dataset.delay ?? '0', 10) * 0.1
+        card.style.animationDelay = `${delay}s`
+        card.classList.remove('animate-in')
+        void card.offsetWidth
+        card.classList.add('animate-in')
+      })
+    }
+
+    window.addEventListener('load', animateCards)
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === 'slideEnter') animateCards()
+    })
+  </script>
+</body>
+</html>
