@@ -14,6 +14,7 @@ export interface PresentationMeta {
   author?: string
   date?: string
   tags?: string[]
+  theme?: string
   slides: SlideConfig[]
 }
 
@@ -25,8 +26,6 @@ export interface ViewerState {
 }
 
 // postMessage payloads sent from viewer → slide iframe
-export interface SlideMessage {
-  type: 'slideEnter' | 'slideExit'
-  index: number
-  direction: 'forward' | 'backward' | 'initial'
-}
+export type SlideMessage =
+  | { type: 'slideEnter'; index: number; direction: 'forward' | 'backward' | 'initial' }
+  | { type: 'slideExit'; index: number; direction: 'forward' | 'backward' | 'initial' }

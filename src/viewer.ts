@@ -7,23 +7,37 @@ import { NavigationController } from './viewer/NavigationController'
 
 // ── State ──────────────────────────────────────────────────────────────────
 
+type ColorMode = 'dark' | 'light' | 'system'
+
 let currentPresentation: PresentationMeta | null = null
 let currentIndex = 0
 let activeIframe: HTMLIFrameElement | null = null
 let gridVisible = false
+let isFixedCanvas = localStorage.getItem('fixedCanvas') === '1'
+let colorMode: ColorMode = (() => {
+  const stored = localStorage.getItem('colorMode')
+  return stored === 'light' || stored === 'system' ? stored : 'dark'
+})()
 
 // ── DOM refs ───────────────────────────────────────────────────────────────
 
 const slideContainer = document.getElementById('slide-container')!
+const canvasStage = document.getElementById('canvas-stage')!
+const slideScaler = document.getElementById('slide-scaler')!
+const viewerRoot = document.getElementById('viewer-root')!
 const gridOverlay = document.getElementById('grid-overlay')!
 const gridSlides = document.getElementById('grid-slides')!
 const btnPrev = document.getElementById('btn-prev') as HTMLButtonElement
 const btnNext = document.getElementById('btn-next') as HTMLButtonElement
 const btnFullscreen = document.getElementById('btn-fullscreen') as HTMLButtonElement
+const btnCanvas = document.getElementById('btn-canvas') as HTMLButtonElement
+const themeSwitch = document.getElementById('theme-switch')!
+const themeOpts = Array.from(document.querySelectorAll<HTMLButtonElement>('.theme-opt'))
 const iconExpand = document.getElementById('icon-expand')!
 const iconCompress = document.getElementById('icon-compress')!
 const viewerChrome = document.getElementById('viewer-chrome')!
 const kbdHint = document.getElementById('kbd-hint')!
+const btnHelp = document.getElementById('btn-help') as HTMLButtonElement
 
 // ── Utilities ──────────────────────────────────────────────────────────────
 
@@ -65,7 +79,10 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
   iframe.src = src
   iframe.title = slide.title ?? `Slide ${index + 1}`
   iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-modals')
-  iframe.classList.add('entering')
+
+  // Keep hidden while loading — prevents the white blank document from being
+  // revealed by the fade-in animation before content is ready.
+  iframe.style.opacity = '0'
 
   // Choose transition
   const transition: TransitionType = slide.transition ?? 'fade'
@@ -82,30 +99,38 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
     slideContainer.className = ''
   }
 
-  // Mark previous as leaving
-  if (previousIframe) {
-    previousIframe.classList.remove('entering')
-    previousIframe.classList.add('leaving')
-  }
-
-  // Send enter once loaded
+  // Once loaded: start old exit + new enter simultaneously so transition
+  // always plays over real content, never over a blank white document.
   iframe.addEventListener('load', () => {
     sendSlideMessage(iframe, {
       type: 'slideEnter',
       index,
       direction,
     })
-    iframe.classList.remove('entering')
-    // Remove old iframe after transition
+
+    // Kick off old slide exit
     if (previousIframe) {
-      const delay = transition === 'none' ? 0 : 350
-      setTimeout(() => {
-        previousIframe.remove()
-      }, delay)
+      previousIframe.classList.remove('entering')
+      previousIframe.classList.add('leaving')
     }
+
+    // Forward wheel events from inside the slide iframe to the parent navigator
+    try {
+      iframe.contentWindow?.addEventListener('wheel', (e) => nav.handleWheel(e), { passive: true })
+    } catch { /* cross-origin guard */ }
+
+    // Hand opacity back to CSS and start enter animation
+    iframe.style.opacity = ''
+    iframe.classList.add('entering')
+
+    const delay = transition === 'none' ? 0 : 350
+    setTimeout(() => {
+      iframe.classList.remove('entering')
+      previousIframe?.remove()
+    }, delay)
   }, { once: true })
 
-  slideContainer.appendChild(iframe)
+  slideScaler.appendChild(iframe)
   activeIframe = iframe
   document.title = `${currentPresentation.title} — ${slide.title ?? index + 1}`
 }
@@ -141,7 +166,7 @@ function updateNavButtons(): void {
 // ── Fullscreen ─────────────────────────────────────────────────────────────
 
 const fullscreen = new FullscreenController(
-  document.getElementById('viewer-root')!,
+  viewerRoot,
   (isFs) => {
     iconExpand.style.display = isFs ? 'none' : ''
     iconCompress.style.display = isFs ? '' : 'none'
@@ -153,6 +178,68 @@ const fullscreen = new FullscreenController(
 if (!fullscreen.supported) {
   btnFullscreen.style.display = 'none'
 }
+
+// ── Color mode ─────────────────────────────────────────────────────────────
+
+function applyColorMode(): void {
+  document.documentElement.classList.remove('theme-dark', 'theme-light', 'theme-system')
+  document.documentElement.classList.add(`theme-${colorMode}`)
+  const index = ['light', 'system', 'dark'].indexOf(colorMode)
+  themeSwitch.style.setProperty('--theme-index', String(index))
+  themeOpts.forEach((btn) => btn.classList.toggle('active', btn.dataset.mode === colorMode))
+}
+
+function setColorMode(mode: ColorMode): void {
+  colorMode = mode
+  localStorage.setItem('colorMode', colorMode)
+  applyColorMode()
+}
+
+function toggleMode(): void {
+  setColorMode(colorMode === 'dark' ? 'light' : 'dark')
+}
+
+function toggleSystem(): void {
+  setColorMode(colorMode === 'system' ? 'light' : 'system')
+}
+
+themeOpts.forEach((btn) => btn.addEventListener('click', () => setColorMode(btn.dataset.mode as ColorMode)))
+applyColorMode()
+
+// ── Fixed canvas ───────────────────────────────────────────────────────────
+
+const CANVAS_DESIGN_WIDTH = 1920
+
+function updateSlideScale(): void {
+  if (isFixedCanvas) {
+    const scale = canvasStage.clientWidth / CANVAS_DESIGN_WIDTH
+    slideScaler.style.transform = `scale(${scale})`
+  } else {
+    slideScaler.style.transform = ''
+  }
+}
+
+function applyFixedCanvas(): void {
+  if (isFixedCanvas) {
+    viewerRoot.classList.add('fixed-canvas')
+    btnCanvas.classList.add('active')
+  } else {
+    viewerRoot.classList.remove('fixed-canvas')
+    btnCanvas.classList.remove('active')
+  }
+  updateSlideScale()
+}
+
+function toggleFixedCanvas(): void {
+  isFixedCanvas = !isFixedCanvas
+  localStorage.setItem('fixedCanvas', isFixedCanvas ? '1' : '0')
+  applyFixedCanvas()
+}
+
+new ResizeObserver(updateSlideScale).observe(canvasStage)
+
+btnCanvas.addEventListener('click', toggleFixedCanvas)
+applyFixedCanvas()
 
 // ── Chrome auto-hide ───────────────────────────────────────────────────────
 
@@ -192,6 +279,13 @@ function buildGrid(): void {
       <span class="grid-thumb-num">${i + 1}</span>
       ${slide.title ? `<span class="grid-thumb-label">${slide.title}</span>` : ''}
     `
+    const thumbIframe = thumb.querySelector('iframe')
+    if (thumbIframe) {
+      thumbIframe.addEventListener('load', () => {
+        thumbIframe.classList.add('loaded')
+      }, { once: true })
+    }
+
     thumb.addEventListener('click', () => {
       const dir = i > currentIndex ? 'forward' : 'backward'
       goTo(i, dir)
@@ -234,7 +328,32 @@ function exit(): void {
 
 // ── Keyboard hint ──────────────────────────────────────────────────────────
 
-setTimeout(() => kbdHint.classList.add('hidden'), 4000)
+let kbdHintTimer: ReturnType<typeof setTimeout> | null = null
+
+function showKbdHint(autohide = false): void {
+  if (kbdHintTimer) clearTimeout(kbdHintTimer)
+  kbdHint.classList.remove('hidden')
+  btnHelp.classList.add('active')
+  if (autohide) {
+    kbdHintTimer = setTimeout(() => {
+      kbdHint.classList.add('hidden')
+      btnHelp.classList.remove('active')
+      kbdHintTimer = null
+    }, 4000)
+  }
+}
+
+function toggleKbdHint(): void {
+  if (kbdHintTimer) {
+    clearTimeout(kbdHintTimer)
+    kbdHintTimer = null
+  }
+  const visible = !kbdHint.classList.contains('hidden')
+  kbdHint.classList.toggle('hidden', visible)
+  btnHelp.classList.toggle('active', !visible)
+}
+
+btnHelp.addEventListener('click', toggleKbdHint)
 
 // ── Progress bar ───────────────────────────────────────────────────────────
 
@@ -247,6 +366,10 @@ const nav = new NavigationController({
   prev,
   toggleFullscreen: () => fullscreen.toggle(),
   toggleGrid,
+  toggleMode,
+  toggleSystem,
+  toggleHint: toggleKbdHint,
+  toggleCanvas: toggleFixedCanvas,
   exit,
 })
 nav.attach()
@@ -278,8 +401,12 @@ function init(): void {
   }
 
   currentPresentation = presentation
+  canvasStage.dataset.presentationTheme = presentation.theme ?? ''
+  localStorage.setItem('lastPresentationId', presentation.id)
+  localStorage.setItem('lastPresentationTheme', presentation.theme ?? '')
   const startIndex = Math.max(0, Math.min(parsed.slideIndex, presentation.slides.length - 1))
   loadSlide(startIndex, 'initial')
+  showKbdHint(true)
 }
 
 // Handle external hash changes (browser back/forward)
