@@ -1,6 +1,10 @@
 export interface NavCallbacks {
   next: () => void
   prev: () => void
+  nextSlide: () => void
+  prevSlide: () => void
+  stepNext: () => void
+  stepPrev: () => void
   toggleFullscreen: () => void
   toggleGrid: () => void
   toggleMode: () => void
@@ -23,8 +27,9 @@ export class NavigationController {
 
   attach(): void {
     document.addEventListener('keydown', this._onKeyDown)
-    document.getElementById('btn-prev')!.addEventListener('click', this.callbacks.prev)
-    document.getElementById('btn-next')!.addEventListener('click', this.callbacks.next)
+    window.addEventListener('blur', this._onWindowBlur)
+    document.getElementById('btn-prev')!.addEventListener('click', this.callbacks.prevSlide)
+    document.getElementById('btn-next')!.addEventListener('click', this.callbacks.nextSlide)
     document.getElementById('btn-fullscreen')!.addEventListener('click', this.callbacks.toggleFullscreen)
     document.getElementById('btn-grid')!.addEventListener('click', this.callbacks.toggleGrid)
     document.getElementById('btn-close-grid')!.addEventListener('click', this.callbacks.toggleGrid)
@@ -37,7 +42,13 @@ export class NavigationController {
 
   detach(): void {
     document.removeEventListener('keydown', this._onKeyDown)
+    window.removeEventListener('blur', this._onWindowBlur)
     document.removeEventListener('wheel', this._onWheel)
+  }
+
+  private _onWindowBlur = () => {
+    // When an iframe steals focus, immediately reclaim it so keydown still fires
+    setTimeout(() => window.focus(), 0)
   }
 
   private _onKeyDown = (e: KeyboardEvent) => {
@@ -59,6 +70,12 @@ export class NavigationController {
       case 'Backspace':
         e.preventDefault()
         this.callbacks.prev()
+        break
+      case ']':
+        this.callbacks.stepNext()
+        break
+      case '[':
+        this.callbacks.stepPrev()
         break
       case 'f':
       case 'F':

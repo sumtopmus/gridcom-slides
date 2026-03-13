@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AUROC — Distribution</title>
+  <link rel="stylesheet" href="../../themes/aurora.css" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --pos: #fb923c;
+      --neg: #a78bfa;
+      --theme-color-muted: #a1a1aa;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .title {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--theme-color-muted);
+      margin-top: 0.4rem;
+    }
+
+    .header {
+      text-align: center;
+    }
+
+    .legend {
+      display: flex;
+      gap: 2.4rem;
+      align-items: center;
+      font-size: 1rem;
+      color: var(--theme-color-muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .legend-swatch {
+      width: 15px;
+      height: 15px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="content">
+    <div class="header">
+      <div class="title">Score Distribution</div>
+      <div class="subtitle">Positives cluster toward higher scores — the classifier is imperfect but informative</div>
+    </div>
+    <svg id="hist" width="860" height="400" style="overflow:visible;flex-shrink:0"></svg>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:var(--pos)"></div>
+        <span>Positive (25 samples)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:var(--neg)"></div>
+        <span>Negative (25 samples)</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { dataset } from './dataset.js'
+
+    const POS = '#fb923c', NEG = '#a78bfa'
+
+    const bins = Array.from({ length: 10 }, (_, i) => ({ lo: i / 10, pos: 0, neg: 0 }))
+    for (const d of dataset) {
+      const bi = Math.min(9, Math.floor(d.score * 10))
+      d.label === 1 ? bins[bi].pos++ : bins[bi].neg++
+    }
+
+    function buildHistogram() {
+      const svg = document.getElementById('hist')
+      const W = 860, H = 400, ml = 50, mr = 22, mt = 22, mb = 52
+      const pw = W - ml - mr, ph = H - mt - mb
+      const maxC = Math.max(...bins.map(b => b.pos + b.neg))  // 5
+      const bw = pw / 10 - 6
+      let h = ''
+
+      // Grid lines
+      for (let y = 0; y <= maxC; y++) {
+        const yy = mt + ph - (y / maxC) * ph
+        h += `<line x1="${ml}" y1="${yy}" x2="${W - mr}" y2="${yy}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`
+        h += `<text x="${ml - 8}" y="${yy + 4}" font-size="13" fill="rgba(255,255,255,0.58)" text-anchor="end">${y}</text>`
+      }
+
+      bins.forEach((b, i) => {
+        const x = ml + i * (pw / 10) + 3
+        const negH = (b.neg / maxC) * ph
+        const posH = (b.pos / maxC) * ph
+        const cx = x + bw / 2
+        // Neg bar (bottom stack)
+        if (b.neg > 0) {
+          h += `<rect x="${x}" y="${mt + ph - negH}" width="${bw}" height="${negH}" fill="${NEG}" rx="3" opacity="0" id="nb${i}"/>`
+        }
+        // Pos bar (top stack)
+        if (b.pos > 0) {
+          h += `<rect x="${x}" y="${mt + ph - negH - posH}" width="${bw}" height="${posH}" fill="${POS}" rx="3" opacity="0" id="pb${i}"/>`
+        }
+        // X-axis label
+        h += `<text x="${cx}" y="${mt + ph + 20}" font-size="13" fill="rgba(255,255,255,0.62)" text-anchor="middle">${b.lo.toFixed(1)}</text>`
+      })
+      h += `<text x="${ml + pw}" y="${mt + ph + 20}" font-size="13" fill="rgba(255,255,255,0.62)" text-anchor="middle">1.0</text>`
+
+      // Axes
+      h += `<line x1="${ml}" y1="${mt}" x2="${ml}" y2="${mt + ph}" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>`
+      h += `<line x1="${ml}" y1="${mt + ph}" x2="${W - mr}" y2="${mt + ph}" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>`
+      h += `<text x="${ml + pw / 2}" y="${H - 6}" font-size="14" fill="rgba(255,255,255,0.65)" text-anchor="middle">Classifier Score</text>`
+      h += `<text x="13" y="${mt + ph / 2}" font-size="14" fill="rgba(255,255,255,0.65)" text-anchor="middle" transform="rotate(-90,13,${mt + ph / 2})">Count</text>`
+
+      svg.innerHTML = h
+    }
+
+    function animateIn() {
+      buildHistogram()
+      // Fade in bars with stagger
+      bins.forEach((b, i) => {
+        const neg = document.getElementById(`nb${i}`)
+        const pos = document.getElementById(`pb${i}`)
+        const delay = i * 60
+        if (neg) setTimeout(() => { neg.style.transition = 'opacity 0.35s ease'; neg.style.opacity = '0.84' }, delay)
+        if (pos) setTimeout(() => { pos.style.transition = 'opacity 0.35s ease'; pos.style.opacity = '0.84' }, delay + (neg ? 80 : 0))
+      })
+    }
+
+    window.addEventListener('load', animateIn)
+    window.addEventListener('message', e => { if (e.data?.type === 'slideEnter') animateIn() })
+  </script>
+</body>
+
+</html>

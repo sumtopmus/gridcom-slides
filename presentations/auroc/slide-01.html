@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AUROC — Dataset</title>
+  <link rel="stylesheet" href="../../themes/aurora.css" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --pos: #fb923c;
+      --neg: #a78bfa;
+      --pos-a: rgba(251, 146, 60, 0.13);
+      --neg-a: rgba(167, 139, 250, 0.13);
+      --theme-color-muted: #a1a1aa;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .title {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--theme-color-muted);
+      margin-top: 0.4rem;
+    }
+
+    .header {
+      text-align: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(10, 62px);
+      gap: 0.6rem 1rem;
+    }
+
+    .dp {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.28rem;
+    }
+
+    .dp-sym {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 700;
+      opacity: 0;
+      transform: scale(0.55);
+      transition: transform 0.22s cubic-bezier(.34, 1.56, .64, 1), opacity 0.18s ease;
+    }
+
+    .dp-sym.pos {
+      background: var(--pos-a);
+      border-color: var(--pos);
+      color: var(--pos);
+    }
+
+    .dp-sym.neg {
+      background: var(--neg-a);
+      border-color: var(--neg);
+      color: var(--neg);
+    }
+
+    .dp-sym.shown {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .dp-id {
+      font-size: 0.65rem;
+      color: var(--theme-color-muted);
+      font-variant-numeric: tabular-nums;
+      opacity: 0;
+      transition: opacity 0.16s ease 0.1s;
+    }
+
+    .dp-sym.shown+.dp-id {
+      opacity: 1;
+    }
+
+    .legend {
+      display: flex;
+      gap: 2.5rem;
+      align-items: center;
+      font-size: 1rem;
+      color: var(--theme-color-muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .legend-sym {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="content">
+    <div class="header">
+      <div class="title">The Dataset</div>
+      <div class="subtitle">50 labeled samples — the classifier has assigned each a score ∈ [0, 1]</div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-sym" style="border-color:var(--pos);color:var(--pos)">●</div>
+        <span>Positive class (25 samples)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-sym" style="border-color:var(--neg);color:var(--neg)">×</div>
+        <span>Negative class (25 samples)</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { dataset, displayOrder as order } from './dataset.js'
+
+    const grid = document.getElementById('grid')
+    for (const idx of order) {
+      const d = dataset[idx]
+      const dp = document.createElement('div')
+      dp.className = 'dp'
+      dp.innerHTML = `<div class="dp-sym ${d.label === 1 ? 'pos' : 'neg'}">${d.label === 1 ? '●' : '×'}</div><div class="dp-id">S${String(d.id).padStart(2, '0')}</div>`
+      grid.appendChild(dp)
+    }
+
+    function animate() {
+      document.querySelectorAll('.dp-sym').forEach((el, i) => {
+        el.classList.remove('shown')
+        void el.offsetWidth
+        setTimeout(() => el.classList.add('shown'), 20 + i * 28)
+      })
+    }
+
+    window.addEventListener('load', animate)
+    window.addEventListener('message', e => { if (e.data?.type === 'slideEnter') animate() })
+  </script>
+</body>
+
+</html>

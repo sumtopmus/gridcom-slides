@@ -1,0 +1,33 @@
+{
+  "id": "auroc",
+  "title": "AUROC",
+  "description": "Interactive step-by-step construction of the ROC curve and AUROC metric.",
+  "theme": "aurora",
+  "slides": [
+    {
+      "file": "slide-00.html",
+      "title": "AUROC",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-01.html",
+      "title": "Dataset",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-02.html",
+      "title": "Classifier Scores",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-03.html",
+      "title": "Score Distribution",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-04.html",
+      "title": "ROC Curve",
+      "transition": "fade"
+    }
+  ]
+}

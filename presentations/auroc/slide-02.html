@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AUROC — Scores</title>
+  <link rel="stylesheet" href="../../themes/aurora.css" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --pos: #fb923c;
+      --neg: #a78bfa;
+      --theme-color-muted: #a1a1aa;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .title {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--theme-color-muted);
+      margin-top: 0.4rem;
+    }
+
+    .header {
+      text-align: center;
+    }
+
+    .tables {
+      display: flex;
+      gap: 3.2rem;
+      align-items: flex-start;
+    }
+
+    table {
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th {
+      padding: 0.36rem 0.85rem;
+      color: var(--theme-color-muted);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--theme-border);
+      text-align: left;
+    }
+
+    td {
+      padding: 0.25rem 0.85rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .bar-bg {
+      background: rgba(255, 255, 255, 0.08);
+      height: 5px;
+      border-radius: 3px;
+      width: 90px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+
+    .rank-divider td {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="content">
+    <div class="header">
+      <div class="title">Classifier Scores</div>
+      <div class="subtitle">All 50 samples ranked by score — higher score = model is more confident the sample is
+        positive</div>
+    </div>
+    <div class="tables">
+      <table id="tbl-left"></table>
+      <table id="tbl-right"></table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { dataset, sorted } from './dataset.js'
+
+    const col = l => l === 1 ? '#fb923c' : '#a78bfa'
+    const sym = l => l === 1 ? '●' : '×'
+
+    const hdr = () => `<thead><tr><th>#</th><th>Sample</th><th>Class</th><th>Score</th><th></th></tr></thead>`
+    const row = (d, rank) => `<tr>
+      <td style="color:var(--theme-color-muted);font-size:0.7rem">${rank}</td>
+      <td style="color:var(--theme-color-muted)">S${String(d.id).padStart(2, '0')}</td>
+      <td style="font-weight:700;color:${col(d.label)};text-align:center">${sym(d.label)}</td>
+      <td style="color:${col(d.label)};font-weight:600">${d.score.toFixed(2)}</td>
+      <td><div class="bar-bg"><div class="bar-fill" style="width:${d.score * 100}%;background:${col(d.label)}"></div></div></td>
+    </tr>`
+
+    document.getElementById('tbl-left').innerHTML = hdr() + `<tbody>${sorted.slice(0, 25).map((d, i) => row(d, i + 1)).join('')}</tbody>`
+    document.getElementById('tbl-right').innerHTML = hdr() + `<tbody>${sorted.slice(25).map((d, i) => row(d, i + 26)).join('')}</tbody>`
+
+    function animateIn() {
+      const trs = document.querySelectorAll('tr')
+      trs.forEach((tr, i) => {
+        tr.style.opacity = '0'
+        tr.style.transform = 'translateX(-8px)'
+        tr.style.transition = 'none'
+        void tr.offsetWidth
+        tr.style.transition = `opacity 0.25s ease ${i * 0.012}s, transform 0.25s ease ${i * 0.012}s`
+        tr.style.opacity = '1'
+        tr.style.transform = 'translateX(0)'
+      })
+    }
+
+    window.addEventListener('load', animateIn)
+    window.addEventListener('message', e => { if (e.data?.type === 'slideEnter') animateIn() })
+  </script>
+</body>
+
+</html>
