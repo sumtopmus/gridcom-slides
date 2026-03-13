@@ -23,14 +23,100 @@ npm run preview  # serve dist/ locally
 **Slide rendering:**
 Each slide is a sandboxed `<iframe>` pointing to its HTML file. The viewer sends `slideEnter`/`slideExit` `postMessage` events to the active slide.
 
-## Adding a Presentation
+## Adding a Presentation — Step-by-Step
 
-1. Copy `presentations/_template/` → `presentations/<id>/`
-2. Edit `presentation.json` — set `id` (must match folder name), `title`, `theme`, `slides` array
-3. Write each slide as a standalone `<!DOCTYPE html>` document
-4. `npm run dev` — the card appears on the homepage automatically
+**Before writing any code, ask the user which theme to use** if they haven't specified one (see Themes section). Also confirm the presentation ID (must be a short lowercase slug matching the folder name) if not obvious.
 
-**When asked to add a presentation, ask which theme to use** (see Themes section below).
+### 1. Create the folder
+
+Copy `presentations/_template/` to `presentations/<id>/`. Do not copy from an existing presentation — always start from the template to get a clean baseline.
+
+### 2. Edit `presentation.json`
+
+Set at minimum:
+
+- `id` — must exactly match the folder name
+- `title` — human-readable title shown on the homepage card
+- `theme` — `"aurora"` or `"eclipse"`
+- `slides` — array of slide objects with at least `file`
+
+Fill in `author` and `date` (ISO format `YYYY-MM-DD`) if the user provided them. Leave optional fields out rather than leaving placeholder values.
+
+### 3. Write the slide HTML files
+
+Each slide is a **complete, self-contained `<!DOCTYPE html>` document**. Key rules:
+
+- Link the chosen theme: `<link rel="stylesheet" href="../../themes/<theme>.css" />`
+- Place `<div class="bg"></div>` and `<div class="grid-lines"></div>` as the **first two children of `<body>`** — these are the animated background layers
+- Every content wrapper needs `position: relative; z-index: 1` to stack above the background
+- Use theme CSS variables for all colors (never hardcode colors): `--theme-bg`, `--theme-color`, `--theme-color-secondary`, `--theme-color-muted`, `--theme-accent`, `--theme-accent-alt`, `--theme-surface`, `--theme-border`
+- Wire up the `slideEnter` / `slideExit` message listener (see Slide Lifecycle API below) — at minimum for enter animations
+
+**Fixed canvas mode compatibility:** The viewer can scale slides to a virtual 1920×1080 canvas. Design slides at this effective resolution in mind: use `px` or `rem` values freely — they will scale proportionally. `vw`/`vh` units also work but are relative to the iframe viewport which changes with window size.
+
+**Slide structure example:**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slide title</title>
+  <link rel="stylesheet" href="../../themes/aurora.css" />
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+    }
+    .content {
+      position: relative;
+      z-index: 1;
+      /* layout styles */
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="content">
+    <!-- slide content -->
+  </div>
+
+  <script>
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === 'slideEnter') {
+        // trigger enter animations
+      }
+      if (e.data?.type === 'slideExit') {
+        // stop timers, reset state
+      }
+    })
+  </script>
+</body>
+</html>
+```
+
+### 4. Register slides in `presentation.json`
+
+Each slide object in the `slides` array:
+
+```json
+{ "file": "slide-01.html", "title": "Slide title", "transition": "fade" }
+```
+
+- `file` — filename relative to the presentation folder
+- `title` — optional; shown in the grid overlay
+- `transition` — `"fade"` (default), `"slide-left"`, or `"none"`
+
+### 5. Verify
+
+Run `npm run dev` and confirm the card appears on the homepage and all slides load in the viewer.
+
+---
 
 ## Themes
 
@@ -112,11 +198,16 @@ window.addEventListener('message', (e) => {
 | Key | Action |
 | ----- | -------- |
 | `→` / `↓` / `Space` | Next slide |
-| `←` / `↑` | Previous slide |
+| `←` / `↑` / `⌫` | Previous slide |
 | `f` | Toggle fullscreen |
 | `g` | Slide grid overview |
-| `t` | Cycle color mode (dark → light → system) |
+| `c` | Toggle fixed 16:9 canvas (scales all content to 1920×1080) |
+| `m` | Toggle dark / light mode |
+| `s` | Toggle system color mode |
+| `h` / `?` | Toggle keyboard shortcuts hint |
 | `Esc` | Exit grid / exit fullscreen / back to index |
+
+Swipe left/right and scroll also navigate between slides.
 
 ## Safari Notes
 
