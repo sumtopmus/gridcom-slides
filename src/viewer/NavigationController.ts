@@ -115,7 +115,7 @@ export class NavigationController {
     if (Math.abs(delta) < 5) return
 
     this.wheelCooldown = true
-    setTimeout(() => { this.wheelCooldown = false }, 100)
+    setTimeout(() => { this.wheelCooldown = false }, 1)
 
     if (delta > 0) {
       this.callbacks.next()

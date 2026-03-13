@@ -26,6 +26,7 @@
     body {
       display: flex;
       flex-direction: column;
+      align-items: center;
       width: 100vw;
       height: 100vh;
       overflow: clip;
@@ -44,6 +45,7 @@
       align-items: flex-start;
       flex-shrink: 0;
       margin-bottom: 0.9rem;
+      width: 100%;
     }
 
     .tag {
@@ -65,6 +67,7 @@
       display: flex;
       gap: 0.7rem;
       align-items: center;
+      justify-content: flex-end;
     }
 
     .stat {
@@ -91,64 +94,42 @@
 
     /* ── Body ── */
     .body {
-      display: flex;
-      gap: 2rem;
-      flex: 1;
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 0.6rem 4rem;
       min-height: 0;
     }
 
-    .col-left {
-      width: 230px;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-    }
-
-    .col-right {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-    }
-
     .list-label {
-      flex-shrink: 0;
       font-size: 1.1rem;
       font-weight: 700;
       letter-spacing: -0.02em;
       color: rgba(255, 255, 255, 0.65);
+      text-align: center;
+      flex-shrink: 0;
     }
 
     /* ── Slot machine ── */
+
     .slot-clip {
-      flex: 1;
       min-height: 0;
       position: relative;
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
+      gap: 0.3rem;
+    }
+
+    .slot-content-clip {
+      position: relative;
+      width: 100%;
+      height: 50%;
       overflow: hidden;
-    }
-
-    /* Fade top & bottom thirds */
-    .slot-clip::before,
-    .slot-clip::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 36%;
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    .slot-clip::before {
-      top: 0;
-      background: linear-gradient(to bottom, #09090b 25%, transparent 100%);
-    }
-
-    .slot-clip::after {
-      bottom: 0;
-      background: linear-gradient(to top, #09090b 25%, transparent 100%);
+      mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
     }
 
     /* Fixed highlight frame at the centre of the clip */
@@ -246,10 +227,10 @@
     }
 
     #roc-svg {
-      height: 90%;
+      /* square: take the smaller of the two 90% constraints */
+      height: min(calc(90vh - 10rem), calc(90vw - 18rem));
       width: auto;
       aspect-ratio: 1;
-      max-width: 100%;
       display: block;
       overflow: visible;
     }
@@ -274,7 +255,6 @@
       padding: 0.1rem 0.42rem;
       font-size: 0.64rem;
     }
-
   </style>
 </head>
 
@@ -290,18 +270,17 @@
   </div>
 
   <div class="body z1">
-    <div class="col-left">
+    <div class="cell-empty"></div>
+    <div class="stats" id="stats"></div>
+    <div class="slot-clip">
       <div class="list-label">Samples sorted by score ↓</div>
-      <div class="slot-clip">
+      <div class="slot-content-clip">
         <div class="slot-highlight"></div>
         <div class="slot-inner" id="slot-inner"></div>
       </div>
     </div>
-    <div class="col-right">
-      <div class="stats" id="stats"></div>
-      <div class="plot-panel">
-        <svg id="roc-svg"></svg>
-      </div>
+    <div class="plot-panel">
+      <svg id="roc-svg"></svg>
     </div>
   </div>
 
@@ -324,7 +303,7 @@
     }
 
     // ── Build slot-machine strip ───────────────────────────
-    const slotClip = document.querySelector('.slot-clip')
+    const slotClip = document.querySelector('.slot-content-clip')
     const slotInner = document.getElementById('slot-inner')
 
     const emptySlot = () => '<div class="slot-item empty"><span class="slot-rank"></span><div class="slot-core"><span class="slot-sym"></span><span class="slot-score"></span><span class="slot-dir"></span></div><span></span></div>'
@@ -352,9 +331,9 @@
     function update(s) {
       step = s
 
-      // Slot machine: translate so sorted[s] sits at centre of clip
+      // Slot machine: centre on the item just processed (s-1), or on empty space when s=0
       const clipH = slotClip.clientHeight
-      slotInner.style.transform = `translateY(${clipH / 2 - (s + PREFIX + 0.5) * ITEM_H}px)`
+      slotInner.style.transform = `translateY(${clipH / 2 - (s + PREFIX - 0.5) * ITEM_H}px)`
 
       // Update item states
       const items = slotInner.children
@@ -364,9 +343,9 @@
         const label = sorted[i].label
         dir.textContent = i < 50 ? (label === 1 ? '↑ TPR' : '→ FPR') : ''
         dir.style.color = label === 1 ? POS : NEG
-        if (i < s) {
+        if (i < s - 1) {
           el.className = 'slot-item done'
-        } else if (i === s && s < 50) {
+        } else if (i === s - 1 && s > 0) {
           el.className = 'slot-item current'
         } else {
           el.className = 'slot-item pending'
@@ -403,8 +382,8 @@
         const v = i / 5, gx = tx(v), gy = ty(v)
         h += `<line x1="${gx}" y1="${mt}" x2="${gx}" y2="${mt + ph}" stroke="rgba(255,255,255,0.055)" stroke-width="1"/>`
         h += `<line x1="${ml}" y1="${gy}" x2="${ml + pw}" y2="${gy}" stroke="rgba(255,255,255,0.055)" stroke-width="1"/>`
-        h += `<text x="${gx}" y="${mt + ph + 22}" font-size="15" fill="rgba(255,255,255,0.58)" text-anchor="middle">${v.toFixed(1)}</text>`
-        h += `<text x="${ml - 10}" y="${gy + 5}" font-size="15" fill="rgba(255,255,255,0.58)" text-anchor="end">${v.toFixed(1)}</text>`
+        h += `<text x="${gx}" y="${mt + ph + 32}" font-size="15" fill="rgba(255,255,255,0.58)" text-anchor="middle">${v.toFixed(1)}</text>`
+        h += `<text x="${ml - 18}" y="${gy + 5}" font-size="15" fill="rgba(255,255,255,0.58)" text-anchor="end">${v.toFixed(1)}</text>`
       }
 
       // Axes
@@ -454,9 +433,9 @@
 
         // AUROC annotation on completion
         if (s === 50) {
-          const bx = tx(0.26), by = ty(0.65)
-          h += `<rect x="${bx - 2}" y="${by - 18}" width="145" height="27" rx="6" fill="rgba(15,15,35,0.75)" stroke="${CURVE}" stroke-width="1.2"/>`
-          h += `<text x="${bx + 70}" y="${by + 2}" font-size="13.5" fill="${CURVE}" font-weight="600" text-anchor="middle">AUROC = ${rocPts[50].auroc.toFixed(3)}</text>`
+          const cx = tx(0.5), cy = ty(0.4)
+          h += `<rect x="${cx - 110}" y="${cy - 23}" width="220" height="46" rx="8" fill="rgba(15,15,35,0.85)" stroke="${CURVE}" stroke-width="1.8"/>`
+          h += `<text x="${cx}" y="${cy}" font-size="24" fill="${CURVE}" font-weight="700" text-anchor="middle" dominant-baseline="middle">AUROC = ${rocPts[50].auroc.toFixed(3)}</text>`
         }
       } else {
         h += `<circle cx="${tx(0)}" cy="${ty(0)}" r="8" fill="${CURVE}" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>`
