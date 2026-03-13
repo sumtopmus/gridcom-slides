@@ -32,9 +32,23 @@ html, body {
   width: 100%;
   height: 100%;
   background: #000;
+  overflow: hidden;
 }
 
-#canvas-stage iframe {
+/* Slide scaler — wraps iframes; scaled to 1920×1080 in fixed-canvas mode */
+#slide-scaler {
+  position: absolute;
+  inset: 0;
+}
+
+#viewer-root.fixed-canvas #slide-scaler {
+  width: 1920px;
+  height: 1080px;
+  transform-origin: top left;
+  /* transform value is set dynamically by viewer.ts */
+}
+
+#slide-scaler iframe {
   position: absolute;
   inset: 0;
   width: 100%;

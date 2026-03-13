@@ -23,6 +23,7 @@ let colorMode: ColorMode = (() => {
 
 const slideContainer = document.getElementById('slide-container')!
 const canvasStage = document.getElementById('canvas-stage')!
+const slideScaler = document.getElementById('slide-scaler')!
 const viewerRoot = document.getElementById('viewer-root')!
 const gridOverlay = document.getElementById('grid-overlay')!
 const gridSlides = document.getElementById('grid-slides')!
@@ -129,7 +130,7 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
     }, delay)
   }, { once: true })
 
-  canvasStage.appendChild(iframe)
+  slideScaler.appendChild(iframe)
   activeIframe = iframe
   document.title = `${currentPresentation.title} — ${slide.title ?? index + 1}`
 }
@@ -207,6 +208,17 @@ applyColorMode()
 
 // ── Fixed canvas ───────────────────────────────────────────────────────────
 
+const CANVAS_DESIGN_WIDTH = 1920
+
+function updateSlideScale(): void {
+  if (isFixedCanvas) {
+    const scale = canvasStage.clientWidth / CANVAS_DESIGN_WIDTH
+    slideScaler.style.transform = `scale(${scale})`
+  } else {
+    slideScaler.style.transform = ''
+  }
+}
+
 function applyFixedCanvas(): void {
   if (isFixedCanvas) {
     viewerRoot.classList.add('fixed-canvas')
@@ -215,6 +227,7 @@ function applyFixedCanvas(): void {
     viewerRoot.classList.remove('fixed-canvas')
     btnCanvas.classList.remove('active')
   }
+  updateSlideScale()
 }
 
 function toggleFixedCanvas(): void {
@@ -222,6 +235,8 @@ function toggleFixedCanvas(): void {
   localStorage.setItem('fixedCanvas', isFixedCanvas ? '1' : '0')
   applyFixedCanvas()
 }
+
+new ResizeObserver(updateSlideScale).observe(canvasStage)
 
 btnCanvas.addEventListener('click', toggleFixedCanvas)
 applyFixedCanvas()
