@@ -2,7 +2,8 @@
   "id": "demo-aurora",
   "title": "Demo — Aurora",
   "description": "Demo presentation using the Aurora theme — dark background with animated indigo/violet gradient.",
-  "author": "You",
+  "author": "Claude",
+  "authorUrl": "https://github.com/claude",
   "date": "2026-03-11",
   "tags": [
     "demo",

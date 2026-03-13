@@ -12,6 +12,7 @@ export interface PresentationMeta {
   title: string
   description?: string
   author?: string
+  authorUrl?: string
   date?: string
   tags?: string[]
   theme?: string

@@ -214,3 +214,7 @@ Transitions: `"fade"` (default), `"slide-left"`, `"none"`
 | `Esc` | Exit grid / exit fullscreen / back to homepage |
 
 Swipe left/right and scroll also navigate between slides.
+
+---
+
+Built by [HIMARS](https://github.com/sumtopmus) · MIT License
