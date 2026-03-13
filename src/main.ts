@@ -81,7 +81,10 @@ function renderCard(p: PresentationMeta): string {
 
   const metaItems: string[] = []
   if (p.author) {
-    metaItems.push(`<span class="card-meta-item">${icon('user')}<span>${p.author}</span></span>`)
+    const authorInner = p.authorUrl
+      ? `<span class="card-author-link" role="link" tabindex="0" data-href="${p.authorUrl}">${p.author}</span>`
+      : `<span>${p.author}</span>`
+    metaItems.push(`<span class="card-meta-item">${icon('user')}${authorInner}</span>`)
   }
   if (p.date) {
     metaItems.push(`<span class="card-meta-item">${icon('calendar')}<span>${formatDate(p.date)}</span></span>`)
@@ -127,6 +130,16 @@ function init() {
   }
 
   grid.innerHTML = presentations.map(renderCard).join('')
+
+  // Author links inside cards — open in a new tab without triggering card navigation.
+  grid.addEventListener('click', (e) => {
+    const el = (e.target as Element).closest<HTMLElement>('[data-href]')
+    if (el?.dataset.href) {
+      e.preventDefault()
+      e.stopPropagation()
+      window.open(el.dataset.href, '_blank', 'noopener')
+    }
+  })
 
   // Fade each thumbnail iframe in once its content is ready, so the card
   // placeholder background shows instead of a blank white document flash.
