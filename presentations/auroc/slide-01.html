@@ -7,7 +7,13 @@
   <title>AUROC — Distribution</title>
   <link rel="stylesheet" href="../../themes/aurora.css" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
       --pos: #fb923c;
@@ -31,48 +37,105 @@
       gap: 2rem;
     }
 
-    .title   { font-size: 2.6rem; font-weight: 700; letter-spacing: -0.03em; }
-    .subtitle { font-size: 1.1rem; color: var(--theme-color-muted); margin-top: 0.4rem; }
-    .header  { text-align: center; }
+    .title {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--theme-color-muted);
+      margin-top: 0.4rem;
+    }
+
+    .header {
+      text-align: center;
+    }
 
     .legend {
-      display: flex; gap: 2.4rem; align-items: center;
-      font-size: 1rem; color: var(--theme-color-muted);
+      display: flex;
+      gap: 2.4rem;
+      align-items: center;
+      font-size: 1rem;
+      color: var(--theme-color-muted);
     }
-    .legend-item { display: flex; align-items: center; gap: 0.6rem; }
-    .legend-swatch { width: 15px; height: 15px; border-radius: 3px; }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .legend-swatch {
+      width: 15px;
+      height: 15px;
+      border-radius: 3px;
+    }
 
     /* ── Dataset switcher ── */
     .ds-switcher {
-      position: fixed; top: 1.5rem; right: 1.8rem;
+      position: fixed;
+      top: 1.5rem;
+      right: 1.8rem;
       z-index: 10;
-      display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.4rem;
     }
-    .ds-btns { position: relative; display: flex; gap: 0.3rem; }
+
+    .ds-btns {
+      position: relative;
+      display: flex;
+      gap: 0.3rem;
+    }
+
     .ds-btn {
-      width: 2rem; height: 2rem;
+      width: 2rem;
+      height: 2rem;
       border-radius: 6px;
       border: 1.5px solid var(--theme-border);
       background: transparent;
       color: var(--theme-color-muted);
-      font-size: 0.82rem; font-weight: 700;
+      font-size: 0.82rem;
+      font-weight: 700;
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      position: relative; z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
       transition: color 0.15s;
     }
-    .ds-btn:hover:not(.active) { color: var(--theme-color); }
-    .ds-btn.active { border-color: transparent; color: var(--theme-accent); }
+
+    .ds-btn:hover:not(.active) {
+      color: var(--theme-color);
+    }
+
+    .ds-btn.active {
+      border-color: transparent;
+      color: var(--theme-accent);
+    }
+
     .ds-indicator {
-      position: absolute; left: 0; top: 0;
-      width: 2rem; height: 2rem; border-radius: 6px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 6px;
       border: 1.5px solid var(--theme-accent);
       background: rgba(99, 102, 241, 0.12);
       pointer-events: none;
     }
+
     .ds-legend {
-      font-size: 0.63rem; color: var(--theme-color-muted);
-      text-align: right; line-height: 1.7; opacity: 0.8;
+      font-size: 0.63rem;
+      color: var(--theme-color-muted);
+      text-align: right;
+      line-height: 1.7;
+      opacity: 0.8;
     }
   </style>
 </head>
@@ -90,80 +153,99 @@
     </div>
     <div class="ds-legend">A – High score<br>B – Regular score<br>C – Low score</div>
   </div>
-  <script>(function(){var i=parseInt(localStorage.getItem('auroc_dsIdx')||'0');document.querySelectorAll('.ds-btn').forEach(function(b){b.classList.toggle('active',+b.dataset.idx===i)});var ind=document.querySelector('.ds-indicator');if(ind){ind.style.transition='none';ind.style.transform='translateX(calc('+i+'*(2rem + 0.3rem)))';};})()</script>
+  <script>(function () { var i = parseInt(localStorage.getItem('auroc_dsIdx') || '0'); document.querySelectorAll('.ds-btn').forEach(function (b) { b.classList.toggle('active', +b.dataset.idx === i) }); var ind = document.querySelector('.ds-indicator'); if (ind) { ind.style.transition = 'none'; ind.style.transform = 'translateX(calc(' + i + '*(2rem + 0.3rem)))'; }; })()</script>
 
   <div class="content">
     <div class="header">
       <div class="title">Score Distribution</div>
       <div class="subtitle">How positive and negative scores are distributed across the [0, 1] range</div>
     </div>
-    <svg id="hist" width="860" height="400" style="overflow:visible;flex-shrink:0"></svg>
+    <svg id="chart" width="860" height="400" style="overflow:visible;flex-shrink:0"></svg>
     <div class="legend">
       <div class="legend-item">
         <div class="legend-swatch" style="background:var(--pos)"></div>
-        <span>Positive (50 samples)</span>
+        <span id="pos-label">Positives (50 samples)</span>
       </div>
       <div class="legend-item">
         <div class="legend-swatch" style="background:var(--neg)"></div>
-        <span>Negative (50 samples)</span>
+        <span id="neg-label">Negatives (50 samples)</span>
       </div>
     </div>
   </div>
 
   <script type="module">
-    import { datasets } from './datasets.js'
+    import { distributions } from './datasets.js'
 
     const POS = '#fb923c', NEG = '#a78bfa'
+    const W = 860, H = 400, ml = 50, mr = 22, mt = 22, mb = 52
+    const pw = W - ml - mr, ph = H - mt - mb
 
-    function render(data) {
-      const bins = Array.from({ length: 10 }, (_, i) => ({ lo: i / 10, pos: 0, neg: 0 }))
-      for (const d of data) {
-        const bi = Math.min(9, Math.floor(d.score * 10))
-        d.label === 1 ? bins[bi].pos++ : bins[bi].neg++
+    // Evaluate pdfFn at `steps+1` points over [0,1], normalize to max=1,
+    // return closed area path and open line path as SVG strings.
+    function makePaths(pdfFn, steps = 300) {
+      const ys = Array.from({ length: steps + 1 }, (_, i) => pdfFn(i / steps))
+      const maxY = Math.max(...ys)
+      const pts = ys.map((y, i) =>
+        `${(ml + (i / steps) * pw).toFixed(1)},${(mt + ph - (y / maxY) * ph).toFixed(1)}`
+      )
+      return {
+        area: `M ${ml},${mt + ph} L ${pts.join(' L ')} L ${ml + pw},${mt + ph} Z`,
+        line: `M ${pts.join(' L ')}`,
       }
+    }
 
-      const svg = document.getElementById('hist')
-      const W = 860, H = 400, ml = 50, mr = 22, mt = 22, mb = 52
-      const pw = W - ml - mr, ph = H - mt - mb
-      const maxC = Math.max(...bins.map(b => b.pos + b.neg))
-      const bw = pw / 10 - 6
+    function render(dist) {
+      const posP = makePaths(dist.posPDF)
+      const negP = makePaths(dist.negPDF)
       let h = ''
 
-      for (let y = 0; y <= maxC; y += Math.ceil(maxC / 8)) {
-        const yy = mt + ph - (y / maxC) * ph
+      // Horizontal grid lines
+      for (let g = 1; g <= 4; g++) {
+        const yy = (mt + ph - (g / 4) * ph).toFixed(1)
         h += `<line x1="${ml}" y1="${yy}" x2="${W - mr}" y2="${yy}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`
-        h += `<text x="${ml - 8}" y="${yy + 4}" font-size="13" fill="rgba(255,255,255,0.58)" text-anchor="end">${y}</text>`
       }
 
-      bins.forEach((b, i) => {
-        const x = ml + i * (pw / 10) + 3
-        const negH = (b.neg / maxC) * ph
-        const posH = (b.pos / maxC) * ph
-        const cx = x + bw / 2
-        if (b.neg > 0) h += `<rect x="${x}" y="${mt + ph - negH}" width="${bw}" height="${negH}" fill="${NEG}" rx="3" opacity="0" id="nb${i}"/>`
-        if (b.pos > 0) h += `<rect x="${x}" y="${mt + ph - negH - posH}" width="${bw}" height="${posH}" fill="${POS}" rx="3" opacity="0" id="pb${i}"/>`
-        h += `<text x="${cx}" y="${mt + ph + 20}" font-size="13" fill="rgba(255,255,255,0.62)" text-anchor="middle">${b.lo.toFixed(1)}</text>`
-      })
-      h += `<text x="${ml + pw}" y="${mt + ph + 20}" font-size="13" fill="rgba(255,255,255,0.62)" text-anchor="middle">1.0</text>`
+      // Area fills — start hidden for fade-in animation
+      h += `<path id="neg-area" d="${negP.area}" fill="${NEG}" opacity="0"/>`
+      h += `<path id="pos-area" d="${posP.area}" fill="${POS}" opacity="0"/>`
+
+      // Curve strokes — start hidden
+      h += `<path id="neg-line" d="${negP.line}" fill="none" stroke="${NEG}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0"/>`
+      h += `<path id="pos-line" d="${posP.line}" fill="none" stroke="${POS}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0"/>`
+
+      // Axes
       h += `<line x1="${ml}" y1="${mt}" x2="${ml}" y2="${mt + ph}" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>`
       h += `<line x1="${ml}" y1="${mt + ph}" x2="${W - mr}" y2="${mt + ph}" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>`
-      h += `<text x="${ml + pw / 2}" y="${H - 6}" font-size="14" fill="rgba(255,255,255,0.65)" text-anchor="middle">Classifier Score</text>`
-      h += `<text x="13" y="${mt + ph / 2}" font-size="14" fill="rgba(255,255,255,0.65)" text-anchor="middle" transform="rotate(-90,13,${mt + ph / 2})">Count</text>`
-      svg.innerHTML = h
 
-      bins.forEach((b, i) => {
-        const delay = i * 60
-        const neg = document.getElementById(`nb${i}`)
-        const pos = document.getElementById(`pb${i}`)
-        if (neg) setTimeout(() => { neg.style.transition = 'opacity 0.35s ease'; neg.style.opacity = '0.84' }, delay)
-        if (pos) setTimeout(() => { pos.style.transition = 'opacity 0.35s ease'; pos.style.opacity = '0.84' }, delay + (neg ? 80 : 0))
-      })
+      // X-axis labels (0.0 … 1.0)
+      for (let i = 0; i <= 5; i++) {
+        const x = (ml + (i / 5) * pw).toFixed(1)
+        h += `<text x="${x}" y="${mt + ph + 20}" font-size="13" fill="rgba(255,255,255,0.62)" text-anchor="middle">${(i / 5).toFixed(1)}</text>`
+      }
+
+      // Axis labels
+      h += `<text x="${(ml + pw / 2).toFixed(1)}" y="${H - 6}" font-size="14" fill="rgba(255,255,255,0.65)" text-anchor="middle">Classifier Score</text>`
+      h += `<text x="13" y="${(mt + ph / 2).toFixed(1)}" font-size="14" fill="rgba(255,255,255,0.65)" text-anchor="middle" transform="rotate(-90,13,${(mt + ph / 2).toFixed(1)})">Density</text>`
+
+      document.getElementById('chart').innerHTML = h
+    }
+
+    function animateIn() {
+      setTimeout(() => {
+        document.getElementById('neg-area').style.cssText = 'transition:opacity 0.4s ease;opacity:0.18'
+        document.getElementById('neg-line').style.cssText = 'transition:opacity 0.4s ease;opacity:0.85'
+      }, 0)
+      setTimeout(() => {
+        document.getElementById('pos-area').style.cssText = 'transition:opacity 0.4s ease;opacity:0.18'
+        document.getElementById('pos-line').style.cssText = 'transition:opacity 0.4s ease;opacity:0.85'
+      }, 220)
     }
 
     let dsIdx = 0
     const swBtns = document.querySelectorAll('.ds-btn')
-
     const ind = document.querySelector('.ds-indicator')
+    const posLabel = document.getElementById('pos-label')
+    const negLabel = document.getElementById('neg-label')
 
     function applyIdx(idx, animate = false) {
       dsIdx = idx
@@ -171,12 +253,14 @@
       swBtns.forEach(b => b.classList.toggle('active', +b.dataset.idx === idx))
       ind.style.transition = animate ? 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1)' : 'none'
       ind.style.transform = `translateX(calc(${idx} * (2rem + 0.3rem)))`
-      render(datasets[idx].data)
+      const dist = distributions[idx]
+      render(dist)
+      posLabel.textContent = `Positives (${dist.posCount} samples)`
+      negLabel.textContent = `Negatives (${dist.negCount} samples)`
+      animateIn()
     }
 
-    swBtns.forEach(btn => {
-      btn.addEventListener('click', () => applyIdx(+btn.dataset.idx, true))
-    })
+    swBtns.forEach(btn => btn.addEventListener('click', () => applyIdx(+btn.dataset.idx, true)))
 
     applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
     window.addEventListener('message', e => {

@@ -7,7 +7,13 @@
   <title>AUROC — Scores</title>
   <link rel="stylesheet" href="../../themes/aurora.css" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
       --pos: #fb923c;
@@ -31,9 +37,21 @@
       gap: 1.6rem;
     }
 
-    .title   { font-size: 2.6rem; font-weight: 700; letter-spacing: -0.03em; }
-    .subtitle { font-size: 1.05rem; color: var(--theme-color-muted); margin-top: 0.35rem; }
-    .header  { text-align: center; }
+    .title {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--theme-color-muted);
+      margin-top: 0.35rem;
+    }
+
+    .header {
+      text-align: center;
+    }
 
     .tables {
       display: flex;
@@ -63,7 +81,9 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     }
 
-    tr:last-child td { border-bottom: none; }
+    tr:last-child td {
+      border-bottom: none;
+    }
 
     .bar-bg {
       background: rgba(255, 255, 255, 0.08);
@@ -72,39 +92,75 @@
       width: 62px;
       overflow: hidden;
     }
-    .bar-fill { height: 100%; border-radius: 3px; }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
 
     /* ── Dataset switcher ── */
     .ds-switcher {
-      position: fixed; top: 1.5rem; right: 1.8rem;
+      position: fixed;
+      top: 1.5rem;
+      right: 1.8rem;
       z-index: 10;
-      display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.4rem;
     }
-    .ds-btns { position: relative; display: flex; gap: 0.3rem; }
+
+    .ds-btns {
+      position: relative;
+      display: flex;
+      gap: 0.3rem;
+    }
+
     .ds-btn {
-      width: 2rem; height: 2rem;
+      width: 2rem;
+      height: 2rem;
       border-radius: 6px;
       border: 1.5px solid var(--theme-border);
       background: transparent;
       color: var(--theme-color-muted);
-      font-size: 0.82rem; font-weight: 700;
+      font-size: 0.82rem;
+      font-weight: 700;
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      position: relative; z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
       transition: color 0.15s;
     }
-    .ds-btn:hover:not(.active) { color: var(--theme-color); }
-    .ds-btn.active { border-color: transparent; color: var(--theme-accent); }
+
+    .ds-btn:hover:not(.active) {
+      color: var(--theme-color);
+    }
+
+    .ds-btn.active {
+      border-color: transparent;
+      color: var(--theme-accent);
+    }
+
     .ds-indicator {
-      position: absolute; left: 0; top: 0;
-      width: 2rem; height: 2rem; border-radius: 6px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 6px;
       border: 1.5px solid var(--theme-accent);
       background: rgba(99, 102, 241, 0.12);
       pointer-events: none;
     }
+
     .ds-legend {
-      font-size: 0.63rem; color: var(--theme-color-muted);
-      text-align: right; line-height: 1.7; opacity: 0.8;
+      font-size: 0.63rem;
+      color: var(--theme-color-muted);
+      text-align: right;
+      line-height: 1.7;
+      opacity: 0.8;
     }
   </style>
 </head>
@@ -122,12 +178,13 @@
     </div>
     <div class="ds-legend">A – High score<br>B – Regular score<br>C – Low score</div>
   </div>
-  <script>(function(){var i=parseInt(localStorage.getItem('auroc_dsIdx')||'0');document.querySelectorAll('.ds-btn').forEach(function(b){b.classList.toggle('active',+b.dataset.idx===i)});var ind=document.querySelector('.ds-indicator');if(ind){ind.style.transition='none';ind.style.transform='translateX(calc('+i+'*(2rem + 0.3rem)))';};})()</script>
+  <script>(function () { var i = parseInt(localStorage.getItem('auroc_dsIdx') || '0'); document.querySelectorAll('.ds-btn').forEach(function (b) { b.classList.toggle('active', +b.dataset.idx === i) }); var ind = document.querySelector('.ds-indicator'); if (ind) { ind.style.transition = 'none'; ind.style.transform = 'translateX(calc(' + i + '*(2rem + 0.3rem)))'; }; })()</script>
 
   <div class="content">
     <div class="header">
       <div class="title">Classifier Scores</div>
-      <div class="subtitle">All 100 samples ranked by score — higher score = model is more confident the sample is positive</div>
+      <div class="subtitle">All 100 samples ranked by score — higher score = model is more confident the sample is
+        positive</div>
     </div>
     <div class="tables" id="tables"></div>
   </div>
