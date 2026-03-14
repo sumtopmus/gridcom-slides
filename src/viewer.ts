@@ -14,6 +14,7 @@ let currentIndex = 0
 let activeIframe: HTMLIFrameElement | null = null
 let slideCanGoBack = false
 let slideCanGoForward = false
+let slideIsStepBased = false
 let gridVisible = false
 let isFixedCanvas = localStorage.getItem('fixedCanvas') === '1'
 let colorMode: ColorMode = (() => {
@@ -63,6 +64,7 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
   currentIndex = index
   slideCanGoBack = false
   slideCanGoForward = false
+  slideIsStepBased = false
 
   writeHash(currentPresentation.id, index)
   progress.update(index, currentPresentation.slides.length)
@@ -404,6 +406,9 @@ const nav = new NavigationController({
   toggleHint: toggleKbdHint,
   toggleCanvas: toggleFixedCanvas,
   exit,
+  isStepSlide: () => slideIsStepBased,
+  canStepForward: () => slideCanGoForward,
+  canStepBackward: () => slideCanGoBack,
 })
 nav.attach()
 
@@ -450,6 +455,7 @@ window.addEventListener('message', (e) => {
   if (msg?.type === 'stepState') {
     slideCanGoBack = msg.canGoBack
     slideCanGoForward = msg.canGoForward
+    slideIsStepBased = true
   }
 })
 
