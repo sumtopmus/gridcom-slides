@@ -126,8 +126,8 @@ export class NavigationController {
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) >= 10) {
       this.wheelCooldown = true
       setTimeout(() => { this.wheelCooldown = false }, 1)
-      if (dx > 0) this.callbacks.prevSlide()
-      else this.callbacks.nextSlide()
+      if (dx > 0) this.callbacks.nextSlide()
+      else this.callbacks.prevSlide()
       return
     }
 

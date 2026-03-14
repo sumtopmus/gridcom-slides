@@ -11,17 +11,17 @@
     },
     {
       "file": "slide-01.html",
-      "title": "Dataset",
+      "title": "Score Distribution",
       "transition": "fade"
     },
     {
       "file": "slide-02.html",
-      "title": "Classifier Scores",
+      "title": "Dataset",
       "transition": "fade"
     },
     {
       "file": "slide-03.html",
-      "title": "Score Distribution",
+      "title": "Classifier Scores",
       "transition": "fade"
     },
     {
