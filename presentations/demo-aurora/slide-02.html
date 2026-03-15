@@ -1,149 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Key Points</title>
+  <title>AUROC — Dataset</title>
   <link rel="stylesheet" href="../../themes/aurora.css" />
   <style>
-
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 3rem;
+      padding: 2rem 2.5rem;
     }
 
-    .slide {
+    .content {
       position: relative;
       z-index: 1;
-      max-width: 860px;
-      width: 100%;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      align-items: start;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.4rem;
+    }
+
+    .title {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--theme-color-muted);
+      margin-top: 0.35rem;
     }
 
     .header {
-      grid-column: 1 / -1;
-      margin-bottom: 0.5rem;
+      text-align: center;
     }
 
-    .tag {
-      display: inline-block;
-      padding: 0.2rem 0.7rem;
-      border-radius: 999px;
-      background: rgba(99,102,241,0.12);
-      border: 1px solid rgba(99,102,241,0.3);
-      color: var(--theme-accent-alt);
-      font-size: 0.75rem;
-      font-weight: 500;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 1rem;
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(10, 54px);
+      gap: 0.45rem 0.7rem;
     }
 
-    h2 {
-      font-size: clamp(1.8rem, 4vw, 3rem);
+    .dp {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .dp-sym {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
       font-weight: 700;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
-    }
-
-    .card {
-      background: var(--theme-surface);
-      border: 1px solid var(--theme-border);
-      border-radius: 12px;
-      padding: 1.5rem;
       opacity: 0;
-      transform: translateY(20px);
-      transition: border-color 0.2s;
+      transform: scale(0.55);
+      transition: transform 0.22s cubic-bezier(.34, 1.56, .64, 1), opacity 0.18s ease;
     }
 
-    .card:hover {
-      border-color: rgba(99,102,241,0.4);
+    .dp-sym.pos {
+      background: var(--pos-a);
+      border-color: var(--pos);
+      color: var(--pos);
     }
 
-    .card-icon {
-      font-size: 1.5rem;
-      margin-bottom: 0.75rem;
-      display: block;
+    .dp-sym.neg {
+      background: var(--neg-a);
+      border-color: var(--neg);
+      color: var(--neg);
     }
 
-    .card-title {
+    .dp-sym.shown {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .dp-id {
+      font-size: 0.54rem;
+      color: var(--theme-color-muted);
+      font-variant-numeric: tabular-nums;
+      opacity: 0;
+      transition: opacity 0.16s ease 0.08s;
+    }
+
+    .dp-sym.shown+.dp-id {
+      opacity: 1;
+    }
+
+    .legend {
+      display: flex;
+      gap: 2.5rem;
+      align-items: center;
       font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
+      color: var(--theme-color-muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .legend-sym {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    /* ── Dataset switcher ── */
+    .ds-switcher {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.8rem;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+
+    .ds-btns {
+      position: relative;
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .ds-btn {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 6px;
+      border: 1.5px solid var(--theme-border);
+      background: transparent;
+      color: var(--theme-color-muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      transition: color 0.15s;
+    }
+
+    .ds-btn:hover:not(.active) {
       color: var(--theme-color);
     }
 
-    .card-desc {
-      font-size: 0.85rem;
+    .ds-btn.active {
+      border-color: transparent;
+      color: var(--theme-accent);
+    }
+
+    .ds-indicator {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 6px;
+      border: 1.5px solid var(--theme-accent);
+      background: var(--theme-accent-subtle);
+      pointer-events: none;
+    }
+
+    .ds-legend {
+      font-size: 0.63rem;
       color: var(--theme-color-muted);
-      line-height: 1.6;
-    }
-
-    .animate-in {
-      animation: cardIn 0.5s ease forwards;
-    }
-
-    @keyframes cardIn {
-      to { opacity: 1; transform: translateY(0); }
+      text-align: left;
+      line-height: 1.7;
+      opacity: 0.8;
+      padding-left: 0.3rem;
     }
   </style>
 </head>
+
 <body>
   <div class="bg"></div>
   <div class="grid-lines"></div>
 
-  <div class="slide">
+  <div class="ds-switcher">
+    <div class="ds-btns">
+      <div class="ds-indicator"></div>
+      <button class="ds-btn" data-idx="0">A</button>
+      <button class="ds-btn" data-idx="1">B</button>
+      <button class="ds-btn" data-idx="2">C</button>
+    </div>
+    <div class="ds-legend">A – High score<br>B – Regular score<br>C – Low score</div>
+  </div>
+  <script>(function () { var i = parseInt(localStorage.getItem('auroc_dsIdx') || '0'); document.querySelectorAll('.ds-btn').forEach(function (b) { b.classList.toggle('active', +b.dataset.idx === i) }); var ind = document.querySelector('.ds-indicator'); if (ind) { ind.style.transition = 'none'; ind.style.transform = 'translateX(calc(' + i + '*(2rem + 0.3rem)))'; }; })()</script>
+
+  <div class="content">
     <div class="header">
-      <span class="tag">Features</span>
-      <h2>Everything you need,<br>nothing you don't</h2>
+      <div class="title">The Datasets</div>
+      <div class="subtitle">100 labeled samples — the classifier has assigned each a score ∈ [0, 1]</div>
     </div>
-
-    <div class="card" data-delay="0">
-      <span class="card-icon">🖼️</span>
-      <div class="card-title">iframe isolation</div>
-      <p class="card-desc">Each slide is a sandboxed iframe. Full CSS isolation, arbitrary scripts, zero bleed between slides.</p>
-    </div>
-
-    <div class="card" data-delay="1">
-      <span class="card-icon">⌨️</span>
-      <div class="card-title">Keyboard-first navigation</div>
-      <p class="card-desc">Arrow keys, Space, F for fullscreen, G for grid overview. Everything reachable without a mouse.</p>
-    </div>
-
-    <div class="card" data-delay="2">
-      <span class="card-icon">🔗</span>
-      <div class="card-title">Shareable URLs</div>
-      <p class="card-desc">Every slide has a unique URL. Navigate directly to any slide with <code style="color:var(--theme-accent-alt);font-size:0.8em">#/demo/2</code>.</p>
-    </div>
-
-    <div class="card" data-delay="3">
-      <span class="card-icon">✨</span>
-      <div class="card-title">Lifecycle hooks</div>
-      <p class="card-desc">Slides receive <code style="color:var(--theme-accent-alt);font-size:0.8em">slideEnter</code> and <code style="color:var(--theme-accent-alt);font-size:0.8em">slideExit</code> events via postMessage. Trigger animations on cue.</p>
+    <div class="grid" id="grid"></div>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-sym" style="border-color:var(--pos);color:var(--pos)">●</div>
+        <span>Positive class (50 samples)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-sym" style="border-color:var(--neg);color:var(--neg)">×</div>
+        <span>Negative class (50 samples)</span>
+      </div>
     </div>
   </div>
 
-  <script>
-    function animateCards() {
-      document.querySelectorAll('.card').forEach((card) => {
-        const delay = parseInt(card.dataset.delay ?? '0', 10) * 0.1
-        card.style.animationDelay = `${delay}s`
-        card.classList.remove('animate-in')
-        void card.offsetWidth
-        card.classList.add('animate-in')
+  <script type="module">
+    import { datasets } from './datasets.js'
+
+    const grid = document.getElementById('grid')
+
+    function render(data) {
+      grid.innerHTML = ''
+      for (const d of data) {
+        const dp = document.createElement('div')
+        dp.className = 'dp'
+        dp.innerHTML = `<div class="dp-sym ${d.label === 1 ? 'pos' : 'neg'}">${d.label === 1 ? '●' : '×'}</div><div class="dp-id">S${String(d.id).padStart(3, '0')}</div>`
+        grid.appendChild(dp)
+      }
+      document.querySelectorAll('.dp-sym').forEach((el, i) => {
+        setTimeout(() => el.classList.add('shown'), 20 + i * 14)
       })
     }
 
-    window.addEventListener('load', animateCards)
-    window.addEventListener('message', (e) => {
-      if (e.data?.type === 'slideEnter') animateCards()
+    let dsIdx = 0
+    const swBtns = document.querySelectorAll('.ds-btn')
+
+    const ind = document.querySelector('.ds-indicator')
+
+    function applyIdx(idx, animate = false) {
+      dsIdx = idx
+      localStorage.setItem('auroc_dsIdx', idx)
+      swBtns.forEach(b => b.classList.toggle('active', +b.dataset.idx === idx))
+      ind.style.transition = animate ? 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1)' : 'none'
+      ind.style.transform = `translateX(calc(${idx} * (2rem + 0.3rem)))`
+      render(datasets[idx].data)
+    }
+
+    swBtns.forEach(btn => {
+      btn.addEventListener('click', () => applyIdx(+btn.dataset.idx, true))
+    })
+
+    applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
+    window.addEventListener('message', e => {
+      if (e.data?.type === 'slideEnter') applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
     })
   </script>
 </body>
+
 </html>

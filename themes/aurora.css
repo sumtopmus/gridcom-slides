@@ -18,11 +18,32 @@ html {
   --theme-bg:              #09090b;
   --theme-color:           #fafafa;
   --theme-color-secondary: #d4d4d8;
-  --theme-color-muted:     #71717a;
+  --theme-color-muted:     #a1a1aa;
   --theme-accent:          #6366f1;
   --theme-accent-alt:      #818cf8;
+  --theme-accent-subtle:   rgba(99, 102, 241, 0.12);
   --theme-surface:         #18181b;
   --theme-border:          #27272a;
+
+  /* Data visualization palette */
+  --pos:   #fb923c;
+  --neg:   #a78bfa;
+  --pos-a: rgba(251, 146, 60, 0.13);
+  --neg-a: rgba(167, 139, 250, 0.13);
+
+  /* Chart/SVG utility palette */
+  --chart-grid:       rgba(255, 255, 255, 0.055);
+  --chart-axis:       rgba(255, 255, 255, 0.28);
+  --chart-label:      rgba(255, 255, 255, 0.65);
+  --chart-tick:       rgba(255, 255, 255, 0.58);
+  --chart-ref:        rgba(255, 255, 255, 0.17);
+  --chart-ref-label:  rgba(255, 255, 255, 0.22);
+  --chart-dot-idle:   rgba(255, 255, 255, 0.85);
+  --chart-dot-stroke: rgba(255, 255, 255, 0.9);
+  --chart-badge-bg:   rgba(15, 15, 35, 0.85);
+  --chart-area:       rgba(99, 102, 241, 0.13);
+  --chart-row-sep:    rgba(255, 255, 255, 0.04);
+  --chart-bar-bg:     rgba(255, 255, 255, 0.08);
 }
 
 /* ── Base reset & viewport ────────────────────────────────────────────────── */
