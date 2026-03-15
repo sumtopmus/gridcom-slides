@@ -518,7 +518,7 @@
         if (s === N) {
           const cx = tx(0.5), cy = ty(0.2)
           h += `<rect x="${cx - 110}" y="${cy - 23}" width="220" height="46" rx="8" fill="${CHART.badgeBg}" stroke="${CURVE}" stroke-width="1.8"/>`
-          h += `<text x="${cx}" y="${cy}" font-size="24" fill="${CURVE}" font-weight="700" text-anchor="middle" dominant-baseline="middle">AUROC = ${rocPts[N].auroc.toFixed(3)}</text>`
+          h += `<text x="${cx}" y="${cy}" dy="0.35em" font-size="24" fill="${CURVE}" font-weight="700" text-anchor="middle">AUROC = ${rocPts[N].auroc.toFixed(3)}</text>`
         }
       } else {
         h += `<circle cx="${tx(0)}" cy="${ty(0)}" r="8" fill="${CHART.dotIdle}" stroke="${CHART.dotIdle}" stroke-width="2"/>`

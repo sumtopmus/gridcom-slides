@@ -1,226 +1,253 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Visualization</title>
+  <title>AUROC — Scores</title>
   <link rel="stylesheet" href="../../themes/eclipse.css" />
   <style>
-
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
-      gap: 1.5rem;
+      padding: 2rem 2.5rem;
     }
 
-    .header {
+    .content {
       position: relative;
       z-index: 1;
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.6rem;
     }
 
-    .tag {
-      display: inline-block;
-      padding: 0.2rem 0.7rem;
-      border-radius: 999px;
-      background: rgba(34,197,94,0.1);
-      border: 1px solid rgba(34,197,94,0.25);
-      color: #4ade80;
-      font-size: 0.75rem;
-      font-weight: 500;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 0.75rem;
-    }
-
-    h2 {
-      font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+    .title {
+      font-size: 2.6rem;
       font-weight: 700;
       letter-spacing: -0.03em;
     }
 
-    .chart-area {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 720px;
-      background: var(--theme-surface);
-      border: 1px solid var(--theme-border);
-      border-radius: 14px;
-      padding: 1.5rem;
-    }
-
-    .chart-title {
-      font-size: 0.8rem;
+    .subtitle {
+      font-size: 1.05rem;
       color: var(--theme-color-muted);
-      margin-bottom: 1rem;
-      font-weight: 500;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
+      margin-top: 0.35rem;
     }
 
-    .bars {
-      display: flex;
-      align-items: flex-end;
-      gap: 0.75rem;
-      height: 160px;
-    }
-
-    .bar-group {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.4rem;
-      height: 100%;
-      justify-content: flex-end;
-    }
-
-    .bar {
-      width: 100%;
-      border-radius: 4px 4px 0 0;
-      height: 0;
-      transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-      position: relative;
-    }
-
-    .bar::after {
-      content: attr(data-value);
-      position: absolute;
-      top: -1.4rem;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 0.7rem;
-      color: var(--theme-color-secondary);
-      font-family: monospace;
-      white-space: nowrap;
-      opacity: 0;
-      transition: opacity 0.3s ease 0.8s;
-    }
-
-    .bar.shown::after { opacity: 1; }
-
-    .bar-label {
-      font-size: 0.7rem;
-      color: var(--theme-color-muted);
+    .header {
       text-align: center;
     }
 
-    .legend {
+    .tables {
       display: flex;
-      gap: 1rem;
-      margin-top: 1rem;
-      flex-wrap: wrap;
+      gap: 1.6rem;
+      align-items: flex-start;
     }
 
-    .legend-item {
+    table {
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th {
+      padding: 0.3rem 0.65rem;
+      color: var(--theme-color-muted);
+      font-weight: 500;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--theme-border);
+      text-align: left;
+    }
+
+    td {
+      padding: 0.2rem 0.65rem;
+      border-bottom: 1px solid var(--chart-row-sep);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .bar-bg {
+      background: var(--chart-bar-bg);
+      height: 5px;
+      border-radius: 3px;
+      width: 62px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+
+    /* ── Dataset switcher ── */
+    .ds-switcher {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.8rem;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+
+    .ds-btns {
+      position: relative;
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .ds-btn {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 6px;
+      border: 1.5px solid var(--theme-border);
+      background: transparent;
+      color: var(--theme-color-muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      font-size: 0.75rem;
-      color: var(--theme-color-muted);
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      transition: color 0.15s;
     }
 
-    .legend-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
+    .ds-btn:hover:not(.active) {
+      color: var(--theme-color);
+    }
+
+    .ds-btn.active {
+      border-color: transparent;
+      color: var(--theme-accent);
+    }
+
+    .ds-indicator {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 6px;
+      border: 1.5px solid var(--theme-accent);
+      background: var(--theme-accent-subtle);
+      pointer-events: none;
+    }
+
+    .ds-legend {
+      font-size: 0.63rem;
+      color: var(--theme-color-muted);
+      text-align: left;
+      line-height: 1.7;
+      opacity: 0.8;
+      padding-left: 0.3rem;
     }
   </style>
 </head>
+
 <body>
   <div class="bg"></div>
   <div class="grid-lines"></div>
 
-  <div class="header">
-    <span class="tag">Live Canvas</span>
-    <h2>Inline visualizations, zero dependencies</h2>
-  </div>
-
-  <div class="chart-area">
-    <div class="chart-title">Monthly active presentations</div>
-    <div class="bars" id="bars"></div>
-    <div class="legend">
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#6366f1"></div>
-        <span>Views</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#22c55e"></div>
-        <span>Unique visitors</span>
-      </div>
+  <div class="ds-switcher">
+    <div class="ds-btns">
+      <div class="ds-indicator"></div>
+      <button class="ds-btn" data-idx="0">A</button>
+      <button class="ds-btn" data-idx="1">B</button>
+      <button class="ds-btn" data-idx="2">C</button>
     </div>
+    <div class="ds-legend">A – High score<br>B – Regular score<br>C – Low score</div>
+  </div>
+  <script>(function () { var i = parseInt(localStorage.getItem('auroc_dsIdx') || '0'); document.querySelectorAll('.ds-btn').forEach(function (b) { b.classList.toggle('active', +b.dataset.idx === i) }); var ind = document.querySelector('.ds-indicator'); if (ind) { ind.style.transition = 'none'; ind.style.transform = 'translateX(calc(' + i + '*(2rem + 0.3rem)))'; }; })()</script>
+
+  <div class="content">
+    <div class="header">
+      <div class="title">Classifier Scores</div>
+      <div class="subtitle">All 100 samples ranked by score — higher score = model is more confident the sample is
+        positive</div>
+    </div>
+    <div class="tables" id="tables"></div>
   </div>
 
-  <script>
-    const data = [
-      { label: 'Oct', views: 38, unique: 22 },
-      { label: 'Nov', views: 52, unique: 31 },
-      { label: 'Dec', views: 47, unique: 28 },
-      { label: 'Jan', views: 71, unique: 45 },
-      { label: 'Feb', views: 88, unique: 60 },
-      { label: 'Mar', views: 95, unique: 72 },
-    ]
+  <script type="module">
+    import { datasets } from './datasets.js'
 
-    const maxVal = Math.max(...data.flatMap(d => [d.views, d.unique]))
+    const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim()
+    const col = l => l === 1 ? css('--pos') : css('--neg')
+    const sym = l => l === 1 ? '●' : '×'
 
-    function build() {
-      const container = document.getElementById('bars')
-      container.innerHTML = ''
-      data.forEach(d => {
-        const group = document.createElement('div')
-        group.className = 'bar-group'
+    const hdr = () => `<thead><tr><th>#</th><th>Sample</th><th>Class</th><th>Score</th><th></th></tr></thead>`
+    const row = (d, rank) => `<tr>
+      <td style="color:var(--theme-color-muted);font-size:0.68rem">${rank}</td>
+      <td style="color:var(--theme-color-muted)">S${String(d.id).padStart(3, '0')}</td>
+      <td style="font-weight:700;color:${col(d.label)};text-align:center">${sym(d.label)}</td>
+      <td style="color:${col(d.label)};font-weight:600">${d.score.toFixed(2)}</td>
+      <td><div class="bar-bg"><div class="bar-fill" style="width:${d.score * 100}%;background:${col(d.label)}"></div></div></td>
+    </tr>`
 
-        const innerBars = document.createElement('div')
-        innerBars.style.cssText = 'display:flex;gap:3px;align-items:flex-end;width:100%;height:100%'
+    const tablesEl = document.getElementById('tables')
 
-        const b1 = document.createElement('div')
-        b1.className = 'bar'
-        b1.dataset.value = String(d.views)
-        b1.style.background = 'linear-gradient(to top, #4f46e5, #818cf8)'
-        b1.style.flex = '1'
-        b1.dataset.target = String((d.views / maxVal) * 100)
-
-        const b2 = document.createElement('div')
-        b2.className = 'bar'
-        b2.dataset.value = String(d.unique)
-        b2.style.background = 'linear-gradient(to top, #16a34a, #4ade80)'
-        b2.style.flex = '1'
-        b2.dataset.target = String((d.unique / maxVal) * 100)
-
-        innerBars.append(b1, b2)
-
-        const label = document.createElement('div')
-        label.className = 'bar-label'
-        label.textContent = d.label
-
-        group.append(innerBars, label)
-        container.appendChild(group)
-      })
+    function render(data) {
+      tablesEl.innerHTML = ''
+      for (let c = 0; c < 4; c++) {
+        const slice = data.slice(c * 25, c * 25 + 25)
+        const offset = c * 25
+        const t = document.createElement('table')
+        t.innerHTML = hdr() + `<tbody>${slice.map((d, i) => row(d, offset + i + 1)).join('')}</tbody>`
+        tablesEl.appendChild(t)
+      }
+      animateIn()
     }
 
     function animateIn() {
-      document.querySelectorAll('.bar').forEach(bar => {
-        bar.style.height = '0'
-        bar.classList.remove('shown')
-        void bar.offsetWidth
-        const target = bar.dataset.target ?? '0'
-        requestAnimationFrame(() => {
-          bar.style.height = `${target}%`
-          bar.classList.add('shown')
-        })
+      document.querySelectorAll('tr').forEach((tr, i) => {
+        tr.style.opacity = '0'
+        tr.style.transform = 'translateX(-8px)'
+        tr.style.transition = 'none'
+        void tr.offsetWidth
+        tr.style.transition = `opacity 0.22s ease ${i * 0.009}s, transform 0.22s ease ${i * 0.009}s`
+        tr.style.opacity = '1'
+        tr.style.transform = 'translateX(0)'
       })
     }
 
-    build()
-    window.addEventListener('load', animateIn)
-    window.addEventListener('message', (e) => {
-      if (e.data?.type === 'slideEnter') animateIn()
+    let dsIdx = 0
+    const swBtns = document.querySelectorAll('.ds-btn')
+    const ind = document.querySelector('.ds-indicator')
+
+    function applyIdx(idx, animate = false) {
+      dsIdx = idx
+      localStorage.setItem('auroc_dsIdx', idx)
+      swBtns.forEach(b => b.classList.toggle('active', +b.dataset.idx === idx))
+      ind.style.transition = animate ? 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1)' : 'none'
+      ind.style.transform = `translateX(calc(${idx} * (2rem + 0.3rem)))`
+      render(datasets[idx].data)
+    }
+
+    swBtns.forEach(btn => {
+      btn.addEventListener('click', () => applyIdx(+btn.dataset.idx, true))
+    })
+
+    applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
+    window.addEventListener('message', e => {
+      if (e.data?.type === 'slideEnter') applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
     })
   </script>
 </body>
+
 </html>

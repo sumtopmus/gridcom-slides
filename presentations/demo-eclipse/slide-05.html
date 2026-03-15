@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AUROC — PR Curve</title>
-  <link rel="stylesheet" href="../../themes/aurora.css" />
+  <link rel="stylesheet" href="../../themes/eclipse.css" />
   <style>
     *,
     *::before,
@@ -533,7 +533,7 @@
         if (s === N) {
           const cx = tx(0.5), cy = ty(0.18)
           h += `<rect x="${cx - 120}" y="${cy - 23}" width="240" height="46" rx="8" fill="${CHART.badgeBg}" stroke="${CURVE}" stroke-width="1.8"/>`
-          h += `<text x="${cx}" y="${cy}" font-size="24" fill="${CURVE}" font-weight="700" text-anchor="middle" dominant-baseline="middle">AUPRC = ${prPts[N].auprc.toFixed(3)}</text>`
+          h += `<text x="${cx}" y="${cy}" dy="0.35em" font-size="24" fill="${CURVE}" font-weight="700" text-anchor="middle">AUPRC = ${prPts[N].auprc.toFixed(3)}</text>`
         }
       } else {
         // Starting dot at (0, 1)
