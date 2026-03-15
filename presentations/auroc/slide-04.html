@@ -41,25 +41,30 @@
 
     /* ── Header row ── */
     .top {
+      position: relative;
       display: flex;
       align-items: flex-start;
-      justify-content: space-between;
+      justify-content: flex-end;
       flex-shrink: 0;
       margin-bottom: 0.9rem;
       width: 100%;
     }
 
+    .top-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+
     .tag {
-      font-size: 0.65rem;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--theme-accent);
-      margin-bottom: 0.3rem;
+      font-size: 1.05rem;
+      color: var(--theme-color-muted);
+      margin-bottom: 0.35rem;
     }
 
     .title {
-      font-size: 1.5rem;
+      font-size: 2.6rem;
       font-weight: 700;
       letter-spacing: -0.03em;
     }
@@ -68,7 +73,7 @@
     .ds-switcher {
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
+      align-items: flex-start;
       gap: 0.4rem;
     }
 
@@ -120,9 +125,10 @@
     .ds-legend {
       font-size: 0.63rem;
       color: var(--theme-color-muted);
-      text-align: right;
+      text-align: left;
       line-height: 1.7;
       opacity: 0.8;
+      padding-left: 0.3rem;
     }
 
     .stats {
@@ -157,7 +163,7 @@
     /* ── Body ── */
     .body {
       display: grid;
-      grid-template-columns: 230px 1fr;
+      grid-template-columns: 300px 1fr;
       grid-template-rows: auto 1fr;
       gap: 0.6rem 4rem;
       min-height: 0;
@@ -321,7 +327,7 @@
   <div class="grid-lines"></div>
 
   <div class="top z1">
-    <div>
+    <div class="top-title">
       <div class="tag">Sweep threshold from high → low</div>
       <div class="title">ROC Curve Construction</div>
     </div>
@@ -391,7 +397,7 @@
         const d = sorted[i]
         const col = d.label === 1 ? POS : NEG
         html += `<div class="slot-item pending">
-          <span class="slot-rank">${String(i + 1).padStart(3, '0')}</span>
+          <span class="slot-rank">${i + 1}. S${String(d.id).padStart(3, '0')}</span>
           <div class="slot-core">
             <span class="slot-sym" style="color:${col}">${d.label === 1 ? '●' : '×'}</span>
             <span class="slot-score">${d.score.toFixed(2)}</span>
@@ -500,7 +506,7 @@
         }
 
         if (s === N) {
-          const cx = tx(0.5), cy = ty(0.4)
+          const cx = tx(0.5), cy = ty(0.2)
           h += `<rect x="${cx - 110}" y="${cy - 23}" width="220" height="46" rx="8" fill="rgba(15,15,35,0.85)" stroke="${CURVE}" stroke-width="1.8"/>`
           h += `<text x="${cx}" y="${cy}" font-size="24" fill="${CURVE}" font-weight="700" text-anchor="middle" dominant-baseline="middle">AUROC = ${rocPts[N].auroc.toFixed(3)}</text>`
         }

@@ -100,8 +100,8 @@ function generateDataset(dist, seed) {
   const items = []
   for (let i = 0; i < dist.posCount; i++) items.push({ label: 1, score: +dist.samplePos(rand).toFixed(2) })
   for (let i = 0; i < dist.negCount; i++) items.push({ label: 0, score: +dist.sampleNeg(rand).toFixed(2) })
-  items.sort((a, b) => b.score - a.score || a.label - b.label)
   items.forEach((it, i) => { it.id = i + 1 })
+  items.sort((a, b) => b.score - a.score || a.label - b.label)
   return items
 }
 

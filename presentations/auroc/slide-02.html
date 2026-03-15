@@ -146,7 +146,7 @@
       z-index: 10;
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
+      align-items: flex-start;
       gap: 0.4rem;
     }
 
@@ -198,9 +198,10 @@
     .ds-legend {
       font-size: 0.63rem;
       color: var(--theme-color-muted);
-      text-align: right;
+      text-align: left;
       line-height: 1.7;
       opacity: 0.8;
+      padding-left: 0.3rem;
     }
   </style>
 </head>
@@ -239,14 +240,13 @@
   </div>
 
   <script type="module">
-    import { datasets, displayOrder100 } from './datasets.js'
+    import { datasets } from './datasets.js'
 
     const grid = document.getElementById('grid')
 
     function render(data) {
       grid.innerHTML = ''
-      for (const idx of displayOrder100) {
-        const d = data[idx]
+      for (const d of data) {
         const dp = document.createElement('div')
         dp.className = 'dp'
         dp.innerHTML = `<div class="dp-sym ${d.label === 1 ? 'pos' : 'neg'}">${d.label === 1 ? '●' : '×'}</div><div class="dp-id">S${String(d.id).padStart(3, '0')}</div>`
