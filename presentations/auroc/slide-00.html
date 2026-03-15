@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AUROC</title>
+  <title>Area Under Curve Metrics</title>
   <link rel="stylesheet" href="../../themes/aurora.css" />
   <style>
     body {
@@ -32,7 +32,7 @@
     }
 
     h1 {
-      font-size: 9rem;
+      font-size: 7rem;
       font-weight: 700;
       letter-spacing: -0.04em;
       line-height: 1.0;
@@ -63,7 +63,7 @@
     }
 
     .divider {
-      width: 48px;
+      width: 128px;
       height: 2px;
       background: var(--theme-accent);
       margin: 2.2rem auto;
@@ -104,15 +104,17 @@
 
   <div class="content">
     <p class="eyebrow">Binary Classification · Evaluation Metrics</p>
-    <h1>AUROC</h1>
-    <span class="acronym">Area Under the Receiver Operating Characteristic Curve</span>
+    <h1>Area Under Curve Metrics</h1>
+    <span class="acronym">Area Under the ROC Curve &amp; Precision-Recall Curve</span>
     <p class="subtitle">
-      A threshold-independent measure of how well a classifier<br>
-      separates positives from negatives — built step by step.
+      Two threshold-independent measures of classifier quality —<br>
+      built step by step from the same ranked score list.
     </p>
     <div class="divider"></div>
     <div class="meta">
-      <span>50 samples</span>
+      <span>3 datasets</span>
+      <span class="meta-sep">·</span>
+      <span>100 samples</span>
       <span class="meta-sep">·</span>
       <span>Interactive</span>
     </div>
