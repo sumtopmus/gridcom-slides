@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Area Under Curve Metrics</title>
+  <link rel="stylesheet" href="../../themes/eclipse.css" />
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem 4rem;
+    }
+
+    .eyebrow {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--theme-accent);
+      margin-bottom: 1.6rem;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    h1 {
+      font-size: 7rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.0;
+      margin-bottom: 0.15em;
+      opacity: 0;
+      transform: translateY(18px);
+    }
+
+    .acronym {
+      display: block;
+      font-size: 1.4rem;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      color: var(--theme-color-secondary);
+      margin-top: 0.6rem;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    .subtitle {
+      font-size: 1.5rem;
+      color: var(--theme-color-muted);
+      font-weight: 400;
+      line-height: 1.6;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    .divider {
+      width: 128px;
+      height: 2px;
+      background: var(--theme-accent);
+      margin: 2.2rem auto;
+      border-radius: 1px;
+      opacity: 0;
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.4rem;
+      font-size: 1rem;
+      color: var(--theme-color-muted);
+      opacity: 0;
+    }
+
+    .meta-sep {
+      color: var(--theme-border);
+    }
+
+    .animate {
+      animation: up 0.55s ease forwards;
+    }
+
+    @keyframes up {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="content">
+    <p class="eyebrow">Binary Classification · Evaluation Metrics</p>
+    <h1>Area Under Curve Metrics</h1>
+    <span class="acronym">Area Under the ROC Curve &amp; Precision-Recall Curve</span>
+    <p class="subtitle">
+      Two threshold-independent measures of classifier quality —<br>
+      built step by step from the same ranked score list.
+    </p>
+    <div class="divider"></div>
+    <div class="meta">
+      <span>3 datasets</span>
+      <span class="meta-sep">·</span>
+      <span>100 samples</span>
+      <span class="meta-sep">·</span>
+      <span>Interactive</span>
+    </div>
+  </div>
+
+  <script>
+    const els = ['.eyebrow', 'h1', '.acronym', '.subtitle', '.divider', '.meta']
+
+    function animateIn() {
+      els.forEach((sel, i) => {
+        const el = document.querySelector(sel)
+        el.classList.remove('animate')
+        void el.offsetWidth
+        el.style.animationDelay = `${i * 0.11}s`
+        el.classList.add('animate')
+      })
+    }
+
+    window.addEventListener('load', animateIn)
+    window.addEventListener('message', e => {
+      if (e.data?.type === 'slideEnter') animateIn()
+    })
+  </script>
+</body>
+
+</html>

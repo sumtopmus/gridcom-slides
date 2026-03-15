@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AUROC — ROC Curve</title>
+  <link rel="stylesheet" href="../../themes/aurora.css" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --item-h: 58px;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100vw;
+      height: 100vh;
+      overflow: clip;
+      padding: 1.5rem 1.8rem 2.2rem;
+      color: var(--theme-color);
+    }
+
+    .z1 {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Header row ── */
+    .top {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      flex-shrink: 0;
+      margin-bottom: 0.9rem;
+      width: 100%;
+    }
+
+    .top-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+
+    .tag {
+      font-size: 1.05rem;
+      color: var(--theme-color-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .title {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    /* ── Dataset switcher ── */
+    .ds-switcher {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+
+    .ds-btns {
+      position: relative;
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .ds-btn {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 6px;
+      border: 1.5px solid var(--theme-border);
+      background: transparent;
+      color: var(--theme-color-muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      transition: color 0.15s;
+    }
+
+    .ds-btn:hover:not(.active) {
+      color: var(--theme-color);
+    }
+
+    .ds-btn.active {
+      border-color: transparent;
+      color: var(--theme-accent);
+    }
+
+    .ds-indicator {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 6px;
+      border: 1.5px solid var(--theme-accent);
+      background: var(--theme-accent-subtle);
+      pointer-events: none;
+    }
+
+    .ds-legend {
+      font-size: 0.63rem;
+      color: var(--theme-color-muted);
+      text-align: left;
+      line-height: 1.7;
+      opacity: 0.8;
+      padding-left: 0.3rem;
+    }
+
+    .stats {
+      display: flex;
+      gap: 0.7rem;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .stat {
+      background: var(--theme-surface);
+      border: 1px solid var(--theme-border);
+      border-radius: 8px;
+      padding: 0.38rem 0.8rem;
+      min-width: 72px;
+    }
+
+    .stat-label {
+      font-size: 0.58rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--theme-color-muted);
+      margin-bottom: 0.1rem;
+    }
+
+    .stat-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Body ── */
+    .body {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 0.6rem 4rem;
+      min-height: 0;
+    }
+
+    .list-label {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--chart-label);
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    /* ── Slot machine ── */
+    .slot-clip {
+      min-height: 0;
+      position: relative;
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
+      gap: 0.3rem;
+    }
+
+    .slot-content-clip {
+      position: relative;
+      width: 100%;
+      height: 50%;
+      overflow: hidden;
+      mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
+    }
+
+    .slot-highlight {
+      position: absolute;
+      left: 1.5rem;
+      right: 1.5rem;
+      top: 50%;
+      height: var(--item-h);
+      transform: translateY(-50%);
+      border: 1px solid var(--theme-accent);
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.07); /* lighter tint than --theme-accent-subtle */
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .slot-inner {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.26s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      will-change: transform;
+    }
+
+    .slot-item {
+      height: var(--item-h);
+      display: grid;
+      grid-template-columns: 1fr max-content 0.4fr;
+      align-items: center;
+      padding: 0 1.5rem;
+      font-size: 1rem;
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+      transition: opacity 0.18s;
+    }
+
+    .slot-item.empty {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .slot-item.done {
+      opacity: 0.22;
+    }
+
+    .slot-item.current {
+      opacity: 1;
+    }
+
+    .slot-item.pending {
+      opacity: 0.48;
+    }
+
+    .slot-rank {
+      text-align: right;
+      font-size: 0.82rem;
+      color: var(--theme-color-muted);
+      padding-right: 0.45rem;
+    }
+
+    .slot-core {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .slot-sym {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .slot-score {
+      color: var(--theme-color-muted);
+      font-size: 0.9rem;
+    }
+
+    .slot-dir {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    /* ── Plot panel ── */
+    .plot-panel {
+      flex: 1;
+      min-height: 0;
+      overflow: visible;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #roc-svg {
+      height: min(calc(90vh - 10rem), calc(90vw - 18rem));
+      width: auto;
+      aspect-ratio: 1;
+      display: block;
+      overflow: visible;
+    }
+
+    /* ── Nav hint ── */
+    .nav-hint {
+      position: fixed;
+      bottom: 4.8rem;
+      right: 2.8rem;
+      font-size: 0.7rem;
+      color: var(--theme-color-muted);
+      opacity: 0.7;
+      z-index: 100;
+      letter-spacing: 0.03em;
+    }
+
+    .nav-hint kbd {
+      font-family: inherit;
+      background: var(--theme-surface);
+      border: 1px solid var(--theme-border);
+      border-radius: 4px;
+      padding: 0.1rem 0.42rem;
+      font-size: 0.64rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="top z1">
+    <div class="top-title">
+      <div class="tag">Sweep threshold from high → low</div>
+      <div class="title">ROC Curve Construction</div>
+    </div>
+    <div class="ds-switcher">
+      <div class="ds-btns">
+        <div class="ds-indicator"></div>
+        <button class="ds-btn" data-idx="0">A</button>
+        <button class="ds-btn" data-idx="1">B</button>
+        <button class="ds-btn" data-idx="2">C</button>
+      </div>
+      <div class="ds-legend">A – High score<br>B – Regular score<br>C – Low score</div>
+    </div>
+  </div>
+  <script>(function () { var i = parseInt(localStorage.getItem('auroc_dsIdx') || '0'); document.querySelectorAll('.ds-btn').forEach(function (b) { b.classList.toggle('active', +b.dataset.idx === i) }); var ind = document.querySelector('.ds-indicator'); if (ind) { ind.style.transition = 'none'; ind.style.transform = 'translateX(calc(' + i + '*(2rem + 0.3rem)))'; }; })()</script>
+
+  <div class="body z1">
+    <div class="cell-empty"></div>
+    <div class="stats" id="stats"></div>
+    <div class="slot-clip">
+      <div class="list-label">Samples sorted by score ↓</div>
+      <div class="slot-content-clip">
+        <div class="slot-highlight"></div>
+        <div class="slot-inner" id="slot-inner"></div>
+      </div>
+    </div>
+    <div class="plot-panel">
+      <svg id="roc-svg"></svg>
+    </div>
+  </div>
+
+  <div class="nav-hint"><kbd>[</kbd> prev step &nbsp; next step <kbd>]</kbd></div>
+
+  <script type="module">
+    import { datasets } from './datasets.js'
+
+    const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim()
+    const POS = css('--pos'), NEG = css('--neg'), CURVE = css('--theme-accent')
+    const CHART = {
+      grid:      css('--chart-grid'),
+      axis:      css('--chart-axis'),
+      label:     css('--chart-label'),
+      tick:      css('--chart-tick'),
+      ref:       css('--chart-ref'),
+      refLabel:  css('--chart-ref-label'),
+      dotIdle:   css('--chart-dot-idle'),
+      dotStroke: css('--chart-dot-stroke'),
+      badgeBg:   css('--chart-badge-bg'),
+      area:      css('--chart-area'),
+    }
+    const ITEM_H = 58
+    const PREFIX = 3
+
+    const slotClip = document.querySelector('.slot-content-clip')
+    const slotInner = document.getElementById('slot-inner')
+
+    const emptySlot = () => '<div class="slot-item empty"><span class="slot-rank"></span><div class="slot-core"><span class="slot-sym"></span><span class="slot-score"></span><span class="slot-dir"></span></div><span></span></div>'
+
+    // ── Per-dataset state ──────────────────────────────────
+    let sorted, N_POS, N_NEG, N, rocPts
+    let step = 0
+
+    function loadDataset(data) {
+      sorted = data
+      N = sorted.length
+      N_POS = sorted.filter(d => d.label === 1).length
+      N_NEG = sorted.filter(d => d.label === 0).length
+
+      // Precompute all N+1 ROC points
+      rocPts = [{ fpr: 0, tpr: 0, auroc: 0 }]
+      let _tp = 0, _fp = 0, _auc = 0
+      for (const d of sorted) {
+        if (d.label === 1) { _tp++ }
+        else { _auc += (_tp / N_POS) * (1 / N_NEG); _fp++ }
+        rocPts.push({ fpr: _fp / N_NEG, tpr: _tp / N_POS, auroc: _auc })
+      }
+
+      // Rebuild slot strip
+      let html = emptySlot() + emptySlot() + emptySlot()
+      for (let i = 0; i < N; i++) {
+        const d = sorted[i]
+        const col = d.label === 1 ? POS : NEG
+        html += `<div class="slot-item pending">
+          <span class="slot-rank">${i + 1}. S${String(d.id).padStart(3, '0')}</span>
+          <div class="slot-core">
+            <span class="slot-sym" style="color:${col}">${d.label === 1 ? '●' : '×'}</span>
+            <span class="slot-score">${d.score.toFixed(2)}</span>
+            <span class="slot-dir"></span>
+          </div>
+          <span></span>
+        </div>`
+      }
+      html += emptySlot() + emptySlot() + emptySlot()
+      slotInner.innerHTML = html
+
+      step = 0
+      update(0)
+    }
+
+    function update(s) {
+      step = s
+
+      const clipH = slotClip.clientHeight
+      slotInner.style.transform = `translateY(${clipH / 2 - (s + PREFIX - 0.5) * ITEM_H}px)`
+
+      const items = slotInner.children
+      for (let i = 0; i < N; i++) {
+        const el = items[i + PREFIX]
+        const dir = el.querySelector('.slot-dir')
+        const label = sorted[i].label
+        dir.textContent = label === 1 ? '↑ TPR' : '→ FPR'
+        dir.style.color = label === 1 ? POS : NEG
+        if (i < s - 1) el.className = 'slot-item done'
+        else if (i === s - 1) el.className = 'slot-item current'
+        else el.className = 'slot-item pending'
+      }
+
+      const pt = rocPts[s]
+      document.getElementById('stats').innerHTML = `
+        <div class="stat"><div class="stat-label">Step</div><div class="stat-value">${s}&thinsp;/&thinsp;${N}</div></div>
+        <div class="stat"><div class="stat-label">FPR</div><div class="stat-value" style="color:${NEG}">${pt.fpr.toFixed(2)}</div></div>
+        <div class="stat"><div class="stat-label">TPR</div><div class="stat-value" style="color:${POS}">${pt.tpr.toFixed(2)}</div></div>
+        <div class="stat"><div class="stat-label">AUROC</div><div class="stat-value" style="color:${CURVE}">${s === 0 ? '—' : pt.auroc.toFixed(3)}</div></div>
+      `
+
+      drawROC(s)
+    }
+
+    function drawROC(s) {
+      const svg = document.getElementById('roc-svg')
+      const W = svg.clientWidth, H = svg.clientHeight
+      if (!W || !H) return
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
+
+      const ml = 80, mr = 24, mt = 24, mb = 88
+      const pw = W - ml - mr, ph = H - mt - mb
+      const tx = fpr => ml + fpr * pw
+      const ty = tpr => mt + ph - tpr * ph
+
+      let h = ''
+
+      for (let i = 0; i <= 5; i++) {
+        const v = i / 5, gx = tx(v), gy = ty(v)
+        h += `<line x1="${gx}" y1="${mt}" x2="${gx}" y2="${mt + ph}" stroke="${CHART.grid}" stroke-width="1"/>`
+        h += `<line x1="${ml}" y1="${gy}" x2="${ml + pw}" y2="${gy}" stroke="${CHART.grid}" stroke-width="1"/>`
+        h += `<text x="${gx}" y="${mt + ph + 32}" font-size="15" fill="${CHART.tick}" text-anchor="middle">${v.toFixed(1)}</text>`
+        h += `<text x="${ml - 18}" y="${gy + 5}" font-size="15" fill="${CHART.tick}" text-anchor="end">${v.toFixed(1)}</text>`
+      }
+
+      h += `<line x1="${ml}" y1="${mt}" x2="${ml}" y2="${mt + ph}" stroke="${CHART.axis}" stroke-width="5"/>`
+      h += `<line x1="${ml}" y1="${mt + ph}" x2="${ml + pw}" y2="${mt + ph}" stroke="${CHART.axis}" stroke-width="5"/>`
+      h += `<text x="${ml + pw / 2}" y="${H - 8}" font-size="24" fill="${CHART.label}" text-anchor="middle">False Positive Rate (FPR)</text>`
+      h += `<text x="18" y="${mt + ph / 2}" font-size="24" fill="${CHART.label}" text-anchor="middle" transform="rotate(-90,18,${mt + ph / 2})">True Positive Rate (TPR)</text>`
+
+      const diagAngle = Math.atan2(-ph, pw) * 180 / Math.PI
+      h += `<line x1="${tx(0)}" y1="${ty(0)}" x2="${tx(1)}" y2="${ty(1)}" stroke="${CHART.ref}" stroke-width="3" stroke-dasharray="9,6"/>`
+      h += `<text x="${tx(0.66)}" y="${ty(0.62)}" font-size="18" fill="${CHART.refLabel}" text-anchor="middle" transform="rotate(${diagAngle},${tx(0.66)},${ty(0.62)})">Random (0.50)</text>`
+
+      if (s > 0) {
+        const pts = rocPts.slice(0, s + 1)
+        const last = pts[pts.length - 1]
+        let area = `M ${tx(0)} ${ty(0)}`
+        for (const p of pts) area += ` L ${tx(p.fpr)} ${ty(p.tpr)}`
+        area += ` L ${tx(last.fpr)} ${ty(0)} Z`
+        h += `<path d="${area}" fill="${CHART.area}"/>`
+
+        for (let i = 1; i <= s; i++) {
+          const from = rocPts[i - 1], to = rocPts[i]
+          const segCol = sorted[i - 1].label === 1 ? POS : NEG
+          h += `<path d="M ${tx(from.fpr)} ${ty(from.tpr)} L ${tx(to.fpr)} ${ty(to.tpr)}" fill="none" stroke="${segCol}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`
+        }
+
+        for (let i = 1; i < s; i++) {
+          if (i % 2 === 0 || rocPts[i].fpr !== rocPts[i - 1].fpr || rocPts[i].tpr !== rocPts[i - 1].tpr) {
+            const p = rocPts[i]
+            const dotCol = sorted[i - 1].label === 1 ? POS : NEG
+            h += `<circle cx="${tx(p.fpr)}" cy="${ty(p.tpr)}" r="5" fill="${dotCol}" opacity="0.45"/>`
+          }
+        }
+
+        const cur = rocPts[s]
+        const curCol = sorted[s - 1].label === 1 ? POS : NEG
+        h += `<circle cx="${tx(cur.fpr)}" cy="${ty(cur.tpr)}" r="8" fill="${curCol}" stroke="${CHART.dotStroke}" stroke-width="2"/>`
+
+        if (s < N) {
+          const lx = cur.fpr > 0.72 ? tx(cur.fpr) - 10 : tx(cur.fpr) + 10
+          const ly = cur.tpr > 0.88 ? ty(cur.tpr) + 18 : ty(cur.tpr) - 12
+          const anchor = cur.fpr > 0.72 ? 'end' : 'start'
+          h += `<text x="${lx}" y="${ly}" font-size="15" fill="${CURVE}" text-anchor="${anchor}" opacity="0.88">(${cur.fpr.toFixed(2)}, ${cur.tpr.toFixed(2)})</text>`
+        }
+
+        if (s === N) {
+          const cx = tx(0.5), cy = ty(0.2)
+          h += `<rect x="${cx - 110}" y="${cy - 23}" width="220" height="46" rx="8" fill="${CHART.badgeBg}" stroke="${CURVE}" stroke-width="1.8"/>`
+          h += `<text x="${cx}" y="${cy}" font-size="24" fill="${CURVE}" font-weight="700" text-anchor="middle" dominant-baseline="middle">AUROC = ${rocPts[N].auroc.toFixed(3)}</text>`
+        }
+      } else {
+        h += `<circle cx="${tx(0)}" cy="${ty(0)}" r="8" fill="${CHART.dotIdle}" stroke="${CHART.dotIdle}" stroke-width="2"/>`
+      }
+
+      svg.innerHTML = h
+    }
+
+    // ── Switcher ──────────────────────────────────────────
+    const swBtns = document.querySelectorAll('.ds-btn')
+    const ind = document.querySelector('.ds-indicator')
+
+    function applyIdx(idx, animate = false) {
+      localStorage.setItem('auroc_dsIdx', idx)
+      swBtns.forEach(b => b.classList.toggle('active', +b.dataset.idx === idx))
+      ind.style.transition = animate ? 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1)' : 'none'
+      ind.style.transform = `translateX(calc(${idx} * (2rem + 0.3rem)))`
+      loadDataset(datasets[idx].data)
+      sendStepState()
+    }
+
+    swBtns.forEach(btn => {
+      btn.addEventListener('click', () => applyIdx(+btn.dataset.idx, true))
+    })
+
+    // ── Viewer lifecycle ──────────────────────────────────
+    function sendStepState() {
+      window.parent.postMessage({ type: 'stepState', canGoBack: step > 0, canGoForward: step < N }, '*')
+    }
+
+    window.addEventListener('message', e => {
+      if (e.data?.type === 'slideEnter') { applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0')); sendStepState() }
+      if (e.data?.type === 'stepNext' && step < N) { update(step + 1); sendStepState() }
+      if (e.data?.type === 'stepPrev' && step > 0) { update(step - 1); sendStepState() }
+    })
+
+    // ── Init ──────────────────────────────────────────────
+    applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
+    window.addEventListener('load', () => update(step))
+    new ResizeObserver(() => drawROC(step)).observe(document.getElementById('roc-svg'))
+  </script>
+</body>
+
+</html>

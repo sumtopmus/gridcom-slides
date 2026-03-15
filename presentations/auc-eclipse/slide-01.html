@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AUROC — Distribution</title>
-  <link rel="stylesheet" href="../../themes/aurora.css" />
+  <link rel="stylesheet" href="../../themes/eclipse.css" />
   <style>
     *,
     *::before,
@@ -173,6 +173,12 @@
 
     const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim()
     const POS = css('--pos'), NEG = css('--neg')
+    const CHART = {
+      grid:  css('--chart-grid'),
+      axis:  css('--chart-axis'),
+      label: css('--chart-label'),
+      tick:  css('--chart-tick'),
+    }
     const W = 860, H = 400, ml = 50, mr = 22, mt = 22, mb = 52
     const pw = W - ml - mr, ph = H - mt - mb
 
@@ -198,7 +204,7 @@
       // Horizontal grid lines
       for (let g = 1; g <= 4; g++) {
         const yy = (mt + ph - (g / 4) * ph).toFixed(1)
-        h += `<line x1="${ml}" y1="${yy}" x2="${W - mr}" y2="${yy}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`
+        h += `<line x1="${ml}" y1="${yy}" x2="${W - mr}" y2="${yy}" stroke="${CHART.grid}" stroke-width="1"/>`
       }
 
       // Area fills — start hidden for fade-in animation
@@ -210,18 +216,18 @@
       h += `<path id="pos-line" d="${posP.line}" fill="none" stroke="${POS}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0"/>`
 
       // Axes
-      h += `<line x1="${ml}" y1="${mt}" x2="${ml}" y2="${mt + ph}" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>`
-      h += `<line x1="${ml}" y1="${mt + ph}" x2="${W - mr}" y2="${mt + ph}" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>`
+      h += `<line x1="${ml}" y1="${mt}" x2="${ml}" y2="${mt + ph}" stroke="${CHART.axis}" stroke-width="1.5"/>`
+      h += `<line x1="${ml}" y1="${mt + ph}" x2="${W - mr}" y2="${mt + ph}" stroke="${CHART.axis}" stroke-width="1.5"/>`
 
       // X-axis labels (0.0 … 1.0)
       for (let i = 0; i <= 5; i++) {
         const x = (ml + (i / 5) * pw).toFixed(1)
-        h += `<text x="${x}" y="${mt + ph + 20}" font-size="13" fill="rgba(255,255,255,0.62)" text-anchor="middle">${(i / 5).toFixed(1)}</text>`
+        h += `<text x="${x}" y="${mt + ph + 20}" font-size="13" fill="${CHART.tick}" text-anchor="middle">${(i / 5).toFixed(1)}</text>`
       }
 
       // Axis labels
-      h += `<text x="${(ml + pw / 2).toFixed(1)}" y="${H - 6}" font-size="14" fill="rgba(255,255,255,0.65)" text-anchor="middle">Classifier Score</text>`
-      h += `<text x="13" y="${(mt + ph / 2).toFixed(1)}" font-size="14" fill="rgba(255,255,255,0.65)" text-anchor="middle" transform="rotate(-90,13,${(mt + ph / 2).toFixed(1)})">Density</text>`
+      h += `<text x="${(ml + pw / 2).toFixed(1)}" y="${H - 6}" font-size="14" fill="${CHART.label}" text-anchor="middle">Classifier Score</text>`
+      h += `<text x="13" y="${(mt + ph / 2).toFixed(1)}" font-size="14" fill="${CHART.label}" text-anchor="middle" transform="rotate(-90,13,${(mt + ph / 2).toFixed(1)})">Density</text>`
 
       document.getElementById('chart').innerHTML = h
     }
