@@ -28,6 +28,11 @@
       "file": "slide-04.html",
       "title": "ROC Curve",
       "transition": "fade"
+    },
+    {
+      "file": "slide-05.html",
+      "title": "PR Curve",
+      "transition": "fade"
     }
   ]
 }
