@@ -233,14 +233,61 @@
     }
 
     function animateIn() {
-      setTimeout(() => {
-        document.getElementById('neg-area').style.cssText = 'transition:opacity 0.4s ease;opacity:0.18'
-        document.getElementById('neg-line').style.cssText = 'transition:opacity 0.4s ease;opacity:0.85'
-      }, 0)
-      setTimeout(() => {
-        document.getElementById('pos-area').style.cssText = 'transition:opacity 0.4s ease;opacity:0.18'
-        document.getElementById('pos-line').style.cssText = 'transition:opacity 0.4s ease;opacity:0.85'
-      }, 220)
+      const negLine = document.getElementById('neg-line')
+      const posLine = document.getElementById('pos-line')
+      const negArea = document.getElementById('neg-area')
+      const posArea = document.getElementById('pos-area')
+      const svg = document.getElementById('chart')
+
+      // Clip rects reveal both line and area left-to-right by x position
+      svg.querySelectorAll('defs.draw-clip').forEach(d => d.remove())
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
+      defs.classList.add('draw-clip')
+
+      function makeClip(id) {
+        const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath')
+        clip.id = id
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+        rect.setAttribute('x', ml)
+        rect.setAttribute('y', mt - 10)
+        rect.setAttribute('width', '0')
+        rect.setAttribute('height', ph + 20)
+        clip.appendChild(rect)
+        defs.appendChild(clip)
+        return rect
+      }
+
+      const negRect = makeClip('neg-clip')
+      const posRect = makeClip('pos-clip')
+      svg.prepend(defs)
+
+      negLine.setAttribute('clip-path', 'url(#neg-clip)')
+      negArea.setAttribute('clip-path', 'url(#neg-clip)')
+      negLine.style.opacity = '0.85'
+      negArea.style.opacity = '0.18'
+
+      posLine.setAttribute('clip-path', 'url(#pos-clip)')
+      posArea.setAttribute('clip-path', 'url(#pos-clip)')
+      posLine.style.opacity = '0.85'
+      posArea.style.opacity = '0.18'
+
+      const DUR = 600
+
+      function drawCurve(clipRect, onDone) {
+        const start = performance.now()
+        function tick(now) {
+          const t = Math.min((now - start) / DUR, 1)
+          const e = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+          clipRect.setAttribute('width', pw * e)
+          if (t < 1) requestAnimationFrame(tick)
+          else if (onDone) onDone()
+        }
+        requestAnimationFrame(tick)
+      }
+
+      drawCurve(negRect, () => {
+        setTimeout(() => drawCurve(posRect, null), 80)
+      })
     }
 
     let dsIdx = 0
