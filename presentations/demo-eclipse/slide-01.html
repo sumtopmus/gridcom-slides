@@ -1,108 +1,321 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Title Slide</title>
+  <title>AUROC — Distribution</title>
   <link rel="stylesheet" href="../../themes/eclipse.css" />
   <style>
-
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 2.5rem;
     }
 
     .content {
       position: relative;
       z-index: 1;
-      text-align: center;
-      padding: 2rem;
-      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
     }
 
-    .eyebrow {
-      font-size: clamp(0.7rem, 1.5vw, 0.85rem);
-      font-weight: 500;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--theme-accent);
-      margin-bottom: 1.5rem;
-      opacity: 0;
-      transform: translateY(10px);
-    }
-
-    h1 {
-      font-size: clamp(2.5rem, 7vw, 5.5rem);
+    .title {
+      font-size: 2.6rem;
       font-weight: 700;
       letter-spacing: -0.03em;
-      line-height: 1.0;
-      margin-bottom: 1.5rem;
-      opacity: 0;
-      transform: translateY(16px);
     }
 
     .subtitle {
-      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      font-size: 1.1rem;
       color: var(--theme-color-muted);
-      font-weight: 400;
-      line-height: 1.5;
-      opacity: 0;
-      transform: translateY(12px);
+      margin-top: 0.4rem;
     }
 
-    .meta {
-      margin-top: 3rem;
+    .header {
+      text-align: center;
+    }
+
+    .legend {
+      display: flex;
+      gap: 2.4rem;
+      align-items: center;
+      font-size: 1rem;
+      color: var(--theme-color-muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .legend-swatch {
+      width: 15px;
+      height: 15px;
+      border-radius: 3px;
+    }
+
+    /* ── Dataset switcher ── */
+    .ds-switcher {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.8rem;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+
+    .ds-btns {
+      position: relative;
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .ds-btn {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 6px;
+      border: 1.5px solid var(--theme-border);
+      background: transparent;
+      color: var(--theme-color-muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 1.5rem;
-      font-size: 0.85rem;
-      color: var(--theme-color-muted);
-      opacity: 0;
+      position: relative;
+      z-index: 1;
+      transition: color 0.15s;
     }
 
-    .meta-sep { color: var(--theme-border); }
+    .ds-btn:hover:not(.active) {
+      color: var(--theme-color);
+    }
 
-    .animate { animation: slideUp 0.6s ease forwards; }
+    .ds-btn.active {
+      border-color: transparent;
+      color: var(--theme-accent);
+    }
 
-    @keyframes slideUp {
-      to { opacity: 1; transform: translateY(0); }
+    .ds-indicator {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 6px;
+      border: 1.5px solid var(--theme-accent);
+      background: var(--theme-accent-subtle);
+      pointer-events: none;
+    }
+
+    .ds-legend {
+      font-size: 0.63rem;
+      color: var(--theme-color-muted);
+      text-align: left;
+      line-height: 1.7;
+      opacity: 0.8;
+      padding-left: 0.3rem;
     }
   </style>
 </head>
+
 <body>
   <div class="bg"></div>
   <div class="grid-lines"></div>
 
+  <div class="ds-switcher">
+    <div class="ds-btns">
+      <div class="ds-indicator"></div>
+      <button class="ds-btn" data-idx="0">A</button>
+      <button class="ds-btn" data-idx="1">B</button>
+      <button class="ds-btn" data-idx="2">C</button>
+    </div>
+    <div class="ds-legend">A – High score<br>B – Regular score<br>C – Low score</div>
+  </div>
+  <script>(function () { var i = parseInt(localStorage.getItem('auroc_dsIdx') || '0'); document.querySelectorAll('.ds-btn').forEach(function (b) { b.classList.toggle('active', +b.dataset.idx === i) }); var ind = document.querySelector('.ds-indicator'); if (ind) { ind.style.transition = 'none'; ind.style.transform = 'translateX(calc(' + i + '*(2rem + 0.3rem)))'; }; })()</script>
+
   <div class="content">
-    <p class="eyebrow">Presentation Platform</p>
-    <h1>HTML Slides,<br>Unlimited Power</h1>
-    <p class="subtitle">Author rich, interactive presentations in raw HTML, CSS &amp; TypeScript.<br>No framework lock-in. Full creative control.</p>
-    <div class="meta">
-      <span>Demo Presentation</span>
-      <span class="meta-sep">·</span>
-      <span>March 2026</span>
-      <span class="meta-sep">·</span>
-      <span>3 slides</span>
+    <div class="header">
+      <div class="title">Score Distribution</div>
+      <div class="subtitle">How positive and negative scores are distributed across the [0, 1] range</div>
+    </div>
+    <svg id="chart" width="860" height="400" style="overflow:visible;flex-shrink:0"></svg>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:var(--pos)"></div>
+        <span id="pos-label">Positives (50 samples)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:var(--neg)"></div>
+        <span id="neg-label">Negatives (50 samples)</span>
+      </div>
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { distributions } from './datasets.js'
+
+    const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim()
+    const POS = css('--pos'), NEG = css('--neg')
+    const CHART = {
+      grid:  css('--chart-grid'),
+      axis:  css('--chart-axis'),
+      label: css('--chart-label'),
+      tick:  css('--chart-tick'),
+    }
+    const W = 860, H = 400, ml = 50, mr = 22, mt = 22, mb = 52
+    const pw = W - ml - mr, ph = H - mt - mb
+
+    // Evaluate pdfFn at `steps+1` points over [0,1], normalize to max=1,
+    // return closed area path and open line path as SVG strings.
+    function makePaths(pdfFn, steps = 300) {
+      const ys = Array.from({ length: steps + 1 }, (_, i) => pdfFn(i / steps))
+      const maxY = Math.max(...ys)
+      const pts = ys.map((y, i) =>
+        `${(ml + (i / steps) * pw).toFixed(1)},${(mt + ph - (y / maxY) * ph).toFixed(1)}`
+      )
+      return {
+        area: `M ${ml},${mt + ph} L ${pts.join(' L ')} L ${ml + pw},${mt + ph} Z`,
+        line: `M ${pts.join(' L ')}`,
+      }
+    }
+
+    function render(dist) {
+      const posP = makePaths(dist.posPDF)
+      const negP = makePaths(dist.negPDF)
+      let h = ''
+
+      // Horizontal grid lines
+      for (let g = 1; g <= 4; g++) {
+        const yy = (mt + ph - (g / 4) * ph).toFixed(1)
+        h += `<line x1="${ml}" y1="${yy}" x2="${W - mr}" y2="${yy}" stroke="${CHART.grid}" stroke-width="1"/>`
+      }
+
+      // Area fills — start hidden for fade-in animation
+      h += `<path id="neg-area" d="${negP.area}" fill="${NEG}" opacity="0"/>`
+      h += `<path id="pos-area" d="${posP.area}" fill="${POS}" opacity="0"/>`
+
+      // Curve strokes — start hidden
+      h += `<path id="neg-line" d="${negP.line}" fill="none" stroke="${NEG}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0"/>`
+      h += `<path id="pos-line" d="${posP.line}" fill="none" stroke="${POS}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0"/>`
+
+      // Axes
+      h += `<line x1="${ml}" y1="${mt}" x2="${ml}" y2="${mt + ph}" stroke="${CHART.axis}" stroke-width="1.5"/>`
+      h += `<line x1="${ml}" y1="${mt + ph}" x2="${W - mr}" y2="${mt + ph}" stroke="${CHART.axis}" stroke-width="1.5"/>`
+
+      // X-axis labels (0.0 … 1.0)
+      for (let i = 0; i <= 5; i++) {
+        const x = (ml + (i / 5) * pw).toFixed(1)
+        h += `<text x="${x}" y="${mt + ph + 20}" font-size="13" fill="${CHART.tick}" text-anchor="middle">${(i / 5).toFixed(1)}</text>`
+      }
+
+      // Axis labels
+      h += `<text x="${(ml + pw / 2).toFixed(1)}" y="${H - 6}" font-size="14" fill="${CHART.label}" text-anchor="middle">Classifier Score</text>`
+      h += `<text x="13" y="${(mt + ph / 2).toFixed(1)}" font-size="14" fill="${CHART.label}" text-anchor="middle" transform="rotate(-90,13,${(mt + ph / 2).toFixed(1)})">Density</text>`
+
+      document.getElementById('chart').innerHTML = h
+    }
+
     function animateIn() {
-      document.querySelectorAll('.eyebrow, h1, .subtitle, .meta').forEach((el, i) => {
-        el.style.animationDelay = `${i * 0.12}s`
-        el.classList.remove('animate')
-        void el.offsetWidth
-        el.classList.add('animate')
+      const negLine = document.getElementById('neg-line')
+      const posLine = document.getElementById('pos-line')
+      const negArea = document.getElementById('neg-area')
+      const posArea = document.getElementById('pos-area')
+      const svg = document.getElementById('chart')
+
+      // Clip rects reveal both line and area left-to-right by x position
+      svg.querySelectorAll('defs.draw-clip').forEach(d => d.remove())
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
+      defs.classList.add('draw-clip')
+
+      function makeClip(id) {
+        const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath')
+        clip.id = id
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+        rect.setAttribute('x', ml)
+        rect.setAttribute('y', mt - 10)
+        rect.setAttribute('width', '0')
+        rect.setAttribute('height', ph + 20)
+        clip.appendChild(rect)
+        defs.appendChild(clip)
+        return rect
+      }
+
+      const negRect = makeClip('neg-clip')
+      const posRect = makeClip('pos-clip')
+      svg.prepend(defs)
+
+      negLine.setAttribute('clip-path', 'url(#neg-clip)')
+      negArea.setAttribute('clip-path', 'url(#neg-clip)')
+      negLine.style.opacity = '0.85'
+      negArea.style.opacity = '0.18'
+
+      posLine.setAttribute('clip-path', 'url(#pos-clip)')
+      posArea.setAttribute('clip-path', 'url(#pos-clip)')
+      posLine.style.opacity = '0.85'
+      posArea.style.opacity = '0.18'
+
+      const DUR = 600
+
+      function drawCurve(clipRect, onDone) {
+        const start = performance.now()
+        function tick(now) {
+          const t = Math.min((now - start) / DUR, 1)
+          const e = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+          clipRect.setAttribute('width', pw * e)
+          if (t < 1) requestAnimationFrame(tick)
+          else if (onDone) onDone()
+        }
+        requestAnimationFrame(tick)
+      }
+
+      drawCurve(negRect, () => {
+        setTimeout(() => drawCurve(posRect, null), 80)
       })
     }
 
-    window.addEventListener('load', animateIn)
-    window.addEventListener('message', (e) => {
-      if (e.data?.type === 'slideEnter') animateIn()
+    let dsIdx = 0
+    const swBtns = document.querySelectorAll('.ds-btn')
+    const ind = document.querySelector('.ds-indicator')
+    const posLabel = document.getElementById('pos-label')
+    const negLabel = document.getElementById('neg-label')
+
+    function applyIdx(idx, animate = false) {
+      dsIdx = idx
+      localStorage.setItem('auroc_dsIdx', idx)
+      swBtns.forEach(b => b.classList.toggle('active', +b.dataset.idx === idx))
+      ind.style.transition = animate ? 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1)' : 'none'
+      ind.style.transform = `translateX(calc(${idx} * (2rem + 0.3rem)))`
+      const dist = distributions[idx]
+      render(dist)
+      posLabel.textContent = `Positives (${dist.posCount} samples)`
+      negLabel.textContent = `Negatives (${dist.negCount} samples)`
+      animateIn()
+    }
+
+    swBtns.forEach(btn => btn.addEventListener('click', () => applyIdx(+btn.dataset.idx, true)))
+
+    applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
+    window.addEventListener('message', e => {
+      if (e.data?.type === 'slideEnter') applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
     })
   </script>
 </body>
+
 </html>

@@ -1,5 +1,5 @@
 import { presentations } from './registry'
-import type { PresentationMeta, SlideMessage, TransitionType } from './types'
+import type { PresentationMeta, SlideMessage, SlideToViewerMessage, TransitionType } from './types'
 import { readHash, writeHash } from './viewer/UrlState'
 import { FullscreenController } from './viewer/FullscreenController'
 import { ProgressBar } from './viewer/ProgressBar'
@@ -12,6 +12,9 @@ type ColorMode = 'dark' | 'light' | 'system'
 let currentPresentation: PresentationMeta | null = null
 let currentIndex = 0
 let activeIframe: HTMLIFrameElement | null = null
+let slideCanGoBack = false
+let slideCanGoForward = false
+let slideIsStepBased = false
 let gridVisible = false
 let isFixedCanvas = localStorage.getItem('fixedCanvas') === '1'
 let colorMode: ColorMode = (() => {
@@ -59,6 +62,9 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
   const previousIframe = activeIframe
   const previousIndex = currentIndex
   currentIndex = index
+  slideCanGoBack = false
+  slideCanGoForward = false
+  slideIsStepBased = false
 
   writeHash(currentPresentation.id, index)
   progress.update(index, currentPresentation.slides.length)
@@ -146,15 +152,40 @@ function goTo(index: number, direction: 'forward' | 'backward' = 'forward'): voi
 
 function next(): void {
   if (!currentPresentation) return
+  if (slideCanGoForward && activeIframe) {
+    sendSlideMessage(activeIframe, { type: 'stepNext' })
+    return
+  }
   if (currentIndex < currentPresentation.slides.length - 1) {
     goTo(currentIndex + 1, 'forward')
   }
 }
 
 function prev(): void {
+  if (slideCanGoBack && activeIframe) {
+    sendSlideMessage(activeIframe, { type: 'stepPrev' })
+    return
+  }
   if (currentIndex > 0) {
     goTo(currentIndex - 1, 'backward')
   }
+}
+
+function nextSlide(): void {
+  if (!currentPresentation) return
+  if (currentIndex < currentPresentation.slides.length - 1) goTo(currentIndex + 1, 'forward')
+}
+
+function prevSlide(): void {
+  if (currentIndex > 0) goTo(currentIndex - 1, 'backward')
+}
+
+function stepNext(): void {
+  if (slideCanGoForward && activeIframe) sendSlideMessage(activeIframe, { type: 'stepNext' })
+}
+
+function stepPrev(): void {
+  if (slideCanGoBack && activeIframe) sendSlideMessage(activeIframe, { type: 'stepPrev' })
 }
 
 function updateNavButtons(): void {
@@ -364,6 +395,10 @@ const progress = new ProgressBar()
 const nav = new NavigationController({
   next,
   prev,
+  nextSlide,
+  prevSlide,
+  stepNext,
+  stepPrev,
   toggleFullscreen: () => fullscreen.toggle(),
   toggleGrid,
   toggleMode,
@@ -371,6 +406,9 @@ const nav = new NavigationController({
   toggleHint: toggleKbdHint,
   toggleCanvas: toggleFixedCanvas,
   exit,
+  isStepSlide: () => slideIsStepBased,
+  canStepForward: () => slideCanGoForward,
+  canStepBackward: () => slideCanGoBack,
 })
 nav.attach()
 
@@ -408,6 +446,18 @@ function init(): void {
   loadSlide(startIndex, 'initial')
   showKbdHint(true)
 }
+
+// ── Step state messages from slide iframes ─────────────────────────────────
+
+window.addEventListener('message', (e) => {
+  if (!activeIframe || e.source !== activeIframe.contentWindow) return
+  const msg = e.data as SlideToViewerMessage
+  if (msg?.type === 'stepState') {
+    slideCanGoBack = msg.canGoBack
+    slideCanGoForward = msg.canGoForward
+    slideIsStepBased = true
+  }
+})
 
 // Handle external hash changes (browser back/forward)
 window.addEventListener('hashchange', () => {

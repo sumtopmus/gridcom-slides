@@ -21,8 +21,29 @@ html {
   --theme-color-muted:     #71717a;
   --theme-accent:          #6366f1;
   --theme-accent-alt:      #4f46e5;
+  --theme-accent-subtle:   rgba(99, 102, 241, 0.12);
   --theme-surface:         #f4f4f5;
   --theme-border:          #d4d4d8;
+
+  /* Data visualization palette */
+  --pos:   #e07b2a;
+  --neg:   #7c5cbf;
+  --pos-a: rgba(224, 123, 42, 0.13);
+  --neg-a: rgba(124, 92, 191, 0.13);
+
+  /* Chart/SVG utility palette */
+  --chart-grid:       rgba(0, 0, 0, 0.06);
+  --chart-axis:       rgba(0, 0, 0, 0.25);
+  --chart-label:      rgba(0, 0, 0, 0.6);
+  --chart-tick:       rgba(0, 0, 0, 0.5);
+  --chart-ref:        rgba(0, 0, 0, 0.15);
+  --chart-ref-label:  rgba(0, 0, 0, 0.22);
+  --chart-dot-idle:   rgba(0, 0, 0, 0.6);
+  --chart-dot-stroke: rgba(0, 0, 0, 0.85);
+  --chart-badge-bg:   rgba(245, 245, 255, 0.95);
+  --chart-area:       rgba(99, 102, 241, 0.10);
+  --chart-row-sep:    rgba(0, 0, 0, 0.05);
+  --chart-bar-bg:     rgba(0, 0, 0, 0.07);
 }
 
 /* ── Base reset & viewport ────────────────────────────────────────────────── */

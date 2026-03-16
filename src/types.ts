@@ -30,3 +30,11 @@ export interface ViewerState {
 export type SlideMessage =
   | { type: 'slideEnter'; index: number; direction: 'forward' | 'backward' | 'initial' }
   | { type: 'slideExit'; index: number; direction: 'forward' | 'backward' | 'initial' }
+  | { type: 'stepNext' }
+  | { type: 'stepPrev' }
+
+// postMessage payloads sent from slide iframe → viewer
+// Slides with internal step sequences send this to let the viewer know
+// whether it should intercept arrow keys or pass them through as slide navigation.
+export type SlideToViewerMessage =
+  | { type: 'stepState'; canGoBack: boolean; canGoForward: boolean }

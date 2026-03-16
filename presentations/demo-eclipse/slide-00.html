@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo — Eclipse</title>
+  <link rel="stylesheet" href="../../themes/eclipse.css" />
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 7%;
+      padding-bottom: 13%;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 0 5rem;
+    }
+
+    .eyebrow {
+      font-size: 1.1vw;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--theme-accent);
+      margin-bottom: 1.8rem;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    h1 {
+      font-size: 10vw;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.0;
+      margin-bottom: 0.15em;
+      opacity: 0;
+      transform: translateY(18px);
+    }
+
+    .acronym {
+      display: block;
+      font-size: 1.7vw;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: var(--theme-color-secondary);
+      margin-top: 0.6rem;
+      margin-bottom: 2.8rem;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    .subtitle {
+      font-size: 1.8vw;
+      color: var(--theme-color-muted);
+      font-weight: 400;
+      line-height: 1.6;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    .divider {
+      width: 8vw;
+      height: 2px;
+      background: var(--theme-accent);
+      margin: 2.6rem auto;
+      border-radius: 1px;
+      opacity: 0;
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      font-size: 1.4vw;
+      color: var(--theme-color-muted);
+      opacity: 0;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .meta-item svg {
+      width: 1.4vw;
+      height: 1.4vw;
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+
+    .meta-link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .meta-link:hover {
+      color: var(--theme-accent);
+    }
+
+    .meta-sep {
+      color: var(--theme-border);
+    }
+
+    .animate {
+      animation: up 0.55s ease forwards;
+    }
+
+    @keyframes up {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="content">
+    <p class="eyebrow">Binary Classification · Evaluation Metrics</p>
+    <h1>Demo</h1>
+    <span class="acronym">Area Under the Receiver Operating Characteristic &amp; Precision-Recall Curves</span>
+    <p class="subtitle">
+      Two threshold-independent measures of classifier quality —<br>
+      built step by step from the same ranked score list.
+    </p>
+    <div class="divider"></div>
+    <div class="meta">
+      <span class="meta-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.6"><path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.865 8.184 6.839 9.504.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.026 2.747-1.026.546 1.378.202 2.397.1 2.65.64.7 1.028 1.595 1.028 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.2 22 16.447 22 12.021 22 6.484 17.522 2 12 2z"/></svg>
+        <a href="https://github.com/sumtopmus" target="_blank" rel="noopener" class="meta-link">sumtopmus</a>
+      </span>
+      <span class="meta-sep">·</span>
+      <span class="meta-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        March 15, 2026
+      </span>
+    </div>
+  </div>
+
+  <script>
+    const els = ['.eyebrow', 'h1', '.acronym', '.subtitle', '.divider', '.meta']
+
+    function animateIn() {
+      els.forEach((sel, i) => {
+        const el = document.querySelector(sel)
+        el.classList.remove('animate')
+        void el.offsetWidth
+        el.style.animationDelay = `${i * 0.11}s`
+        el.classList.add('animate')
+      })
+    }
+
+    window.addEventListener('load', animateIn)
+    window.addEventListener('message', e => {
+      if (e.data?.type === 'slideEnter') animateIn()
+    })
+  </script>
+</body>
+
+</html>

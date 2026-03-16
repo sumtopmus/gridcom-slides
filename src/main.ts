@@ -129,7 +129,13 @@ function init() {
     return
   }
 
-  grid.innerHTML = presentations.map(renderCard).join('')
+  const sorted = [...presentations].sort((a, b) => {
+    if (!a.date && !b.date) return 0
+    if (!a.date) return 1
+    if (!b.date) return -1
+    return b.date.localeCompare(a.date)
+  })
+  grid.innerHTML = sorted.map(renderCard).join('')
 
   // Author links inside cards — open in a new tab without triggering card navigation.
   grid.addEventListener('click', (e) => {
