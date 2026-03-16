@@ -1,5 +1,5 @@
 {
-  "id": "auroc-eclipse",
+  "id": "demo-eclipse",
   "title": "Demo — Eclipse",
   "description": "Interactive step-by-step construction of the ROC and PR curves with AUROC and AUPRC metrics.",
   "author": "HIMARS",

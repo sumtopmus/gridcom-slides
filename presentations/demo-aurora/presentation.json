@@ -1,5 +1,5 @@
 {
-  "id": "auroc",
+  "id": "demo-aurora",
   "title": "Demo — Aurora",
   "description": "Interactive step-by-step construction of the ROC and PR curves with AUROC and AUPRC metrics.",
   "author": "HIMARS",
