@@ -16,6 +16,7 @@ let slideCanGoBack = false
 let slideCanGoForward = false
 let slideIsStepBased = false
 let gridVisible = false
+let notesVisible = false
 let isFixedCanvas = localStorage.getItem('fixedCanvas') === '1'
 let colorMode: ColorMode = (() => {
   const stored = localStorage.getItem('colorMode')
@@ -41,6 +42,9 @@ const iconCompress = document.getElementById('icon-compress')!
 const viewerChrome = document.getElementById('viewer-chrome')!
 const kbdHint = document.getElementById('kbd-hint')!
 const btnHelp = document.getElementById('btn-help') as HTMLButtonElement
+const notesPanel = document.getElementById('notes-panel')!
+const notesContent = document.getElementById('notes-content')!
+const btnNotes = document.getElementById('btn-notes') as HTMLButtonElement
 
 // ── Utilities ──────────────────────────────────────────────────────────────
 
@@ -70,6 +74,7 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
   progress.update(index, currentPresentation.slides.length)
   updateNavButtons()
   updateGridActive()
+  updateNotes()
 
   // Send exit to old slide
   if (previousIframe) {
@@ -95,9 +100,11 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
   const transitionClass =
     transition === 'slide-left'
       ? direction === 'forward' ? 'transition-slide-left' : 'transition-slide-right'
-      : transition === 'none'
-        ? ''
-        : 'transition-fade'
+      : transition === 'slide-up'
+        ? direction === 'forward' ? 'transition-slide-up' : 'transition-slide-down'
+        : transition === 'none'
+          ? ''
+          : 'transition-fade'
 
   if (transitionClass) {
     slideContainer.className = transitionClass
@@ -295,6 +302,22 @@ document.addEventListener('mousemove', () => {
   }
 })
 
+// ── Speaker notes ──────────────────────────────────────────────────────────
+
+function updateNotes(): void {
+  if (!currentPresentation) return
+  const slide = currentPresentation.slides[currentIndex]
+  notesContent.textContent = slide?.notes ?? ''
+}
+
+function toggleNotes(): void {
+  notesVisible = !notesVisible
+  notesPanel.classList.toggle('hidden', !notesVisible)
+  btnNotes.classList.toggle('active', notesVisible)
+}
+
+btnNotes.addEventListener('click', toggleNotes)
+
 // ── Grid overlay ───────────────────────────────────────────────────────────
 
 function buildGrid(): void {
@@ -405,6 +428,7 @@ const nav = new NavigationController({
   toggleSystem,
   toggleHint: toggleKbdHint,
   toggleCanvas: toggleFixedCanvas,
+  toggleNotes,
   exit,
   isStepSlide: () => slideIsStepBased,
   canStepForward: () => slideCanGoForward,

@@ -11,6 +11,7 @@ export interface NavCallbacks {
   toggleSystem: () => void
   toggleHint: () => void
   toggleCanvas: () => void
+  toggleNotes: () => void
   exit: () => void
   isStepSlide: () => boolean
   canStepForward: () => boolean
@@ -108,6 +109,10 @@ export class NavigationController {
       case 'c':
       case 'C':
         this.callbacks.toggleCanvas()
+        break
+      case 'n':
+      case 'N':
+        this.callbacks.toggleNotes()
         break
       case 'Escape':
         this.callbacks.exit()

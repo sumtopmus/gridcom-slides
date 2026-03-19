@@ -62,12 +62,18 @@
       <div class="kbd-row"><kbd>c</kbd> Fixed canvas</div>
       <div class="kbd-row"><kbd>m</kbd> Light / dark mode</div>
       <div class="kbd-row"><kbd>s</kbd> System mode</div>
+      <div class="kbd-row"><kbd>n</kbd> Speaker notes</div>
       <div class="kbd-row"><kbd>h</kbd> Help panel</div>
       <div class="kbd-row"><kbd>Esc</kbd> Back</div>
     </div>
 
     <!-- Control chrome -->
     <div id="viewer-chrome">
+      <!-- Speaker notes panel (toggled with n) -->
+      <div id="notes-panel" class="hidden">
+        <div id="notes-content"></div>
+      </div>
+
       <div id="progress-bar">
         <div id="progress-fill"></div>
       </div>
@@ -137,6 +143,16 @@
             <rect x="2" y="6" width="20" height="12" rx="1.5" />
             <line x1="2" y1="9" x2="22" y2="9" stroke-width="0.75" stroke-dasharray="2 2" />
             <line x1="2" y1="15" x2="22" y2="15" stroke-width="0.75" stroke-dasharray="2 2" />
+          </svg>
+        </button>
+
+        <button id="btn-notes" class="icon-btn" title="Speaker notes (n)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
           </svg>
         </button>
 
