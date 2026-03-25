@@ -1,4 +1,5 @@
 import { presentations } from './registry'
+import { FilterController } from './FilterController'
 import type { PresentationMeta } from './types'
 
 // ── Color mode ──────────────────────────────────────────────────────────────
@@ -129,15 +130,7 @@ function init() {
     return
   }
 
-  const sorted = [...presentations].sort((a, b) => {
-    if (!a.date && !b.date) return 0
-    if (!a.date) return 1
-    if (!b.date) return -1
-    return b.date.localeCompare(a.date)
-  })
-  grid.innerHTML = sorted.map(renderCard).join('')
-
-  // Author links inside cards — open in a new tab without triggering card navigation.
+  // Author links — event delegation on the static grid element; survives innerHTML re-renders.
   grid.addEventListener('click', (e) => {
     const el = (e.target as Element).closest<HTMLElement>('[data-href]')
     if (el?.dataset.href) {
@@ -147,13 +140,31 @@ function init() {
     }
   })
 
-  // Fade each thumbnail iframe in once its content is ready, so the card
-  // placeholder background shows instead of a blank white document flash.
-  grid.querySelectorAll<HTMLIFrameElement>('.card-thumbnail iframe').forEach((iframe) => {
-    iframe.addEventListener('load', () => {
-      iframe.classList.add('loaded')
-    }, { once: true })
-  })
+  // Extracted as a nested function so it closes over `grid` and can be
+  // called again after each FilterController re-render.
+  function attachIframeHandlers(): void {
+    grid.querySelectorAll<HTMLIFrameElement>('.card-thumbnail iframe').forEach((iframe) => {
+      iframe.addEventListener('load', () => iframe.classList.add('loaded'), { once: true })
+    })
+  }
+
+  new FilterController(
+    presentations,
+    {
+      filterBar:    document.getElementById('filter-bar')!,
+      activeFilters: document.getElementById('active-filters')!,
+      overlay:      document.getElementById('overlay')!,
+      drawer:       document.getElementById('drawer')!,
+    },
+    (filtered) => {
+      grid.innerHTML =
+        filtered.length > 0
+          ? filtered.map(renderCard).join('')
+          : `<div class="empty-state"><p>No presentations match the selected filters.</p></div>`
+      attachIframeHandlers()
+      countEl.innerHTML = `<span>${filtered.length}</span> presentation${filtered.length !== 1 ? 's' : ''}`
+    }
+  )
 }
 
 init()
