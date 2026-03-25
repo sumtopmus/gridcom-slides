@@ -50,6 +50,8 @@ Changes inside the drawer are **staged** — not applied until the user hits App
 - Title A → Z
 - Title Z → A
 
+Sort never produces an active-filter badge. "Clear" in the Sort drawer footer resets to `date-desc` (the default) — it does not produce a "no sort" state.
+
 **Author panel** — clickable pill chips, one per distinct author found in the presentations array. Multi-select.
 
 **Tags panel** — clickable pill chips, one per distinct tag across all presentations. Multi-select. When multiple tags are selected, a card must match **all** of them (AND logic).
@@ -85,46 +87,53 @@ class FilterController {
 
 **Init:** reads all distinct authors and tags from the presentations array; renders the pill bar HTML into `mounts.filterBar`; renders the empty drawer shell into `mounts.drawer`; wires overlay click and keyboard (Esc).
 
-**open(panel):** clones live state into `pending`, renders panel-specific body, opens drawer + overlay.
+**open(panel):** clones live state into `pending`, renders panel-specific body, opens drawer + overlay, adds a one-time `keydown` listener on `document` for Esc.
 
-**close():** hides drawer + overlay, discards pending.
+**close():** hides drawer + overlay, discards pending, removes the Esc `keydown` listener. The listener is only active while the drawer is open.
 
 **applyAndClose():** commits `pending → state`, calls `onApply(applyFilters())`, re-renders active badges and pill highlight states.
 
 **applyFilters():** filters and sorts the presentations array:
-- Author filter: card passes if `state.authors` is empty OR card's author is in the set
-- Tag filter: card passes if `state.tags` is empty OR card's tags include **all** tags in the set
-- Cards with no date sort to the end when sorting by date
+- Author filter: card passes if `state.authors` is empty OR card's `author` is in the set. Cards with no `author` (including those with only `authorUrl`) are hidden when any author filter is active.
+- Tag filter: card passes if `state.tags` is empty OR card's `tags` include **all** tags in the set (AND logic). Cards with no `tags` array are hidden when any tag filter is active.
+- Cards with no `date` sort to the end when sorting by date.
+- After filtering, if no cards remain, the empty-state message is shown (see Behaviour Details).
 
-**removeFilter(type, value):** removes a single value from live state, immediately calls `onApply` and re-renders badges.
+**removeFilter(type, value):** removes a single value from live state (`authors` or `tags` only — Sort is never a badge), immediately calls `onApply` and re-renders badges.
 
 ### Changes to `src/main.ts`
 
 1. Extract iframe-load handler attachment into `attachIframeHandlers(grid)` helper so it can be called after re-renders.
-2. After the initial `grid.innerHTML` render, instantiate `FilterController`:
+2. After the initial `grid.innerHTML` render, instantiate `FilterController`. Pass the **raw, unordered `presentations` registry array** — not the pre-sorted `sorted` array. `FilterController` is solely responsible for all ordering from this point forward.
 
 ```ts
+function attachIframeHandlers(): void {
+  grid.querySelectorAll<HTMLIFrameElement>('.card-thumbnail iframe').forEach((iframe) => {
+    iframe.addEventListener('load', () => iframe.classList.add('loaded'), { once: true })
+  })
+}
+
 const filterController = new FilterController(
-  sorted,           // initial sorted presentations (same array used for first render)
+  presentations,    // raw registry array — FilterController owns all sorting
   {
-    filterBar:    document.getElementById('filter-bar')!,
+    filterBar:     document.getElementById('filter-bar')!,
     activeFilters: document.getElementById('active-filters')!,
-    overlay:      document.getElementById('overlay')!,
-    drawer:       document.getElementById('drawer')!,
+    overlay:       document.getElementById('overlay')!,
+    drawer:        document.getElementById('drawer')!,
   },
   (filtered) => {
     grid.innerHTML = filtered.map(renderCard).join('')
-    attachIframeHandlers(grid)
+    attachIframeHandlers()
     countEl.innerHTML = `<span>${filtered.length}</span> presentation${filtered.length !== 1 ? 's' : ''}`
   }
 )
 ```
 
-The existing author-link click delegation on `grid` is re-attached inside `attachIframeHandlers` (or kept on the static grid element so it survives innerHTML replacement via event delegation — no change needed since it's already delegated).
+`attachIframeHandlers` is a nested function inside `init()` so it closes over `grid`. The author-link click delegation is already on the static `grid` element and survives `innerHTML` replacement — no change needed.
 
 ### Changes to `index.html`
 
-Add four mount-point divs inside `<main>`, before the grid:
+Add five elements — three inside `<main>` and two outside it:
 
 ```html
 <main>
@@ -165,12 +174,13 @@ All new styles use existing design tokens (`--color-*`, `--radius-*`, `--transit
 |---|---|
 | No filters active | All presentations shown; active-filters row hidden |
 | Filter pill with selection | Pill gets `has-selection` highlight (indigo tint) |
-| Sort changed from default | Sort pill label updates to reflect current sort |
+| Sort changed from default | Sort pill label updates to reflect current sort; pill gets `has-selection` highlight |
+| Sort is default (Newest first) | Sort pill in default (unhighlighted) appearance |
 | Multiple tags selected | AND logic — card must carry all selected tags |
 | Presentation has no author | Hidden when any author filter is active |
 | Presentation has no tags | Hidden when any tag filter is active |
 | Presentation has no date | Sorted to the end for date sorts |
-| All cards filtered out | Empty-state message shown in grid area |
+| All cards filtered out | A `<div class="empty-state">` is appended to the grid with the message "No presentations match the selected filters." The existing `.empty-state` styles in `index.css` apply. This is separate from the zero-presentations-at-load path in `main.ts`, which is unaffected. |
 | Esc key | Closes drawer (discards pending) |
 | Overlay click | Closes drawer (discards pending) |
 
