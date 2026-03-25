@@ -48,7 +48,7 @@ Go to **Settings** → **Collaborators** → **Add people** and invite each stud
 ### Workflow
 
 ```text
-clone → branch → Claude Code → PR → review → merge → auto-deploy
+clone → branch → plan (Session 1) → generate & review (Session 2) → PR → merge → auto-deploy
 ```
 
 #### 1. Clone the repository
@@ -67,11 +67,32 @@ git checkout -b presentation/<your-name>-<topic>
 # e.g. git checkout -b presentation/alex-sorting-algorithms
 ```
 
-#### 3. Use Claude Code to build your presentation
+#### 3. Install the Claude Code skills (one-time)
 
-Open the project in your terminal and run `claude`. Use one of the prompts below to get started.
+Copy the presentation skills to your Claude Code skills directory:
 
-#### 4. Preview locally
+```bash
+cp -r .claude/skills/add-presentation ~/.claude/skills/
+cp -r .claude/skills/generate-presentation ~/.claude/skills/
+```
+
+#### 4. Use Claude Code to build your presentation
+
+Open the project in your terminal and run `claude`, then say:
+
+```
+add a presentation
+```
+
+Claude will walk you through a short questionnaire, propose a slide-by-slide content plan for your confirmation, commit the plan, and tell you to start a new session. In the new session say:
+
+```
+generate presentation <id>
+```
+
+Claude will generate all the slides and guide you through a review loop.
+
+#### 5. Preview locally
 
 ```bash
 npm run dev
@@ -79,7 +100,7 @@ npm run dev
 
 Open `localhost:5173` — your presentation card appears on the homepage automatically.
 
-#### 5. Open a pull request
+#### 6. Open a pull request
 
 ```bash
 git add presentations/<your-id>/
@@ -91,81 +112,38 @@ Then open a PR on GitHub against `main`. Once merged, the site deploys automatic
 
 ---
 
-## Claude Code Prompts
+## Claude Code Skills
 
-Copy and paste these into Claude Code. Replace the placeholders in `< >`.
+This repo ships with two Claude Code skills that guide you through the full creation workflow.
 
----
+### Install (one-time)
 
-### Starter prompt — create a new presentation from scratch
-
-```text
-Create a new presentation for me in this GRIDCOM project.
-
-Topic: <your topic, e.g. "Bubble Sort and why it's slow">
-Author name: <your name>
-Presentation ID: <a short slug, e.g. "bubble-sort">
-Theme: <aurora (dark) or eclipse (light)>
-Number of slides: <e.g. 6>
-
-Read CLAUDE.md first for the project conventions. Then:
-1. Copy presentations/_template/ to presentations/<id>/
-2. Update presentation.json with the correct id, title, author, date, and a slides array
-3. Write each slide as a full HTML document using the chosen theme
-4. Make the slides visually engaging — use large text, clear section titles, code blocks if relevant, and subtle animations triggered by the slideEnter message
+```bash
+cp -r .claude/skills/add-presentation ~/.claude/skills/
+cp -r .claude/skills/generate-presentation ~/.claude/skills/
 ```
 
----
+Requires [Claude Code](https://claude.ai/code) — `npm install -g @anthropic-ai/claude-code`.
 
-### Prompt — add more slides to an existing presentation
+### Session 1 — Plan
 
-```text
-Add <N> more slides to my presentation at presentations/<id>/.
-Read the existing slides first so the new ones match the style.
-Add the new slide files and register them in presentation.json.
-Topic for the new slides: <describe what they should cover>
+Open the project in your terminal, run `claude`, and say:
+
+```
+add a presentation
 ```
 
----
+Claude will ask about your presentation in a short conversational flow (author, title, description, tags, theme, date, slide count), then propose a slide-by-slide content plan for your review. You can ask for edits until you're happy, then confirm. Claude commits `PLAN.md` and tells you to start a new session.
 
-### Prompt — improve slide visuals
+### Session 2 — Generate & Review
 
-```text
-Look at my presentation at presentations/<id>/ and improve the visual design.
-Keep the content the same but make it more polished:
-- Better typography hierarchy
-- Improve spacing and layout
-- Add enter animations triggered by the slideEnter postMessage event
-- Make sure it works well with the fixed-canvas 1920x1080 scaling mode
-Do not change the theme.
+Start a new `claude` session in the same repo and say:
+
+```
+generate presentation <id>
 ```
 
----
-
-### Prompt — create a code-focused presentation
-
-```text
-Create a presentation at presentations/<id>/ on the topic: <topic>
-Author: <name>
-Theme: eclipse
-Use <N> slides. At least half of the slides should feature a code example.
-Format code in <pre><code> blocks styled to look like a terminal or editor.
-Use the slideEnter event to animate code blocks appearing line by line if possible.
-Read CLAUDE.md for project conventions before starting.
-```
-
----
-
-### Prompt — create a data/diagram-focused presentation
-
-```text
-Create a presentation at presentations/<id>/ on the topic: <topic>
-Author: <name>
-Theme: aurora
-Use <N> slides. Use SVG diagrams or CSS-drawn visuals (no external images) to illustrate concepts.
-Include at least one slide with an animated diagram that plays when the slide is entered.
-Read CLAUDE.md for project conventions before starting.
-```
+Claude dispatches a fresh agent to generate all the slide HTML files from the plan, then walks you through a slide-by-slide review loop — describe any issues and Claude fixes them in place, until every slide looks right. Then it commits everything.
 
 ---
 
