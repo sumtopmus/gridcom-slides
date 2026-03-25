@@ -1,0 +1,126 @@
+---
+name: generate-presentation
+description: Use when the user says "generate presentation <id>" or asks to generate, build, or continue a presentation that already has a PLAN.md. Dispatches a generation agent then does an interactive slide-by-slide review loop.
+---
+
+# Generate Presentation
+
+Second half of the presentation creation workflow: read plan → dispatch generation agent → interactive review loop → final commit.
+
+Requires `presentations/<id>/PLAN.md` to exist (created by the `add-presentation` skill).
+
+---
+
+## Phase 4 — Dispatch Generation Agent
+
+Read `presentations/<id>/PLAN.md` in full. Then dispatch an Agent with the following prompt (fill in `<id>` and embed the full plan content):
+
+---
+
+**Agent prompt template:**
+
+```
+You are generating slides for a GRIDCOM presentation. Read the content plan below and implement it exactly.
+
+## Plan
+
+<full contents of presentations/<id>/PLAN.md>
+
+## What to do
+
+1. Copy the template folder (never copy from an existing presentation):
+   cp -r presentations/_template presentations/<id>
+   (If presentations/<id>/ already has files beyond PLAN.md, do not overwrite them — only create missing slide files.)
+
+2. Write presentations/<id>/presentation.json with these fields from the plan
+   (omit any field not present in the plan — no placeholder values):
+   id, title, description, author, authorUrl, date, tags, theme, slides array
+
+3. Write each slide HTML file listed in the plan.
+
+## Slide generation rules
+
+Every slide must be a complete <!DOCTYPE html> document.
+
+STRUCTURE (required in every slide):
+- <link rel="stylesheet" href="../../themes/<theme>.css" /> in <head>
+- <div class="bg"></div> and <div class="grid-lines"></div> as the FIRST TWO children of <body>
+- Every content wrapper: position: relative; z-index: 1
+- Never hardcode colors — use CSS variables only
+
+THEME TOKENS:
+--theme-bg, --theme-color, --theme-color-secondary, --theme-color-muted,
+--theme-accent, --theme-accent-alt, --theme-surface, --theme-border
+
+TITLE SLIDE pattern (staggered fade-up):
+- Elements start opacity:0; transform:translateY(Npx)
+- .animate class applies: animation: up 0.55s ease forwards
+- Stagger via animation-delay: i*0.11s per element
+- Re-trigger on slideEnter by removing + re-adding .animate
+- Eyebrow / h1 / subtitle / divider / meta row (author + GitHub icon + date)
+- Copy GitHub SVG icon and calendar SVG icon verbatim from presentations/demo-aurora/slide-00.html
+
+CONTENT SLIDE (enter animation only):
+  window.addEventListener('message', e => {
+    if (e.data?.type === 'slideEnter') animateIn()
+    if (e.data?.type === 'slideExit') { /* stop timers, reset */ }
+  })
+
+STEP-BASED SLIDE:
+  let step = 0
+  const TOTAL = N
+
+  function sendStepState() {
+    window.parent.postMessage(
+      { type: 'stepState', canGoBack: step > 0, canGoForward: step < TOTAL }, '*'
+    )
+  }
+
+  function renderStep(n) { /* show/hide/animate content for step n */ }
+
+  window.addEventListener('message', e => {
+    if (e.data?.type === 'slideEnter') { step = 0; renderStep(0); sendStepState() }
+    if (e.data?.type === 'stepNext' && step < TOTAL) { step++; renderStep(step); sendStepState() }
+    if (e.data?.type === 'stepPrev' && step > 0) { step--; renderStep(step); sendStepState() }
+    if (e.data?.type === 'slideExit') { step = 0 }
+  })
+
+Arrow keys step through beats before the viewer advances to the next slide.
+Step 0 is the initial state shown on slideEnter. sendStepState() must be called on every state change.
+
+Design for 1920×1080 effective canvas. Prefer px/rem over vw/vh.
+```
+
+---
+
+Wait for the agent to complete before continuing.
+
+---
+
+## Phase 5 — Slide-by-Slide Review Loop
+
+Once generation is done, tell the user:
+
+> "All slides are generated. Please run `npm run dev` and open `viewer.html#/<id>/0`. We'll go through each slide one by one."
+
+For **each slide** in order:
+
+1. Ask: "Please review **Slide N — \<title\>**. Describe any issues (layout, content, animation, colours) or say **OK** to move on."
+2. If issues reported: apply fixes, then say "Fixed — please refresh and check Slide N again."
+3. Repeat until the user says OK.
+4. Move to the next slide.
+
+For **step-based slides**: remind the user to use arrow keys to step through the beats, and verify each step individually.
+
+After all slides confirmed:
+
+> "All slides look good!"
+
+---
+
+## Phase 6 — Final Commit
+
+```bash
+git add presentations/<id>/
+git commit -m "feat: add presentation '<title>'"
+```
