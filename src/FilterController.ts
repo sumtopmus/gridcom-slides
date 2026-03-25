@@ -115,6 +115,11 @@ export class FilterController {
   }
 
   open(panel: Panel): void {
+    // Remove any in-flight esc handler before registering a new one
+    if (this.escHandler) {
+      document.removeEventListener('keydown', this.escHandler)
+      this.escHandler = null
+    }
     this.currentPanel = panel
     this.pending = cloneState(this.state)
 
