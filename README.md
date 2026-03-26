@@ -67,16 +67,7 @@ git checkout -b presentation/<your-name>-<topic>
 # e.g. git checkout -b presentation/alex-sorting-algorithms
 ```
 
-#### 3. Install the Claude Code skills (one-time)
-
-Copy the presentation skills to your Claude Code skills directory:
-
-```bash
-cp -r .claude/skills/add-presentation ~/.claude/skills/
-cp -r .claude/skills/generate-presentation ~/.claude/skills/
-```
-
-#### 4. Use Claude Code to build your presentation
+#### 3. Use Claude Code to build your presentation
 
 Open the project in your terminal and run `claude`, then say:
 
@@ -114,14 +105,7 @@ Then open a PR on GitHub against `main`. Once merged, the site deploys automatic
 
 ## Claude Code Skills
 
-This repo ships with two Claude Code skills that guide you through the full creation workflow.
-
-### Install (one-time)
-
-```bash
-cp -r .claude/skills/add-presentation ~/.claude/skills/
-cp -r .claude/skills/generate-presentation ~/.claude/skills/
-```
+This repo ships with two Claude Code skills that guide you through the full creation workflow. They live in `.claude/skills/` and are loaded automatically when you run `claude` from the project directory — no installation needed.
 
 Requires [Claude Code](https://claude.ai/code) — `npm install -g @anthropic-ai/claude-code`.
 
