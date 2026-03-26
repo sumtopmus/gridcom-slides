@@ -17,10 +17,14 @@ Ask questions conversationally in the following grouped order. Do not touch any 
 Ask for author name and GitHub username/URL together. Both are optional.
 
 **Turn 2 — Title + Description**
-Ask for the title and a one-to-two sentence description together ("what is this presentation about?").
+Based on the message that triggered this skill, propose a title and a 1–2 sentence description. Present them as suggestions:
+
+> "Here's what I'm thinking: **Title**: [proposed title]. **Description**: [proposed 1–2 sentence description]. Does that work, or would you like to change either?"
+
+If the trigger message didn't contain enough context to form a confident suggestion, ask normally instead.
 
 **Turn 3 — Tags**
-Based on the description just given, suggest 3–4 tags and ask the user to confirm or adjust.
+Based on the confirmed description, suggest 3–4 tags and ask the user to confirm or adjust.
 
 **Turn 4 — Theme**
 Ask: **Aurora** (always dark — deep background, indigo/violet) or **Eclipse** (always light — bright background, soft indigo/violet)?
@@ -126,6 +130,10 @@ git add presentations/<id>/PLAN.md
 git commit -m "plan: add content plan for <id>"
 ```
 
-Then tell the user:
+Then tell the user with a ready-to-use instruction block:
 
-> "Plan committed. **Start a new Claude Code session** in this repo and say **'generate presentation <id>'** to generate and review the slides with a fresh context."
+> "Plan committed. To generate the slides, **start a new Claude Code session** in this repo (this session's context stays clean for planning — generation needs a fresh start) and say exactly:
+>
+> **`generate presentation <id>`**
+>
+> That session will read the plan, generate all slides, then walk you through them one by one for review."
