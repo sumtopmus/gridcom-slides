@@ -67,8 +67,11 @@ CONTENT SLIDE (enter animation only):
   })
 
 STEP-BASED SLIDE:
+
+JS pattern (use exactly):
+
   let step = 0
-  const TOTAL = N
+  const TOTAL = N   // replace N with the actual number of steps
 
   function sendStepState() {
     window.parent.postMessage(
@@ -81,12 +84,40 @@ STEP-BASED SLIDE:
   window.addEventListener('message', e => {
     if (e.data?.type === 'slideEnter') { step = 0; renderStep(0); sendStepState() }
     if (e.data?.type === 'stepNext' && step < TOTAL) { step++; renderStep(step); sendStepState() }
-    if (e.data?.type === 'stepPrev' && step > 0) { step--; renderStep(step); sendStepState() }
+    if (e.data?.type === 'stepPrev' && step > 0)    { step--; renderStep(step); sendStepState() }
     if (e.data?.type === 'slideExit') { step = 0 }
   })
 
-Arrow keys step through beats before the viewer advances to the next slide.
-Step 0 is the initial state shown on slideEnter. sendStepState() must be called on every state change.
+ALWAYS add a nav hint element to every step-based slide (bottom-right corner) so users know
+how to advance steps. Use exactly this HTML at the end of <body> (before </body>):
+
+  <div class="nav-hint"><kbd>[</kbd> prev step &nbsp; next step <kbd>]</kbd></div>
+
+And exactly this CSS:
+
+  .nav-hint {
+    position: fixed;
+    bottom: 4.8rem;
+    right: 2.8rem;
+    font-size: 0.7rem;
+    color: var(--theme-color-muted);
+    opacity: 0.7;
+    z-index: 100;
+    letter-spacing: 0.03em;
+  }
+  .nav-hint kbd {
+    font-family: inherit;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: 4px;
+    padding: 0.1rem 0.42rem;
+    font-size: 0.64rem;
+  }
+
+The viewer handles the actual [ ] / arrow / scroll input and translates it into stepNext /
+stepPrev postMessages — the slide never listens for keyboard events directly.
+Step 0 is the initial state shown on slideEnter. sendStepState() must be called on every
+state change including slideEnter.
 
 Design for 1920×1080 effective canvas. Prefer px/rem over vw/vh.
 
