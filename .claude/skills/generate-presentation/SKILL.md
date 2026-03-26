@@ -89,6 +89,30 @@ Arrow keys step through beats before the viewer advances to the next slide.
 Step 0 is the initial state shown on slideEnter. sendStepState() must be called on every state change.
 
 Design for 1920×1080 effective canvas. Prefer px/rem over vw/vh.
+
+MATHJAX (use whenever a slide contains mathematical formulas):
+Add to <head> — config block MUST come before the script tag:
+
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+      chtml: { scale: 1 }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+Use CHTML output (tex-chtml.js), not SVG — CHTML inherits the CSS `color` property, so
+formulas automatically pick up --theme-color without extra configuration.
+
+Syntax:
+- Inline formula: \( E = mc^2 \)
+- Display (block) formula: \[ \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2} \]
+
+On step-based slides, if a formula is inside an element that starts hidden (display:none or
+opacity:0 before reveal), call MathJax.typesetPromise([el]) when revealing it so MathJax
+has a chance to render it at visible size:
+  el.style.display = 'block'
+  MathJax.typesetPromise([el])
 ```
 
 ---
