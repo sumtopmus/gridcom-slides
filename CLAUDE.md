@@ -280,6 +280,45 @@ window.addEventListener('message', (e) => {
 })
 ```
 
+### Standard opening-question behavior (title hidden at step 0)
+
+Use this pattern when a slide opens with an audience question and reveals the answer on the next step.
+
+- Step 0: show question block only.
+- Step 1: reveal answer block and slide title together.
+- Keep layout stable (no reflow jump) by reserving title space at step 0.
+
+**Recommended markup pattern:**
+
+```html
+<div class="gc-audience-slide" id="aq-slide">
+  <h2 class="gc-audience-slide__title">Slide title</h2>
+  <div class="gc-audience" id="aq">
+    <div class="gc-audience__q">...</div>
+    <div class="gc-audience__a" id="aq-answer" aria-hidden="true">...</div>
+  </div>
+</div>
+```
+
+**Reveal classes to toggle in script:**
+
+- On step 1, add both:
+  - `gc-audience--revealed` on `.gc-audience`
+  - `gc-audience-slide--revealed` on `.gc-audience-slide`
+- On `stepPrev` and `slideExit`, remove both (reset to question-only state).
+
+The required styles for this behavior are already in `shared/styles/audience-question.css`.
+
+### Guidance for block-based reveal components
+
+Use block-based reveal patterns when the message has clear beats (question → answer, claim → evidence, before → after) and you want speaker-controlled pacing.
+
+- Prefer shared styles (`shared/styles/audience-question.css`, `shared/styles/step-reveal.css`) over one-off slide CSS.
+- Keep each reveal block in normal document flow; hide visually, not by collapsing layout, to avoid layout shift.
+- Use viewer-integrated step state (`stepState`, `stepNext`, `stepPrev`, `stepRestore`) instead of custom keyboard handlers.
+- Always reset interactive/reveal state on `slideExit`.
+- For dense block layouts, keep symmetric horizontal gutters and ensure content can shrink/fit on narrow viewports.
+
 ## Key Files
 
 | File | Purpose |
