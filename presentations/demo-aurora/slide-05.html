@@ -162,6 +162,9 @@
       grid-template-columns: 300px 1fr;
       grid-template-rows: auto 1fr;
       gap: 0.6rem 4rem;
+      width: 100%;
+      flex: 1;
+      align-content: center;
       min-height: 0;
     }
 
@@ -429,11 +432,13 @@
       update(0)
     }
 
-    function update(s) {
+    function update(s, instant = false) {
       step = s
 
       const clipH = slotClip.clientHeight
+      if (instant) slotInner.style.transition = 'none'
       slotInner.style.transform = `translateY(${clipH / 2 - (s + PREFIX - 0.5) * ITEM_H}px)`
+      if (instant) requestAnimationFrame(() => { slotInner.style.transition = '' })
 
       const items = slotInner.children
       for (let i = 0; i < N; i++) {
@@ -562,11 +567,12 @@
 
     // ── Viewer lifecycle ──────────────────────────────────
     function sendStepState() {
-      window.parent.postMessage({ type: 'stepState', canGoBack: step > 0, canGoForward: step < N }, '*')
+      window.parent.postMessage({ type: 'stepState', canGoBack: step > 0, canGoForward: step < N, currentStep: step }, '*')
     }
 
     window.addEventListener('message', e => {
       if (e.data?.type === 'slideEnter') { applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0')); sendStepState() }
+      if (e.data?.type === 'stepRestore') { update(Math.max(0, Math.min(N, e.data.step ?? 0)), true); sendStepState() }
       if (e.data?.type === 'stepNext' && step < N) { update(step + 1); sendStepState() }
       if (e.data?.type === 'stepPrev' && step > 0) { update(step - 1); sendStepState() }
     })

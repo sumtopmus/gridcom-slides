@@ -78,7 +78,7 @@
 
     function sendStepState() {
       window.parent.postMessage(
-        { type: 'stepState', canGoBack: step > 0, canGoForward: step < TOTAL },
+        { type: 'stepState', canGoBack: step > 0, canGoForward: step < TOTAL, currentStep: step },
         '*'
       )
     }
@@ -91,7 +91,11 @@
 
     window.addEventListener('message', (e) => {
       if (e.data?.type === 'slideEnter') {
-        step = 0
+        render()
+        sendStepState()
+      }
+      if (e.data?.type === 'stepRestore') {
+        step = Math.max(0, Math.min(TOTAL, e.data.step ?? 0))
         render()
         sendStepState()
       }
@@ -104,10 +108,6 @@
         step--
         render()
         sendStepState()
-      }
-      if (e.data?.type === 'slideExit') {
-        step = 0
-        render()
       }
     })
   </script>

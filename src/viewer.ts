@@ -15,6 +15,8 @@ let activeIframe: HTMLIFrameElement | null = null
 let slideCanGoBack = false
 let slideCanGoForward = false
 let slideIsStepBased = false
+let currentSlideStep = 0
+const slideStepMemory = new Map<number, number>()
 let gridVisible = false
 let isFixedCanvas = localStorage.getItem('fixedCanvas') === '1'
 let colorMode: ColorMode = (() => {
@@ -52,6 +54,23 @@ function sendSlideMessage(iframe: HTMLIFrameElement, msg: SlideMessage) {
   iframe.contentWindow?.postMessage(msg, '*')
 }
 
+function setCurrentSlideStep(step: number): void {
+  currentSlideStep = Math.max(0, step)
+  slideStepMemory.set(currentIndex, currentSlideStep)
+}
+
+function sendStepNextToActive(): void {
+  if (!activeIframe) return
+  sendSlideMessage(activeIframe, { type: 'stepNext' })
+  setCurrentSlideStep(currentSlideStep + 1)
+}
+
+function sendStepPrevToActive(): void {
+  if (!activeIframe) return
+  sendSlideMessage(activeIframe, { type: 'stepPrev' })
+  setCurrentSlideStep(currentSlideStep - 1)
+}
+
 // ── Slide loading ──────────────────────────────────────────────────────────
 
 function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' = 'initial'): void {
@@ -61,10 +80,14 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
 
   const previousIframe = activeIframe
   const previousIndex = currentIndex
+  if (previousIframe) {
+    slideStepMemory.set(previousIndex, currentSlideStep)
+  }
   currentIndex = index
   slideCanGoBack = false
   slideCanGoForward = false
   slideIsStepBased = false
+  currentSlideStep = slideStepMemory.get(index) ?? 0
 
   writeHash(currentPresentation.id, index)
   progress.update(index, currentPresentation.slides.length)
@@ -113,6 +136,12 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
       index,
       direction,
     })
+    if (currentSlideStep > 0) {
+      sendSlideMessage(iframe, {
+        type: 'stepRestore',
+        step: currentSlideStep,
+      })
+    }
 
     // Kick off old slide exit
     if (previousIframe) {
@@ -153,7 +182,7 @@ function goTo(index: number, direction: 'forward' | 'backward' = 'forward'): voi
 function next(): void {
   if (!currentPresentation) return
   if (slideCanGoForward && activeIframe) {
-    sendSlideMessage(activeIframe, { type: 'stepNext' })
+    sendStepNextToActive()
     return
   }
   if (currentIndex < currentPresentation.slides.length - 1) {
@@ -163,7 +192,7 @@ function next(): void {
 
 function prev(): void {
   if (slideCanGoBack && activeIframe) {
-    sendSlideMessage(activeIframe, { type: 'stepPrev' })
+    sendStepPrevToActive()
     return
   }
   if (currentIndex > 0) {
@@ -181,11 +210,11 @@ function prevSlide(): void {
 }
 
 function stepNext(): void {
-  if (slideCanGoForward && activeIframe) sendSlideMessage(activeIframe, { type: 'stepNext' })
+  if (slideCanGoForward && activeIframe) sendStepNextToActive()
 }
 
 function stepPrev(): void {
-  if (slideCanGoBack && activeIframe) sendSlideMessage(activeIframe, { type: 'stepPrev' })
+  if (slideCanGoBack && activeIframe) sendStepPrevToActive()
 }
 
 function updateNavButtons(): void {
@@ -439,6 +468,7 @@ function init(): void {
   }
 
   currentPresentation = presentation
+  slideStepMemory.clear()
   canvasStage.dataset.presentationTheme = presentation.theme ?? ''
   localStorage.setItem('lastPresentationId', presentation.id)
   localStorage.setItem('lastPresentationTheme', presentation.theme ?? '')
@@ -456,6 +486,9 @@ window.addEventListener('message', (e) => {
     slideCanGoBack = msg.canGoBack
     slideCanGoForward = msg.canGoForward
     slideIsStepBased = true
+    if (typeof msg.currentStep === 'number') {
+      setCurrentSlideStep(msg.currentStep)
+    }
   }
 })
 
