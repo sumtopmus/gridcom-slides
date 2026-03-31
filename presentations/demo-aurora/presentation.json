@@ -35,6 +35,11 @@
       "file": "slide-05.html",
       "title": "PR Curve",
       "transition": "fade"
+    },
+    {
+      "file": "slide-06.html",
+      "title": "Audience question",
+      "transition": "fade"
     }
   ]
 }
