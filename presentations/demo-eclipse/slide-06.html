@@ -21,14 +21,6 @@
       max-width: 960px;
     }
 
-    .slide-title {
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-
     .nav-hint {
       position: fixed;
       bottom: 2.5rem;
@@ -54,16 +46,18 @@
   <div class="grid-lines"></div>
 
   <div class="content">
-    <h2 class="slide-title">Shared audience question</h2>
+    <div class="gc-audience-slide" id="aq-slide">
+      <h2 class="gc-audience-slide__title">Shared audience question</h2>
 
-    <div class="gc-audience" id="aq">
-      <div class="gc-audience__q">
-        <span class="gc-audience__eyebrow">Question</span>
-        <p class="gc-audience__text">You have ranked predictions and binary labels. What does AUROC measure?</p>
-      </div>
-      <div class="gc-audience__a" id="aq-answer" aria-hidden="true">
-        <span class="gc-audience__eyebrow">Answer</span>
-        <p class="gc-audience__text">The probability that a random positive ranks above a random negative — the area under the ROC curve.</p>
+      <div class="gc-audience" id="aq">
+        <div class="gc-audience__q">
+          <span class="gc-audience__eyebrow">Question</span>
+          <p class="gc-audience__text">You have ranked predictions and binary labels. What does AUROC measure?</p>
+        </div>
+        <div class="gc-audience__a" id="aq-answer" aria-hidden="true">
+          <span class="gc-audience__eyebrow">Answer</span>
+          <p class="gc-audience__text">The probability that a random positive ranks above a random negative — the area under the ROC curve.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -71,6 +65,7 @@
   <div class="nav-hint"><kbd>Space</kbd> reveal · <kbd>[</kbd> <kbd>]</kbd> steps</div>
 
   <script>
+    const slideRoot = document.getElementById('aq-slide')
     const root = document.getElementById('aq')
     const answerEl = document.getElementById('aq-answer')
     let step = 0
@@ -86,6 +81,7 @@
     function render() {
       const revealed = step >= 1
       root.classList.toggle('gc-audience--revealed', revealed)
+      slideRoot.classList.toggle('gc-audience-slide--revealed', revealed)
       answerEl.setAttribute('aria-hidden', revealed ? 'false' : 'true')
     }
 
@@ -108,6 +104,10 @@
         step--
         render()
         sendStepState()
+      }
+      if (e.data?.type === 'slideExit') {
+        step = 0
+        render()
       }
     })
   </script>

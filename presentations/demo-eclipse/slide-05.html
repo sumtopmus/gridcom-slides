@@ -25,11 +25,13 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 100vw;
+      width: 100%;
       height: 100vh;
       overflow: clip;
-      padding: 1.5rem 1.8rem 2.2rem;
+      padding: 1.5rem clamp(3.2rem, 6vw, 5.8rem) 2.2rem;
+      overflow: hidden;
       color: var(--theme-color);
+      box-sizing: border-box;
     }
 
     .z1 {
@@ -94,11 +96,12 @@
     /* ── Body ── */
     .body {
       display: grid;
-      grid-template-columns: 300px auto;
+      grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
       grid-template-rows: auto 1fr;
-      gap: 0.6rem 4rem;
-      width: max-content;
-      max-width: 100%;
+      gap: 0.6rem clamp(1.2rem, 3vw, 2.6rem);
+      width: min(100%, 1500px);
+      max-width: min(100%, 1500px);
+      box-sizing: border-box;
       align-content: center;
       min-height: 0;
     }
@@ -108,7 +111,11 @@
       flex-direction: column;
       align-items: center;
       gap: 0.9rem;
-      width: max-content;
+      width: 100%;
+      padding-inline: clamp(0.9rem, 2.8vw, 1.8rem);
+      width: min(100%, calc(100vw - clamp(3.2rem, 6vw, 5.8rem) * 2));
+      max-width: min(100%, 1500px);
+      box-sizing: border-box;
       max-width: 100%;
     }
 
@@ -233,12 +240,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      min-width: 0;
     }
 
     #pr-svg {
-      height: min(calc(90vh - 10rem), calc(90vw - 18rem));
-      width: auto;
+      width: 100%;
+      max-width: min(100%, calc(90vh - 10rem));
       aspect-ratio: 1;
+      height: auto;
       display: block;
       overflow: visible;
     }

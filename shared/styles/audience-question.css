@@ -8,7 +8,40 @@
  * readability. Hidden answer reserves transparent layout space and drops in from
  * behind the question block without shifting content.
  * Optional: set --gc-audience-* on html to tune.
+ *
+ * Standard reveal layout (title appears with answer):
+ *   <div class="gc-audience-slide">
+ *     <h2 class="gc-audience-slide__title">...</h2>
+ *     <div class="gc-audience">...</div>
+ *   </div>
+ *
+ * Keep title and .gc-audience as siblings in the same wrapper and toggle
+ * .gc-audience-slide--revealed on the wrapper together with
+ * .gc-audience--revealed on the audience block.
  */
+
+.gc-audience-slide {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 2rem;
+  margin-top: 1.25rem;
+}
+
+.gc-audience-slide__title {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-0.5rem);
+  transition:
+    opacity 0.24s ease-out,
+    transform 0.28s ease-out,
+    visibility 0s linear 0.3s;
+}
 
 .gc-audience {
   --gc-border: var(--gc-audience-border, var(--theme-border));
@@ -118,7 +151,19 @@
   transition-delay: 0s, 0s, 0s, 0s;
 }
 
+.gc-audience-slide--revealed .gc-audience-slide__title {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition-delay: 0s, 0s, 0s;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .gc-audience-slide__title {
+    transition: none;
+    transform: none;
+  }
+
   .gc-audience__a {
     transition: none;
   }
