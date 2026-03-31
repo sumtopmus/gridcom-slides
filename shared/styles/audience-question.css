@@ -5,7 +5,9 @@
  *   <link rel="stylesheet" href="../../shared/styles/audience-question.css" />
  *
  * Question: orange (--pos). Answer: lighter purple (--theme-accent-alt + mix) for
- * readability. Optional: set --gc-audience-* on html to tune.
+ * readability. Hidden answer reserves transparent layout space and drops in from
+ * behind the question block without shifting content.
+ * Optional: set --gc-audience-* on html to tune.
  */
 
 .gc-audience {
@@ -30,11 +32,7 @@
   max-width: 52rem;
   margin-inline: auto;
   text-align: left;
-  background: var(--gc-surface);
-  border: 1px solid var(--gc-border);
-  border-radius: 12px;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
-  overflow: hidden;
+  background: transparent;
 }
 
 .gc-audience__q,
@@ -43,7 +41,38 @@
 }
 
 .gc-audience__q {
+  position: relative;
+  z-index: 2;
+  background: var(--gc-surface);
+  border: 1px solid var(--gc-border);
   border-left: 4px solid var(--gc-accent-bar);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.gc-audience__a {
+  position: relative;
+  z-index: 1;
+  background: var(--gc-answer-bg);
+  border-top: 1px solid transparent;
+  border-left: 4px solid transparent;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  margin-top: -1px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-0.8rem);
+  will-change: transform, opacity;
+  transition:
+    opacity 0.28s ease-out,
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.4s,
+    border-color 0.35s ease;
 }
 
 .gc-audience__eyebrow {
@@ -68,24 +97,6 @@
   color: var(--gc-q-emphasis);
 }
 
-.gc-audience__a {
-  background: var(--gc-answer-bg);
-  border-top: 1px solid transparent;
-  border-left: 4px solid var(--gc-answer-label);
-  opacity: 0;
-  max-height: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  overflow: hidden;
-  transform: translateY(6px);
-  transition:
-    opacity 0.4s ease,
-    transform 0.4s ease,
-    max-height 0.45s ease,
-    padding 0.45s ease,
-    border-color 0.35s ease;
-}
-
 .gc-audience__a .gc-audience__eyebrow {
   color: var(--gc-answer-label);
 }
@@ -99,11 +110,12 @@
 
 .gc-audience--revealed .gc-audience__a {
   opacity: 1;
-  max-height: 28rem;
-  padding-top: 1.5rem;
-  padding-bottom: 1.6rem;
+  visibility: visible;
+  pointer-events: auto;
+  border-left-color: var(--gc-answer-label);
   border-top-color: var(--gc-border);
   transform: translateY(0);
+  transition-delay: 0s, 0s, 0s, 0s;
 }
 
 @media (prefers-reduced-motion: reduce) {

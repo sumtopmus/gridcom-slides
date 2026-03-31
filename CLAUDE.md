@@ -176,9 +176,61 @@ Reusable slide **layouts and component styles** live in `shared/` (for example `
 <link rel="stylesheet" href="../../shared/styles/audience-question.css" />
 ```
 
+### Generic multi-block step reveal (`.gc-step-item`)
+
+Use `shared/styles/step-reveal.css` when a slide progressively reveals multiple blocks and you want **zero layout shift**. Hidden blocks reserve their final space from step 0 but stay visually transparent; on reveal they slide down from above (drop-in) without moving surrounding content.
+
+```html
+<link rel="stylesheet" href="../../themes/aurora.css" />
+<link rel="stylesheet" href="../../shared/styles/step-reveal.css" />
+```
+
+**Markup pattern:**
+
+```html
+<div class="content">
+  <h2>Topic</h2>
+  <div class="card gc-step-item" data-step-index="1" aria-hidden="true">First reveal</div>
+  <div class="card gc-step-item" data-step-index="2" aria-hidden="true">Second reveal</div>
+  <div class="card gc-step-item" data-step-index="3" aria-hidden="true">Third reveal</div>
+</div>
+```
+
+**Step script pattern (reveals by index, keeps positions fixed):**
+
+```js
+const items = [...document.querySelectorAll('.gc-step-item')]
+const TOTAL = Math.max(0, ...items.map(el => Number(el.dataset.stepIndex || 0)))
+let step = 0
+
+function render() {
+  items.forEach((el) => {
+    const revealAt = Number(el.dataset.stepIndex || 0)
+    const visible = step >= revealAt && revealAt > 0
+    el.classList.toggle('gc-step-item--visible', visible)
+    el.setAttribute('aria-hidden', visible ? 'false' : 'true')
+  })
+}
+
+function sendStepState() {
+  window.parent.postMessage(
+    { type: 'stepState', canGoBack: step > 0, canGoForward: step < TOTAL, currentStep: step },
+    '*'
+  )
+}
+
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'slideEnter') { step = 0; render(); sendStepState() }
+  if (e.data?.type === 'stepRestore') { step = Math.max(0, Math.min(TOTAL, e.data.step ?? 0)); render(); sendStepState() }
+  if (e.data?.type === 'stepNext' && step < TOTAL) { step++; render(); sendStepState() }
+  if (e.data?.type === 'stepPrev' && step > 0) { step--; render(); sendStepState() }
+  if (e.data?.type === 'slideExit') { step = 0; render() }
+})
+```
+
 ### Audience question block (`.gc-audience`)
 
-Two-part block: **question** always visible; **answer** hidden until you add the modifier class **`gc-audience--revealed`** on the root (usually after a viewer **step**). Default styling uses **`--pos`** (orange) for the question and left accent bar; the **answer** uses lighter purple (**`--theme-accent-alt`**, mixed with **`--theme-color`** for body text, and a soft **`--neg-a`** wash for the panel) so it stays readable — override with `--gc-audience-answer-label`, `--gc-audience-answer-text`, or `--gc-audience-answer-bg` on `html` if needed.
+Two-part block: **question** always visible; **answer** hidden until you add the modifier class **`gc-audience--revealed`** on the root (usually after a viewer **step**). The answer block keeps its final layout space from step 0, but that space remains transparent (not filled with the question panel background). On reveal, the answer drops in from above (behind the question block) so surrounding content stays fixed. Default styling uses **`--pos`** (orange) for the question and left accent bar; the **answer** uses lighter purple (**`--theme-accent-alt`**, mixed with **`--theme-color`** for body text, and a soft **`--neg-a`** wash for the panel) so it stays readable — override with `--gc-audience-answer-label`, `--gc-audience-answer-text`, or `--gc-audience-answer-bg` on `html` if needed.
 
 **Markup:**
 
