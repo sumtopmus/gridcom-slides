@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AUROC — PR Curve</title>
   <link rel="stylesheet" href="../../themes/eclipse.css" />
+  <link rel="stylesheet" href="./dataset-switcher.css" />
   <style>
     *,
     *::before,
@@ -23,11 +24,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: 100vw;
+      justify-content: center;
+      width: 100%;
       height: 100vh;
       overflow: clip;
-      padding: 1.5rem 1.8rem 2.2rem;
+      padding: 1.5rem clamp(3.2rem, 6vw, 5.8rem) 2.2rem;
+      overflow: hidden;
       color: var(--theme-color);
+      box-sizing: border-box;
     }
 
     .z1 {
@@ -37,19 +41,12 @@
 
     /* ── Header row ── */
     .top {
-      position: relative;
       display: flex;
-      align-items: flex-start;
-      justify-content: flex-end;
-      flex-shrink: 0;
-      margin-bottom: 0.9rem;
+      justify-content: center;
       width: 100%;
     }
 
     .top-title {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
       text-align: center;
     }
 
@@ -65,67 +62,7 @@
       letter-spacing: -0.03em;
     }
 
-    /* ── Dataset switcher ── */
-    .ds-switcher {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.4rem;
-    }
-
-    .ds-btns {
-      position: relative;
-      display: flex;
-      gap: 0.3rem;
-    }
-
-    .ds-btn {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 6px;
-      border: 1.5px solid var(--theme-border);
-      background: transparent;
-      color: var(--theme-color-muted);
-      font-size: 0.82rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      z-index: 1;
-      transition: color 0.15s;
-    }
-
-    .ds-btn:hover:not(.active) {
-      color: var(--theme-color);
-    }
-
-    .ds-btn.active {
-      border-color: transparent;
-      color: var(--theme-accent);
-    }
-
-    .ds-indicator {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 2rem;
-      height: 2rem;
-      border-radius: 6px;
-      border: 1.5px solid var(--theme-accent);
-      background: var(--theme-accent-subtle);
-      pointer-events: none;
-    }
-
-    .ds-legend {
-      font-size: 0.63rem;
-      color: var(--theme-color-muted);
-      text-align: left;
-      line-height: 1.7;
-      opacity: 0.8;
-      padding-left: 0.3rem;
-    }
+    /* Dataset switcher styles are shared in ./dataset-switcher.css */
 
     .stats {
       display: flex;
@@ -159,10 +96,27 @@
     /* ── Body ── */
     .body {
       display: grid;
-      grid-template-columns: 300px 1fr;
+      grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
       grid-template-rows: auto 1fr;
-      gap: 0.6rem 4rem;
+      gap: 0.6rem clamp(1.2rem, 3vw, 2.6rem);
+      width: min(100%, 1500px);
+      max-width: min(100%, 1500px);
+      box-sizing: border-box;
+      align-content: center;
       min-height: 0;
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.9rem;
+      width: 100%;
+      padding-inline: clamp(0.9rem, 2.8vw, 1.8rem);
+      width: min(100%, calc(100vw - clamp(3.2rem, 6vw, 5.8rem) * 2));
+      max-width: min(100%, 1500px);
+      box-sizing: border-box;
+      max-width: 100%;
     }
 
     .list-label {
@@ -286,12 +240,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      min-width: 0;
     }
 
     #pr-svg {
-      height: min(calc(90vh - 10rem), calc(90vw - 18rem));
-      width: auto;
+      width: 100%;
+      max-width: min(100%, calc(90vh - 10rem));
       aspect-ratio: 1;
+      height: auto;
       display: block;
       overflow: visible;
     }
@@ -323,35 +279,37 @@
   <div class="bg"></div>
   <div class="grid-lines"></div>
 
-  <div class="top z1">
-    <div class="top-title">
-      <div class="tag">Sweep threshold from high → low</div>
-      <div class="title">PR Curve Construction</div>
+  <div class="ds-switcher">
+    <div class="ds-btns">
+      <div class="ds-indicator"></div>
+      <button class="ds-btn" data-idx="0">A</button>
+      <button class="ds-btn" data-idx="1">B</button>
+      <button class="ds-btn" data-idx="2">C</button>
     </div>
-    <div class="ds-switcher">
-      <div class="ds-btns">
-        <div class="ds-indicator"></div>
-        <button class="ds-btn" data-idx="0">A</button>
-        <button class="ds-btn" data-idx="1">B</button>
-        <button class="ds-btn" data-idx="2">C</button>
-      </div>
-      <div class="ds-legend">A – High score<br>B – Regular score<br>C – Low score</div>
-    </div>
+    <div class="ds-legend">A – High score<br>B – Regular score<br>C – Low score</div>
   </div>
   <script>(function () { var i = parseInt(localStorage.getItem('auroc_dsIdx') || '0'); document.querySelectorAll('.ds-btn').forEach(function (b) { b.classList.toggle('active', +b.dataset.idx === i) }); var ind = document.querySelector('.ds-indicator'); if (ind) { ind.style.transition = 'none'; ind.style.transform = 'translateX(calc(' + i + '*(2rem + 0.3rem)))'; }; })()</script>
 
-  <div class="body z1">
-    <div class="cell-empty"></div>
-    <div class="stats" id="stats"></div>
-    <div class="slot-clip">
-      <div class="list-label">Samples sorted by score ↓</div>
-      <div class="slot-content-clip">
-        <div class="slot-highlight"></div>
-        <div class="slot-inner" id="slot-inner"></div>
+  <div class="content z1">
+    <div class="top">
+      <div class="top-title">
+        <div class="tag">Sweep threshold from high → low</div>
+        <div class="title">PR Curve Construction</div>
       </div>
     </div>
-    <div class="plot-panel">
-      <svg id="pr-svg"></svg>
+    <div class="body">
+      <div class="cell-empty"></div>
+      <div class="stats" id="stats"></div>
+      <div class="slot-clip">
+        <div class="list-label">Samples sorted by score ↓</div>
+        <div class="slot-content-clip">
+          <div class="slot-highlight"></div>
+          <div class="slot-inner" id="slot-inner"></div>
+        </div>
+      </div>
+      <div class="plot-panel">
+        <svg id="pr-svg"></svg>
+      </div>
     </div>
   </div>
 
@@ -429,11 +387,13 @@
       update(0)
     }
 
-    function update(s) {
+    function update(s, instant = false) {
       step = s
 
       const clipH = slotClip.clientHeight
+      if (instant) slotInner.style.transition = 'none'
       slotInner.style.transform = `translateY(${clipH / 2 - (s + PREFIX - 0.5) * ITEM_H}px)`
+      if (instant) requestAnimationFrame(() => { slotInner.style.transition = '' })
 
       const items = slotInner.children
       for (let i = 0; i < N; i++) {
@@ -562,11 +522,12 @@
 
     // ── Viewer lifecycle ──────────────────────────────────
     function sendStepState() {
-      window.parent.postMessage({ type: 'stepState', canGoBack: step > 0, canGoForward: step < N }, '*')
+      window.parent.postMessage({ type: 'stepState', canGoBack: step > 0, canGoForward: step < N, currentStep: step }, '*')
     }
 
     window.addEventListener('message', e => {
       if (e.data?.type === 'slideEnter') { applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0')); sendStepState() }
+      if (e.data?.type === 'stepRestore') { update(Math.max(0, Math.min(N, e.data.step ?? 0)), true); sendStepState() }
       if (e.data?.type === 'stepNext' && step < N) { update(step + 1); sendStepState() }
       if (e.data?.type === 'stepPrev' && step > 0) { update(step - 1); sendStepState() }
     })

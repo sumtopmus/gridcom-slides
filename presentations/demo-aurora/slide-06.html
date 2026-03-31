@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audience question — demo</title>
+  <link rel="stylesheet" href="../../themes/aurora.css" />
+  <link rel="stylesheet" href="../../shared/styles/audience-question.css" />
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 960px;
+    }
+
+    .nav-hint {
+      position: fixed;
+      bottom: 2.5rem;
+      right: 2rem;
+      font-size: 0.75rem;
+      color: var(--theme-color-muted);
+      opacity: 0.75;
+      z-index: 100;
+    }
+
+    .nav-hint kbd {
+      font-family: inherit;
+      background: var(--theme-surface);
+      border: 1px solid var(--theme-border);
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      font-size: 0.68rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="content">
+    <div class="gc-audience-slide" id="aq-slide">
+      <h2 class="gc-audience-slide__title">Shared audience question</h2>
+
+      <div class="gc-audience" id="aq">
+        <div class="gc-audience__q">
+          <span class="gc-audience__eyebrow">Question</span>
+          <p class="gc-audience__text">You have ranked predictions and binary labels. What does AUROC measure?</p>
+        </div>
+        <div class="gc-audience__a" id="aq-answer" aria-hidden="true">
+          <span class="gc-audience__eyebrow">Answer</span>
+          <p class="gc-audience__text">The probability that a random positive ranks above a random negative — the area under the ROC curve.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-hint"><kbd>Space</kbd> reveal · <kbd>[</kbd> <kbd>]</kbd> steps</div>
+
+  <script>
+    const slideRoot = document.getElementById('aq-slide')
+    const root = document.getElementById('aq')
+    const answerEl = document.getElementById('aq-answer')
+    let step = 0
+    const TOTAL = 1
+
+    function sendStepState() {
+      window.parent.postMessage(
+        { type: 'stepState', canGoBack: step > 0, canGoForward: step < TOTAL, currentStep: step },
+        '*'
+      )
+    }
+
+    function render() {
+      const revealed = step >= 1
+      root.classList.toggle('gc-audience--revealed', revealed)
+      slideRoot.classList.toggle('gc-audience-slide--revealed', revealed)
+      answerEl.setAttribute('aria-hidden', revealed ? 'false' : 'true')
+    }
+
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === 'slideEnter') {
+        render()
+        sendStepState()
+      }
+      if (e.data?.type === 'stepRestore') {
+        step = Math.max(0, Math.min(TOTAL, e.data.step ?? 0))
+        render()
+        sendStepState()
+      }
+      if (e.data?.type === 'stepNext' && step < TOTAL) {
+        step++
+        render()
+        sendStepState()
+      }
+      if (e.data?.type === 'stepPrev' && step > 0) {
+        step--
+        render()
+        sendStepState()
+      }
+      if (e.data?.type === 'slideExit') {
+        step = 0
+        render()
+      }
+    })
+  </script>
+</body>
+</html>

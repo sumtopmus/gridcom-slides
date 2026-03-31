@@ -32,9 +32,10 @@ export type SlideMessage =
   | { type: 'slideExit'; index: number; direction: 'forward' | 'backward' | 'initial' }
   | { type: 'stepNext' }
   | { type: 'stepPrev' }
+  | { type: 'stepRestore'; step: number }
 
 // postMessage payloads sent from slide iframe → viewer
 // Slides with internal step sequences send this to let the viewer know
 // whether it should intercept arrow keys or pass them through as slide navigation.
 export type SlideToViewerMessage =
-  | { type: 'stepState'; canGoBack: boolean; canGoForward: boolean }
+  | { type: 'stepState'; canGoBack: boolean; canGoForward: boolean; currentStep?: number }

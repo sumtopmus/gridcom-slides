@@ -119,6 +119,31 @@ stepPrev postMessages — the slide never listens for keyboard events directly.
 Step 0 is the initial state shown on slideEnter. sendStepState() must be called on every
 state change including slideEnter.
 
+OPENING QUESTION / Q&A SLIDES (recommended default when plan includes a prompt-to-audience beat):
+- Use shared component CSS:
+  <link rel="stylesheet" href="../../shared/styles/audience-question.css" />
+- Use this structure for question-first reveal:
+  <div class="gc-audience-slide" id="aq-slide">
+    <h2 class="gc-audience-slide__title">...</h2>
+    <div class="gc-audience" id="aq">...</div>
+  </div>
+- Behavior:
+  - step 0: question visible, title hidden, answer hidden
+  - step 1: reveal answer AND title together by toggling:
+      gc-audience--revealed (on .gc-audience)
+      gc-audience-slide--revealed (on .gc-audience-slide)
+  - on stepPrev/slideExit: reset to step 0 state
+
+BLOCK-BASED REVEALS (general rule):
+- Prefer shared reusable block styles (e.g. audience-question, step-reveal) over ad-hoc slide-specific reveal CSS.
+- Hidden blocks should reserve final layout space whenever possible (no layout jump between steps).
+- Do not attach direct keyboard listeners in slides; use viewer step postMessage flow only.
+
+RESPONSIVE CONTAINMENT FOR DENSE SLIDES:
+- Keep content horizontally centered.
+- Preserve symmetric side gutters (left and right).
+- If viewport width is tight, downscale content/typography proportionally so no block clips past left/right edges.
+
 Design for 1920×1080 effective canvas. Prefer px/rem over vw/vh.
 
 MATHJAX (use whenever a slide contains mathematical formulas):

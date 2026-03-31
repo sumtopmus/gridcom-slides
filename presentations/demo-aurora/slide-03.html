@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AUROC — Scores</title>
   <link rel="stylesheet" href="../../themes/aurora.css" />
+  <link rel="stylesheet" href="./dataset-switcher.css" />
   <style>
     *,
     *::before,
@@ -19,26 +20,37 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem 2.5rem;
+      padding: 2rem clamp(3rem, 6vw, 5.5rem);
+      overflow: hidden;
+    }
+
+    .content-frame {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      overflow: visible;
     }
 
     .content {
-      position: relative;
-      z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 1.6rem;
+      width: max-content;
+      transform: scale(var(--fit-scale, 1));
+      transform-origin: top center;
     }
 
     .title {
-      font-size: 2.6rem;
+      font-size: clamp(2rem, 2.6vw, 2.6rem);
       font-weight: 700;
       letter-spacing: -0.03em;
     }
 
     .subtitle {
-      font-size: 1.05rem;
+      font-size: clamp(0.88rem, 1.2vw, 1.05rem);
       color: var(--theme-color-muted);
       margin-top: 0.35rem;
     }
@@ -92,71 +104,7 @@
       border-radius: 3px;
     }
 
-    /* ── Dataset switcher ── */
-    .ds-switcher {
-      position: fixed;
-      top: 1.5rem;
-      right: 1.8rem;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.4rem;
-    }
-
-    .ds-btns {
-      position: relative;
-      display: flex;
-      gap: 0.3rem;
-    }
-
-    .ds-btn {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 6px;
-      border: 1.5px solid var(--theme-border);
-      background: transparent;
-      color: var(--theme-color-muted);
-      font-size: 0.82rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      z-index: 1;
-      transition: color 0.15s;
-    }
-
-    .ds-btn:hover:not(.active) {
-      color: var(--theme-color);
-    }
-
-    .ds-btn.active {
-      border-color: transparent;
-      color: var(--theme-accent);
-    }
-
-    .ds-indicator {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 2rem;
-      height: 2rem;
-      border-radius: 6px;
-      border: 1.5px solid var(--theme-accent);
-      background: var(--theme-accent-subtle);
-      pointer-events: none;
-    }
-
-    .ds-legend {
-      font-size: 0.63rem;
-      color: var(--theme-color-muted);
-      text-align: left;
-      line-height: 1.7;
-      opacity: 0.8;
-      padding-left: 0.3rem;
-    }
+    /* Dataset switcher styles are shared in ./dataset-switcher.css */
   </style>
 </head>
 
@@ -175,13 +123,15 @@
   </div>
   <script>(function () { var i = parseInt(localStorage.getItem('auroc_dsIdx') || '0'); document.querySelectorAll('.ds-btn').forEach(function (b) { b.classList.toggle('active', +b.dataset.idx === i) }); var ind = document.querySelector('.ds-indicator'); if (ind) { ind.style.transition = 'none'; ind.style.transform = 'translateX(calc(' + i + '*(2rem + 0.3rem)))'; }; })()</script>
 
-  <div class="content">
+  <div class="content-frame">
+    <div class="content" id="content">
     <div class="header">
       <div class="title">Classifier Scores</div>
       <div class="subtitle">All 100 samples ranked by score — higher score = model is more confident the sample is
         positive</div>
     </div>
     <div class="tables" id="tables"></div>
+    </div>
   </div>
 
   <script type="module">
@@ -201,6 +151,15 @@
     </tr>`
 
     const tablesEl = document.getElementById('tables')
+    const contentEl = document.getElementById('content')
+
+    function fitContent() {
+      contentEl.style.setProperty('--fit-scale', '1')
+      const available = document.body.clientWidth - 4
+      const natural = contentEl.scrollWidth
+      const scale = natural > 0 ? Math.min(1, available / natural) : 1
+      contentEl.style.setProperty('--fit-scale', String(scale))
+    }
 
     function render(data) {
       tablesEl.innerHTML = ''
@@ -212,6 +171,7 @@
         tablesEl.appendChild(t)
       }
       animateIn()
+      requestAnimationFrame(fitContent)
     }
 
     function animateIn() {
@@ -247,6 +207,7 @@
     window.addEventListener('message', e => {
       if (e.data?.type === 'slideEnter') applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
     })
+    window.addEventListener('resize', fitContent)
   </script>
 </body>
 

@@ -75,6 +75,14 @@ export const presentations: PresentationMeta[] = ${JSON.stringify(presentations,
         fs.cpSync(themesDir, themesOutDir, { recursive: true })
         console.log('[registry] Copied themes/ → dist/themes/')
       }
+
+      // Copy shared/ (slide components, styles) — referenced by slide HTML via ../../shared/...
+      const sharedDir = path.resolve(__dirname, 'shared')
+      const sharedOutDir = path.resolve(__dirname, 'dist/shared')
+      if (fs.existsSync(sharedDir)) {
+        fs.cpSync(sharedDir, sharedOutDir, { recursive: true })
+        console.log('[registry] Copied shared/ → dist/shared/')
+      }
     },
     configureServer(server) {
       server.watcher.add(presentationsDir)

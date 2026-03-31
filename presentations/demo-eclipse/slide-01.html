@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AUROC — Distribution</title>
   <link rel="stylesheet" href="../../themes/eclipse.css" />
+  <link rel="stylesheet" href="./dataset-switcher.css" />
   <style>
     *,
     *::before,
@@ -67,71 +68,7 @@
       border-radius: 3px;
     }
 
-    /* ── Dataset switcher ── */
-    .ds-switcher {
-      position: fixed;
-      top: 1.5rem;
-      right: 1.8rem;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.4rem;
-    }
-
-    .ds-btns {
-      position: relative;
-      display: flex;
-      gap: 0.3rem;
-    }
-
-    .ds-btn {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 6px;
-      border: 1.5px solid var(--theme-border);
-      background: transparent;
-      color: var(--theme-color-muted);
-      font-size: 0.82rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      z-index: 1;
-      transition: color 0.15s;
-    }
-
-    .ds-btn:hover:not(.active) {
-      color: var(--theme-color);
-    }
-
-    .ds-btn.active {
-      border-color: transparent;
-      color: var(--theme-accent);
-    }
-
-    .ds-indicator {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 2rem;
-      height: 2rem;
-      border-radius: 6px;
-      border: 1.5px solid var(--theme-accent);
-      background: var(--theme-accent-subtle);
-      pointer-events: none;
-    }
-
-    .ds-legend {
-      font-size: 0.63rem;
-      color: var(--theme-color-muted);
-      text-align: left;
-      line-height: 1.7;
-      opacity: 0.8;
-      padding-left: 0.3rem;
-    }
+    /* Dataset switcher styles are shared in ./dataset-switcher.css */
   </style>
 </head>
 

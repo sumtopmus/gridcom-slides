@@ -1,0 +1,36 @@
+/*
+ * GRIDCOM — Generic step-based block reveal
+ *
+ * Link after your theme:
+ *   <link rel="stylesheet" href="../../shared/styles/step-reveal.css" />
+ *
+ * Apply `.gc-step-item` to any block that should reveal by step progression.
+ * Hidden blocks keep transparent layout space (no reflow / no content jumping).
+ * Reveal motion slides down from above to feel like dropping from behind.
+ */
+
+.gc-step-item {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-1rem);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease,
+    visibility 0s linear 0.35s;
+}
+
+.gc-step-item.gc-step-item--visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s, 0s, 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gc-step-item {
+    transition: none;
+    transform: none;
+  }
+}
