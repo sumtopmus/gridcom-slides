@@ -18,7 +18,6 @@ Requires `presentations/<id>/PLAN.md` to exist (created by the `add-presentation
 1. Read `presentations/<id>/PLAN.md` in full.
 2. Run: `cp -r presentations/_template presentations/<id>` (skip if the folder already has slide files beyond PLAN.md).
 3. Write `presentations/<id>/presentation.json` with the fields from the plan (omit any field not present — no placeholder values): `id`, `title`, `description`, `author`, `authorUrl`, `date`, `tags`, `theme`, `slides` array.
-4. Read CLAUDE.md in full (you will embed it verbatim in every agent prompt).
 
 ### Phase 4B — Shared files
 
@@ -42,7 +41,6 @@ Fill in the placeholders before sending:
 - `<SLIDE_FILE>` — filename for this slide (e.g. `slide-01.html`)
 - `<SLIDE_TITLE>` — title of this slide from the plan
 - `<SLIDE_SPEC>` — the full per-slide section from the plan describing this slide's content, layout, and beats
-- `<CLAUDE_MD_CONTENT>` — full verbatim contents of CLAUDE.md
 - `<SHARED_FILES>` — for each shared file: its path and full contents; omit this section entirely if there are no shared files
 - `<PLAN_CONTENT>` — full verbatim contents of PLAN.md (for overall context)
 
@@ -51,12 +49,8 @@ Fill in the placeholders before sending:
 **Per-slide agent prompt template:**
 
 ```
-You are writing a single slide for a GRIDCOM presentation.
+You are writing a single slide for an advanced level presentation.
 Write ONLY the file listed under "Your task". Do not touch any other files.
-
-## Project conventions (from CLAUDE.md)
-
-<CLAUDE_MD_CONTENT>
 
 ## Full presentation plan (for context)
 
@@ -101,6 +95,9 @@ TITLE SLIDE pattern (staggered fade-up):
 - Re-trigger on slideEnter by removing + re-adding .animate
 - Eyebrow / h1 / subtitle / divider / meta row (author + GitHub icon + date)
 - Copy GitHub SVG icon and calendar SVG icon verbatim from presentations/demo-aurora/slide-00.html
+
+SLIDE TITLE (non-title slides):
+The `## Slide N — <Name>` section header in PLAN.md is the slide title. When rendering, use only the `<Name>` part — never "Slide N" or the "—" separator. It may optionally be rendered as a heading centered horizontally at the top of the slide (above the main content). Include it when the plan's layout hint says the title should be visible; omit it for full-bleed layouts or when the plan's content already has a prominent heading that serves the same purpose.
 
 CONTENT SLIDE (enter animation only):
   window.addEventListener('message', e => {

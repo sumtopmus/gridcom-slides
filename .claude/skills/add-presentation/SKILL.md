@@ -109,6 +109,12 @@ mkdir -p presentations/<id>
 - **Layout hint** (centered, two-column, full-bleed chart, etc.)
 - **Content**: headings, bullet text, chart description, question/answer beats, etc.
 
+The presentations are aimed for advanced level of understanding.
+You should support content with high quality visuals including interactive visualizations (static or step-based).
+Describe them in the content section for a generation agent to create them later.
+
+The `## Slide N — <Name>` header is the slide title. The `<Name>` part (not "Slide N —") may optionally be rendered centered at the top of the slide. Note in the layout hint whether it should be visible (e.g. "centered, title visible at top") or omitted (e.g. full-bleed layout where a separate heading is already part of the content).
+
 For step-based slides, list each beat explicitly (Step 0 = initial state, Step 1 = first reveal, …).
 
 ### Confirmation loop
