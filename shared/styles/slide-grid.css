@@ -33,6 +33,12 @@
  *   broadcast to slide iframes via postMessage { type: 'devMode', enabled }.
  */
 
+/* ── Slide typography baseline ─────────────────────────────────────────── */
+
+body {
+  font-size: clamp(1.25rem, 2.5vw, 1.65rem);
+}
+
 .gc-grid {
   position: absolute;
   inset: 0;

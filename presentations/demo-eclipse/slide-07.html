@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Block Stack — demo</title>
+  <link rel="stylesheet" href="../../themes/eclipse.css" />
+  <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
+  <link rel="stylesheet" href="../../shared/styles/block-stack.css" />
+  <style>
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5rem;
+      padding: 3rem 12vw;
+    }
+
+    .slide-title {
+      font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      text-align: center;
+      color: var(--theme-color);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="gc-grid">
+    <div class="content">
+      <div class="slide-title">Block Stack</div>
+
+      <div class="gc-block-stack">
+        <div class="gc-block-stack__item">
+          <span class="gc-block-stack__label">Threshold-free</span>
+          <div class="gc-block-stack__content">Evaluates the classifier at every possible decision threshold simultaneously</div>
+        </div>
+        <div class="gc-block-stack__item">
+          <span class="gc-block-stack__label">Rank-based</span>
+          <div class="gc-block-stack__content">Depends only on the relative ordering of predicted scores, not their absolute values</div>
+        </div>
+        <div class="gc-block-stack__item">
+          <span class="gc-block-stack__label">Probabilistic</span>
+          <div class="gc-block-stack__content">Equals the probability that a random positive outranks a random negative</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === 'devMode') {
+        document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
+      }
+    })
+  </script>
+</body>
+</html>
