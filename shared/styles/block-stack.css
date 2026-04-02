@@ -1,0 +1,116 @@
+/*
+ * GRIDCOM — Block stack (shared slide component)
+ *
+ * A unified card containing stacked blocks with alternating accent border colors.
+ * Odd items use --theme-accent (purple); even items use --theme-accent-alt (light purple).
+ *
+ * Link after your theme:
+ *   <link rel="stylesheet" href="../../shared/styles/block-stack.css" />
+ *
+ * Markup:
+ *   <div class="gc-block-stack">
+ *     <div class="gc-block-stack__item">
+ *       <span class="gc-block-stack__label">Label</span>
+ *       <div class="gc-block-stack__content">Main content / formula</div>
+ *       <div class="gc-block-stack__desc">Secondary description text</div>
+ *     </div>
+ *     <div class="gc-block-stack__item">...</div>
+ *   </div>
+ *
+ * __desc is optional. __content can hold text, MathJax, or any inline content.
+ *
+ * Centering the label:
+ *   Add the modifier class gc-block-stack--centered to the root element,
+ *   or gc-block-stack__item--centered to a specific item.
+ *
+ *   <div class="gc-block-stack gc-block-stack--centered">...</div>
+ *   <div class="gc-block-stack__item gc-block-stack__item--centered">...</div>
+ */
+
+.gc-block-stack {
+  border: 1px solid var(--theme-border);
+  border-left: none;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--theme-surface);
+}
+
+.gc-block-stack__item {
+  position: relative;
+  padding: 1.5rem 2rem;
+}
+
+.gc-block-stack__item::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--theme-accent);
+  pointer-events: none;
+}
+
+.gc-block-stack__item + .gc-block-stack__item {
+  border-top: 1px solid var(--theme-border);
+}
+
+.gc-block-stack__item + .gc-block-stack__item::before {
+  top: -1px;
+}
+
+.gc-block-stack__item:nth-child(even) {
+  background: color-mix(in srgb, var(--theme-accent-alt) 7%, var(--theme-surface));
+}
+
+.gc-block-stack__item:nth-child(even)::before {
+  background: var(--theme-accent-alt);
+}
+
+.gc-block-stack__label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+  color: var(--theme-accent);
+}
+
+.gc-block-stack__item:nth-child(even) .gc-block-stack__label {
+  color: var(--theme-accent-alt);
+}
+
+.gc-block-stack__content {
+  font-weight: 400;
+  color: var(--theme-color);
+  line-height: 1.5;
+}
+
+.gc-block-stack__desc {
+  font-size: 0.9em;
+  color: var(--theme-color-muted);
+  line-height: 1.55;
+  margin-top: 0.45rem;
+}
+
+/* Centered label variant — applies to all items */
+.gc-block-stack--centered .gc-block-stack__item,
+.gc-block-stack__item--centered {
+  text-align: center;
+  border-top: 4px solid var(--theme-accent);
+  box-shadow: none;
+}
+
+.gc-block-stack--centered .gc-block-stack__item::before,
+.gc-block-stack__item--centered::before {
+  display: none;
+}
+
+.gc-block-stack--centered .gc-block-stack__item:nth-child(even),
+.gc-block-stack__item--centered:nth-child(even) {
+  border-top-color: var(--theme-accent-alt);
+}
+
+.gc-block-stack--centered .gc-block-stack__item:not(:first-child):not(:nth-child(even)),
+.gc-block-stack__item--centered:not(:first-child):not(:nth-child(even)) {
+  border-top: 4px solid var(--theme-accent);
+}

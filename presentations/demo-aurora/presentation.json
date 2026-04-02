@@ -40,6 +40,11 @@
       "file": "slide-06.html",
       "title": "Audience question",
       "transition": "fade"
+    },
+    {
+      "file": "slide-07.html",
+      "title": "Block Stack",
+      "transition": "fade"
     }
   ]
 }

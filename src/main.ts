@@ -43,11 +43,17 @@ applyColorMode()
 
 const kbdHint = document.getElementById('kbd-hint')!
 const btnHelp = document.getElementById('btn-help') as HTMLButtonElement
+const devMenu = document.getElementById('dev-menu')!
+const btnDev = document.getElementById('btn-dev') as HTMLButtonElement
 
 function toggleKbdHint(): void {
   const visible = !kbdHint.classList.contains('hidden')
   kbdHint.classList.toggle('hidden', visible)
   btnHelp.classList.toggle('active', !visible)
+  if (!visible) {
+    devMenu.classList.add('hidden')
+    btnDev.classList.remove('active')
+  }
 }
 
 btnHelp.addEventListener('click', toggleKbdHint)
@@ -58,6 +64,46 @@ document.addEventListener('keydown', (e) => {
     case 'm': case 'M': toggleMode(); break
     case 's': case 'S': toggleSystem(); break
     case 'h': case 'H': case '?': toggleKbdHint(); break
+  }
+})
+
+// ── Dev mode ────────────────────────────────────────────────────────────────
+
+let isDevMode = localStorage.getItem('devMode') === '1'
+const devOpts = Array.from(document.querySelectorAll<HTMLButtonElement>('.dev-opt'))
+
+function applyDevMode(): void {
+  document.documentElement.classList.toggle('gc-dev', isDevMode)
+  btnDev.classList.toggle('dev-active', isDevMode)
+  devOpts.forEach((btn) => btn.classList.toggle('active', (btn.dataset.mode === 'dev') === isDevMode))
+}
+
+function setDevMode(mode: 'present' | 'dev'): void {
+  isDevMode = mode === 'dev'
+  localStorage.setItem('devMode', isDevMode ? '1' : '0')
+  applyDevMode()
+}
+
+devOpts.forEach((btn) => btn.addEventListener('click', () => setDevMode(btn.dataset.mode as 'present' | 'dev')))
+
+function toggleDevMenu(): void {
+  const visible = !devMenu.classList.contains('hidden')
+  devMenu.classList.toggle('hidden', visible)
+  btnDev.classList.toggle('active', !visible)
+  if (!visible) {
+    kbdHint.classList.add('hidden')
+    btnHelp.classList.remove('active')
+  }
+}
+
+btnDev.addEventListener('click', toggleDevMenu)
+applyDevMode()
+
+document.addEventListener('click', (e) => {
+  if (devMenu.classList.contains('hidden')) return
+  if (!devMenu.contains(e.target as Node) && e.target !== btnDev) {
+    devMenu.classList.add('hidden')
+    btnDev.classList.remove('active')
   }
 })
 

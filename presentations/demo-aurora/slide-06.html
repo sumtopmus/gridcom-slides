@@ -5,20 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Audience question — demo</title>
   <link rel="stylesheet" href="../../themes/aurora.css" />
+  <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
   <link rel="stylesheet" href="../../shared/styles/audience-question.css" />
   <style>
-    body {
+
+    .content {
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 3rem;
-    }
-
-    .content {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 960px;
     }
 
     .nav-hint {
@@ -45,6 +40,7 @@
   <div class="bg"></div>
   <div class="grid-lines"></div>
 
+  <div class="gc-grid">
   <div class="content">
     <div class="gc-audience-slide" id="aq-slide">
       <h2 class="gc-audience-slide__title">Shared audience question</h2>
@@ -60,6 +56,7 @@
         </div>
       </div>
     </div>
+  </div>
   </div>
 
   <div class="nav-hint"><kbd>Space</kbd> reveal · <kbd>[</kbd> <kbd>]</kbd> steps</div>
@@ -109,6 +106,7 @@
         step = 0
         render()
       }
+      if (e.data?.type === 'devMode') document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
     })
   </script>
 </body>

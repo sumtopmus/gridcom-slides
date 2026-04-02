@@ -219,6 +219,14 @@ html, body {
   z-index: 50;
 }
 
+/* Dev menu — position only (visual styles in global.css) */
+#dev-menu {
+  position: absolute;
+  bottom: 4rem;
+  right: 1rem;
+  z-index: 50;
+}
+
 /* Grid overlay */
 #grid-overlay {
   position: absolute;

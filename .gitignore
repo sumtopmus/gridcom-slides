@@ -8,3 +8,6 @@ src/registry.ts
 .claude/*local*
 # Superpowers dev files
 .superpowers/
+
+# Git worktrees
+.worktrees/

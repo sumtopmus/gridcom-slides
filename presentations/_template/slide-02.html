@@ -5,20 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Slide 2</title>
   <link rel="stylesheet" href="../../themes/aurora.css" />
+  <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
   <style>
 
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem;
-    }
-
     .content {
-      position: relative;
-      z-index: 1;
-      max-width: 720px;
-      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 3rem 12vw;
     }
 
     h2 {
@@ -57,13 +51,16 @@
   <div class="bg"></div>
   <div class="grid-lines"></div>
 
-  <div class="content">
-    <h2>Section heading</h2>
-    <ul>
-      <li>First bullet point goes here</li>
-      <li>Second bullet point goes here</li>
-      <li>Third bullet point goes here</li>
-    </ul>
+  <!-- Main content grid: single cell covering the full slide -->
+  <div class="gc-grid">
+    <div class="content">
+      <h2>Section heading</h2>
+      <ul>
+        <li>First bullet point goes here</li>
+        <li>Second bullet point goes here</li>
+        <li>Third bullet point goes here</li>
+      </ul>
+    </div>
   </div>
 
   <script>
@@ -71,6 +68,12 @@
       if (e.data?.type === 'slideEnter') {
         // e.data.direction: 'forward' | 'backward' | 'initial'
         // trigger enter animations here
+      }
+      if (e.data?.type === 'slideExit') {
+        // clean up / stop timers here
+      }
+      if (e.data?.type === 'devMode') {
+        document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
       }
     })
   </script>
