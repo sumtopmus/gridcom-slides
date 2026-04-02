@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AUROC — ROC Curve</title>
   <link rel="stylesheet" href="../../themes/aurora.css" />
+  <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
   <link rel="stylesheet" href="./dataset-switcher.css" />
   <style>
     *,
@@ -21,22 +22,8 @@
     }
 
     body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 100vh;
-      overflow: clip;
-      padding: 1.5rem clamp(3.2rem, 6vw, 5.8rem) 2.2rem;
       overflow: hidden;
       color: var(--theme-color);
-      box-sizing: border-box;
-    }
-
-    .z1 {
-      position: relative;
-      z-index: 1;
     }
 
     /* ── Header row ── */
@@ -93,31 +80,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* ── Body ── */
-    .body {
-      display: grid;
-      grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
-      grid-template-rows: auto 1fr;
-      gap: 0.6rem clamp(1.2rem, 3vw, 2.6rem);
-      width: min(100%, 1500px);
-      max-width: min(100%, 1500px);
-      box-sizing: border-box;
-      align-content: center;
-      min-height: 0;
-    }
-
-    .content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.9rem;
-      width: 100%;
-      padding-inline: clamp(0.9rem, 2.8vw, 1.8rem);
-      width: min(100%, calc(100vw - clamp(3.2rem, 6vw, 5.8rem) * 2));
-      max-width: min(100%, 1500px);
-      box-sizing: border-box;
-      max-width: 100%;
-    }
 
     .list-label {
       font-size: 1.1rem;
@@ -136,14 +98,19 @@
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 0.3rem;
+      padding: 4rem 4rem 0;
+    }
+
+    .slot-content-wrapper {
+      position: relative;
     }
 
     .slot-content-clip {
       position: relative;
       width: 100%;
-      height: 50%;
+      height: calc(var(--item-h) * 7);
       overflow: hidden;
       mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
       -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
@@ -151,8 +118,8 @@
 
     .slot-highlight {
       position: absolute;
-      left: 1.5rem;
-      right: 1.5rem;
+      left: -1.5rem;
+      right: -1.5rem;
       top: 50%;
       height: var(--item-h);
       transform: translateY(-50%);
@@ -178,9 +145,10 @@
     .slot-item {
       height: var(--item-h);
       display: grid;
-      grid-template-columns: 1fr max-content 0.4fr;
+      grid-template-columns: max-content max-content 1fr;
       align-items: center;
-      padding: 0 1.5rem;
+      padding: 0 2.5rem;
+      min-width: 380px;
       font-size: 1rem;
       font-variant-numeric: tabular-nums;
       flex-shrink: 0;
@@ -234,18 +202,16 @@
 
     /* ── Plot panel ── */
     .plot-panel {
-      flex: 1;
       min-height: 0;
       overflow: visible;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       min-width: 0;
     }
 
     #roc-svg {
-      width: 100%;
-      max-width: min(100%, calc(90vh - 10rem));
+      width: clamp(560px, 74vh, 860px);
       aspect-ratio: 1;
       height: auto;
       display: block;
@@ -290,26 +256,27 @@
   </div>
   <script>(function () { var i = parseInt(localStorage.getItem('auroc_dsIdx') || '0'); document.querySelectorAll('.ds-btn').forEach(function (b) { b.classList.toggle('active', +b.dataset.idx === i) }); var ind = document.querySelector('.ds-indicator'); if (ind) { ind.style.transition = 'none'; ind.style.transform = 'translateX(calc(' + i + '*(2rem + 0.3rem)))'; }; })()</script>
 
-  <div class="content z1">
-    <div class="top">
+  <!-- 3×3 gc-grid: row 1 = header (spans all cols), row 2 = stats (col 2, right), row 3 = slot + plot + empty -->
+  <div class="gc-grid"
+    style="--gc-cols: max-content auto 1fr; --gc-rows: auto auto 1fr; --gc-padding: 1.5rem clamp(4rem, 10vw, 9rem) 2.2rem clamp(7rem, 16vw, 15rem); --gc-gap: 0.9rem clamp(1.2rem, 3vw, 2.6rem)">
+    <div class="top" style="grid-column: 1 / 4; grid-row: 1">
       <div class="top-title">
         <div class="tag">Sweep threshold from high → low</div>
         <div class="title">ROC Curve Construction</div>
       </div>
     </div>
-    <div class="body">
-      <div class="cell-empty"></div>
-      <div class="stats" id="stats"></div>
-      <div class="slot-clip">
-        <div class="list-label">Samples sorted by score ↓</div>
+    <div class="stats" id="stats" style="grid-column: 2; grid-row: 2"></div>
+    <div class="slot-clip" style="grid-column: 1; grid-row: 3">
+      <div class="list-label">Samples sorted by score ↓</div>
+      <div class="slot-content-wrapper">
+        <div class="slot-highlight"></div>
         <div class="slot-content-clip">
-          <div class="slot-highlight"></div>
           <div class="slot-inner" id="slot-inner"></div>
         </div>
       </div>
-      <div class="plot-panel">
-        <svg id="roc-svg"></svg>
-      </div>
+    </div>
+    <div class="plot-panel" style="grid-column: 2; grid-row: 3">
+      <svg id="roc-svg"></svg>
     </div>
   </div>
 
@@ -514,6 +481,7 @@
       if (e.data?.type === 'stepRestore') { update(Math.max(0, Math.min(N, e.data.step ?? 0)), true); sendStepState() }
       if (e.data?.type === 'stepNext' && step < N) { update(step + 1); sendStepState() }
       if (e.data?.type === 'stepPrev' && step > 0) { update(step - 1); sendStepState() }
+      if (e.data?.type === 'devMode') document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
     })
 
     // ── Init ──────────────────────────────────────────────

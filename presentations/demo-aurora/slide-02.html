@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AUROC — Dataset</title>
   <link rel="stylesheet" href="../../themes/aurora.css" />
+  <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
   <link rel="stylesheet" href="./dataset-switcher.css" />
   <style>
     *,
@@ -16,20 +17,13 @@
       padding: 0;
     }
 
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 2.5rem;
-    }
-
     .content {
-      position: relative;
-      z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 1.4rem;
+      padding: 2rem 2.5rem;
     }
 
     .title {
@@ -150,6 +144,7 @@
   </div>
   <script>(function () { var i = parseInt(localStorage.getItem('auroc_dsIdx') || '0'); document.querySelectorAll('.ds-btn').forEach(function (b) { b.classList.toggle('active', +b.dataset.idx === i) }); var ind = document.querySelector('.ds-indicator'); if (ind) { ind.style.transition = 'none'; ind.style.transform = 'translateX(calc(' + i + '*(2rem + 0.3rem)))'; }; })()</script>
 
+  <div class="gc-grid">
   <div class="content">
     <div class="header">
       <div class="title">The Datasets</div>
@@ -166,6 +161,7 @@
         <span>Negative class (50 samples)</span>
       </div>
     </div>
+  </div>
   </div>
 
   <script type="module">
@@ -207,6 +203,7 @@
     applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
     window.addEventListener('message', e => {
       if (e.data?.type === 'slideEnter') applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
+      if (e.data?.type === 'devMode') document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
     })
   </script>
 </body>
