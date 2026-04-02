@@ -11,32 +11,68 @@ Requires `presentations/<id>/PLAN.md` to exist (created by the `add-presentation
 
 ---
 
-## Phase 4 — Dispatch Generation Agent
+## Phase 4 — Setup + Per-Slide Agent Dispatch
 
-Read `presentations/<id>/PLAN.md` in full. Then dispatch an Agent with the following prompt (fill in `<id>` and embed the full plan content):
+### Phase 4A — Setup (main session)
+
+1. Read `presentations/<id>/PLAN.md` in full.
+2. Run: `cp -r presentations/_template presentations/<id>` (skip if the folder already has slide files beyond PLAN.md).
+3. Write `presentations/<id>/presentation.json` with the fields from the plan (omit any field not present — no placeholder values): `id`, `title`, `description`, `author`, `authorUrl`, `date`, `tags`, `theme`, `slides` array.
+4. Read CLAUDE.md in full (you will embed it verbatim in every agent prompt).
+
+### Phase 4B — Shared files
+
+Scan the plan for any data or asset files referenced by more than one slide (e.g. a JSON dataset, a shared CSV, a constants file).
+
+For each such file:
+1. If it already exists on disk — read it.
+2. If it does not exist yet — generate it now in the main session (write it to its final path), then read it.
+
+You will embed each shared file's path and full contents in the prompt of every agent that needs it.
+
+> If no shared files are referenced, skip this step.
+
+### Phase 4C — Dispatch one agent per slide (in parallel)
+
+For **each slide** listed in the plan, dispatch a separate Agent using the template below. You may launch all agents in parallel — they write independent files and do not depend on each other.
+
+Fill in the placeholders before sending:
+- `<id>` — presentation ID
+- `<theme>` — theme name from the plan
+- `<SLIDE_FILE>` — filename for this slide (e.g. `slide-01.html`)
+- `<SLIDE_TITLE>` — title of this slide from the plan
+- `<SLIDE_SPEC>` — the full per-slide section from the plan describing this slide's content, layout, and beats
+- `<CLAUDE_MD_CONTENT>` — full verbatim contents of CLAUDE.md
+- `<SHARED_FILES>` — for each shared file: its path and full contents; omit this section entirely if there are no shared files
+- `<PLAN_CONTENT>` — full verbatim contents of PLAN.md (for overall context)
 
 ---
 
-**Agent prompt template:**
+**Per-slide agent prompt template:**
 
 ```
-You are generating slides for a GRIDCOM presentation. Read the content plan below and implement it exactly.
+You are writing a single slide for a GRIDCOM presentation.
+Write ONLY the file listed under "Your task". Do not touch any other files.
 
-## Plan
+## Project conventions (from CLAUDE.md)
 
-<full contents of presentations/<id>/PLAN.md>
+<CLAUDE_MD_CONTENT>
 
-## What to do
+## Full presentation plan (for context)
 
-1. Copy the template folder (never copy from an existing presentation):
-   cp -r presentations/_template presentations/<id>
-   (If presentations/<id>/ already has files beyond PLAN.md, do not overwrite them — only create missing slide files.)
+<PLAN_CONTENT>
 
-2. Write presentations/<id>/presentation.json with these fields from the plan
-   (omit any field not present in the plan — no placeholder values):
-   id, title, description, author, authorUrl, date, tags, theme, slides array
+## Shared files
 
-3. Write each slide HTML file listed in the plan.
+<SHARED_FILES>
+(Omit this section if there are no shared files.)
+
+## Your task
+
+Write `presentations/<id>/<SLIDE_FILE>` — "<SLIDE_TITLE>".
+
+Slide spec from the plan:
+<SLIDE_SPEC>
 
 ## Slide generation rules
 
@@ -44,9 +80,15 @@ Every slide must be a complete <!DOCTYPE html> document.
 
 STRUCTURE (required in every slide):
 - <link rel="stylesheet" href="../../themes/<theme>.css" /> in <head>
+- <link rel="stylesheet" href="../../shared/styles/slide-grid.css" /> after the theme link
 - <div class="bg"></div> and <div class="grid-lines"></div> as the FIRST TWO children of <body>
+- Use .gc-grid for all content layout (see CLAUDE.md Slide Grid Layout section)
 - Every content wrapper: position: relative; z-index: 1
 - Never hardcode colors — use CSS variables only
+- Always handle devMode in the slide script:
+    if (e.data?.type === 'devMode') {
+      document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
+    }
 
 THEME TOKENS:
 --theme-bg, --theme-color, --theme-color-secondary, --theme-color-muted,
@@ -64,6 +106,9 @@ CONTENT SLIDE (enter animation only):
   window.addEventListener('message', e => {
     if (e.data?.type === 'slideEnter') animateIn()
     if (e.data?.type === 'slideExit') { /* stop timers, reset */ }
+    if (e.data?.type === 'devMode') {
+      document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
+    }
   })
 
 STEP-BASED SLIDE:
@@ -87,6 +132,9 @@ JS pattern (use exactly):
     if (e.data?.type === 'stepNext' && step < TOTAL) { step++; renderStep(step); sendStepState() }
     if (e.data?.type === 'stepPrev' && step > 0)    { step--; renderStep(step); sendStepState() }
     if (e.data?.type === 'slideExit') { step = 0 }
+    if (e.data?.type === 'devMode') {
+      document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
+    }
   })
 
 ALWAYS add a nav hint element to every step-based slide (bottom-right corner) so users know
@@ -174,7 +222,7 @@ has a chance to render it at visible size:
 
 ---
 
-Wait for the agent to complete before continuing.
+Wait for **all** per-slide agents to complete before continuing.
 
 ---
 
