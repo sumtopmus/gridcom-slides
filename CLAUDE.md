@@ -49,8 +49,10 @@ Fill in `author` and `date` (ISO format `YYYY-MM-DD`) if the user provided them.
 Each slide is a **complete, self-contained `<!DOCTYPE html>` document**. Key rules:
 
 - Link the chosen theme: `<link rel="stylesheet" href="../../themes/<theme>.css" />`
+- Link `shared/styles/slide-grid.css` after the theme: `<link rel="stylesheet" href="../../shared/styles/slide-grid.css" />`
 - Place `<div class="bg"></div>` and `<div class="grid-lines"></div>` as the **first two children of `<body>`** — these are the animated background layers
-- Every content wrapper needs `position: relative; z-index: 1` to stack above the background
+- Use **`.gc-grid`** for the slide layout (see Slide Grid Layout section below) — place it after the background layers
+- Add a `devMode` listener to the slide script so Dev Mode grid overlays work (see Slide Lifecycle API)
 - Use theme CSS variables for all colors (never hardcode colors): `--theme-bg`, `--theme-color`, `--theme-color-secondary`, `--theme-color-muted`, `--theme-accent`, `--theme-accent-alt`, `--theme-surface`, `--theme-border`
 - Wire up the `slideEnter` / `slideExit` message listener (see Slide Lifecycle API below) — at minimum for enter animations
 
@@ -66,16 +68,13 @@ Each slide is a **complete, self-contained `<!DOCTYPE html>` document**. Key rul
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Slide title</title>
   <link rel="stylesheet" href="../../themes/aurora.css" />
+  <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
   <style>
-    body {
+    .content {
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 3rem;
-    }
-    .content {
-      position: relative;
-      z-index: 1;
       /* layout styles */
     }
   </style>
@@ -84,8 +83,11 @@ Each slide is a **complete, self-contained `<!DOCTYPE html>` document**. Key rul
   <div class="bg"></div>
   <div class="grid-lines"></div>
 
-  <div class="content">
-    <!-- slide content -->
+  <!-- Main content grid: single cell covering the full slide -->
+  <div class="gc-grid">
+    <div class="content">
+      <!-- slide content -->
+    </div>
   </div>
 
   <script>
@@ -95,6 +97,9 @@ Each slide is a **complete, self-contained `<!DOCTYPE html>` document**. Key rul
       }
       if (e.data?.type === 'slideExit') {
         // stop timers, reset state
+      }
+      if (e.data?.type === 'devMode') {
+        document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
       }
     })
   </script>
@@ -162,6 +167,77 @@ All content wrappers need `position: relative; z-index: 1` to stack above the ba
 | `--theme-accent-alt` | Accent variant |
 | `--theme-surface` | Card / panel background |
 | `--theme-border` | Border color |
+
+## Slide Grid Layout
+
+Every slide should be structured using one or more `.gc-grid` layers (from `shared/styles/slide-grid.css`). A `.gc-grid` is `position: absolute; inset: 0; display: grid` — it covers the entire slide and sits at `z-index: 1` above the background layers.
+
+**Single-region slide (most common):**
+
+```html
+<div class="gc-grid">
+  <div class="content"><!-- fill the one cell --></div>
+</div>
+```
+
+**Multi-region slide (columns/rows):**
+
+```html
+<div class="gc-grid" style="--gc-cols: 1fr 1fr; --gc-rows: auto 1fr">
+  <div style="grid-column: 1 / 3">Header spanning both columns</div>
+  <div>Left panel</div>
+  <div>Right panel</div>
+</div>
+```
+
+**Independent overlay grids** (headers, footers, watermarks in corners):
+
+```html
+<!-- Main content -->
+<div class="gc-grid" style="--gc-cols: 1fr 1fr">
+  <div>Left</div>
+  <div>Right</div>
+</div>
+
+<!-- Corner watermark — separate grid, z-index stacks in DOM order -->
+<div class="gc-grid" style="--gc-padding: 1.5rem">
+  <div style="grid-column: 1; grid-row: 1; align-self: end; justify-self: start">Bottom-left</div>
+  <div style="grid-column: 1; grid-row: 1; align-self: start; justify-self: end">Top-right</div>
+</div>
+```
+
+**Custom properties for `.gc-grid`:**
+
+| Property | Default | Purpose |
+| -------- | ------- | ------- |
+| `--gc-cols` | `1fr` | `grid-template-columns` |
+| `--gc-rows` | `1fr` | `grid-template-rows` |
+| `--gc-gap` | `0` | `gap` |
+| `--gc-padding` | `0` | `padding` |
+
+Grid children have `pointer-events: auto` and `min-width/height: 0` set automatically.
+
+## Dev Mode
+
+A **Dev Mode** toggle is available on both the homepage and the viewer via the grid-inspect button (bottom-right, next to the `?` help button). In Dev Mode:
+
+- All `.gc-grid` containers get a red inset shadow
+- All direct children of `.gc-grid` get a red dashed outline
+- The class `gc-dev` is added to `<html>` on both the viewer/homepage and inside slide iframes
+
+**How it works:**
+- The viewer stores `devMode` in `localStorage` (`'1'` = on)
+- When a slide loads, the viewer sends `{ type: 'devMode', enabled: true/false }` to the iframe
+- The slide script toggles `document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)`
+- The CSS in `slide-grid.css` applies the red outlines when `html.gc-dev` is present
+
+**Every slide script must handle the `devMode` message:**
+
+```js
+if (e.data?.type === 'devMode') {
+  document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
+}
+```
 
 ## Shared slide components (`shared/`)
 
@@ -334,6 +410,7 @@ Use block-based reveal patterns when the message has clear beats (question → a
 | `presentations/_template/` | Starter template |
 | `themes/aurora.css` | Aurora slide theme — dark gradient (CSS + design tokens) |
 | `themes/eclipse.css` | Eclipse slide theme — light gradient (CSS + design tokens) |
+| `shared/styles/slide-grid.css` | `.gc-grid` layout + dev mode red outline visualization |
 | `shared/styles/` | Shared slide component styles (e.g. audience question block) |
 
 ## Slide Lifecycle API
@@ -348,6 +425,10 @@ window.addEventListener('message', (e) => {
   }
   if (e.data?.type === 'slideExit') {
     // clean up / stop timers here
+  }
+  if (e.data?.type === 'devMode') {
+    // toggle red grid outlines for Dev Mode
+    document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
   }
 })
 ```

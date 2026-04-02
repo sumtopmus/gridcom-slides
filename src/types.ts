@@ -33,6 +33,7 @@ export type SlideMessage =
   | { type: 'stepNext' }
   | { type: 'stepPrev' }
   | { type: 'stepRestore'; step: number }
+  | { type: 'devMode'; enabled: boolean }
 
 // postMessage payloads sent from slide iframe → viewer
 // Slides with internal step sequences send this to let the viewer know

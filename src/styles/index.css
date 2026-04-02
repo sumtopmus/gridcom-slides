@@ -50,6 +50,14 @@
   z-index: 200;
 }
 
+/* Dev menu — position only (visual styles in global.css) */
+#dev-menu {
+  position: fixed;
+  bottom: 4rem;
+  right: 1rem;
+  z-index: 200;
+}
+
 /* Bottom bar */
 #bottom-bar {
   position: fixed;

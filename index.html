@@ -45,6 +45,16 @@
   <div id="overlay"></div>
   <div id="drawer"></div>
 
+  <div id="dev-menu" class="hidden">
+    <div class="dev-menu-row">
+      <span class="dev-menu-label">Mode</span>
+      <div class="dev-mode-switch">
+        <button class="dev-opt" data-mode="present">Present</button>
+        <button class="dev-opt" data-mode="dev">Dev</button>
+      </div>
+    </div>
+  </div>
+
   <div id="kbd-hint" class="hidden">
     <div class="kbd-row"><kbd>m</kbd> Light / dark</div>
     <div class="kbd-row"><kbd>s</kbd> System mode</div>
@@ -83,6 +93,16 @@
         </svg>
       </button>
     </div>
+    <button id="btn-dev" class="icon-btn" title="Dev mode">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <line x1="3" y1="9" x2="21" y2="9" stroke-dasharray="3 2"/>
+        <line x1="3" y1="15" x2="21" y2="15" stroke-dasharray="3 2"/>
+        <line x1="9" y1="3" x2="9" y2="21" stroke-dasharray="3 2"/>
+        <line x1="15" y1="3" x2="15" y2="21" stroke-dasharray="3 2"/>
+      </svg>
+    </button>
     <button id="btn-help" class="icon-btn" title="Keyboard shortcuts (h)">?</button>
   </div>
 

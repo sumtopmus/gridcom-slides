@@ -1,0 +1,63 @@
+/*
+ * GRIDCOM — Slide Grid Layout (shared slide component)
+ *
+ * .gc-grid — a position:absolute layer covering the entire slide that uses
+ * CSS Grid for layout. Use one instance per slide for the main content
+ * layout, and additional instances for independent overlay regions (headers,
+ * footers, corner annotations, watermarks, etc.).
+ *
+ * Link after your theme:
+ *   <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
+ *
+ * Markup:
+ *   <div class="gc-grid" style="--gc-cols: repeat(2, 1fr); --gc-rows: repeat(3, 1fr)">
+ *     <div style="grid-column: 1; grid-row: 1 / 3">Left panel</div>
+ *     <div style="grid-column: 2; grid-row: 1 / 4">Right panel</div>
+ *     <div style="grid-column: 1 / 3; grid-row: 3">Footer span</div>
+ *   </div>
+ *
+ * Custom properties (set on the element or an ancestor rule):
+ *   --gc-cols    — grid-template-columns  (default: 1fr)
+ *   --gc-rows    — grid-template-rows     (default: 1fr)
+ *   --gc-gap     — gap                    (default: 0)
+ *   --gc-padding — padding                (default: 0)
+ *
+ * Multiple grids:
+ *   Slides can have more than one .gc-grid to compose independent layout
+ *   layers — for example a main content grid plus a corner watermark grid.
+ *   All .gc-grid instances sit at z-index 1 and stack in DOM order.
+ *
+ * Dev mode (html.gc-dev):
+ *   Grid containers get a red inset shadow; all direct children get a red
+ *   dashed outline. Activated by the viewer/homepage Dev Mode toggle and
+ *   broadcast to slide iframes via postMessage { type: 'devMode', enabled }.
+ */
+
+.gc-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: var(--gc-cols, 1fr);
+  grid-template-rows: var(--gc-rows, 1fr);
+  gap: var(--gc-gap, 0);
+  padding: var(--gc-padding, 0);
+  pointer-events: none;
+}
+
+.gc-grid > * {
+  pointer-events: auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── Dev mode: visualize grid structure ────────────────────────────────── */
+
+html.gc-dev .gc-grid {
+  box-shadow: inset 0 0 0 1px rgba(255, 0, 0, 0.35);
+}
+
+html.gc-dev .gc-grid > * {
+  outline: 1px dashed rgba(255, 0, 0, 0.65);
+  outline-offset: -1px;
+}

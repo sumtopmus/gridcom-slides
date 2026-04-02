@@ -19,6 +19,7 @@ let currentSlideStep = 0
 const slideStepMemory = new Map<number, number>()
 let gridVisible = false
 let isFixedCanvas = localStorage.getItem('fixedCanvas') === '1'
+let isDevMode = localStorage.getItem('devMode') === '1'
 let colorMode: ColorMode = (() => {
   const stored = localStorage.getItem('colorMode')
   return stored === 'light' || stored === 'system' ? stored : 'dark'
@@ -43,6 +44,8 @@ const iconCompress = document.getElementById('icon-compress')!
 const viewerChrome = document.getElementById('viewer-chrome')!
 const kbdHint = document.getElementById('kbd-hint')!
 const btnHelp = document.getElementById('btn-help') as HTMLButtonElement
+const devMenu = document.getElementById('dev-menu')!
+const btnDev = document.getElementById('btn-dev') as HTMLButtonElement
 
 // ── Utilities ──────────────────────────────────────────────────────────────
 
@@ -141,6 +144,9 @@ function loadSlide(index: number, direction: 'forward' | 'backward' | 'initial' 
         type: 'stepRestore',
         step: currentSlideStep,
       })
+    }
+    if (isDevMode) {
+      sendSlideMessage(iframe, { type: 'devMode', enabled: true })
     }
 
     // Kick off old slide exit
@@ -411,9 +417,55 @@ function toggleKbdHint(): void {
   const visible = !kbdHint.classList.contains('hidden')
   kbdHint.classList.toggle('hidden', visible)
   btnHelp.classList.toggle('active', !visible)
+  if (!visible) {
+    devMenu.classList.add('hidden')
+    btnDev.classList.remove('active')
+  }
 }
 
 btnHelp.addEventListener('click', toggleKbdHint)
+
+// ── Dev mode ────────────────────────────────────────────────────────────────
+
+const devOpts = Array.from(document.querySelectorAll<HTMLButtonElement>('.dev-opt'))
+
+function applyDevMode(): void {
+  document.documentElement.classList.toggle('gc-dev', isDevMode)
+  btnDev.classList.toggle('dev-active', isDevMode)
+  devOpts.forEach((btn) => btn.classList.toggle('active', (btn.dataset.mode === 'dev') === isDevMode))
+  if (activeIframe) {
+    sendSlideMessage(activeIframe, { type: 'devMode', enabled: isDevMode })
+  }
+}
+
+function setDevMode(mode: 'present' | 'dev'): void {
+  isDevMode = mode === 'dev'
+  localStorage.setItem('devMode', isDevMode ? '1' : '0')
+  applyDevMode()
+}
+
+devOpts.forEach((btn) => btn.addEventListener('click', () => setDevMode(btn.dataset.mode as 'present' | 'dev')))
+
+function toggleDevMenu(): void {
+  const visible = !devMenu.classList.contains('hidden')
+  devMenu.classList.toggle('hidden', visible)
+  btnDev.classList.toggle('active', !visible)
+  if (!visible) {
+    kbdHint.classList.add('hidden')
+    btnHelp.classList.remove('active')
+  }
+}
+
+btnDev.addEventListener('click', toggleDevMenu)
+applyDevMode()
+
+document.addEventListener('click', (e) => {
+  if (devMenu.classList.contains('hidden')) return
+  if (!devMenu.contains(e.target as Node) && e.target !== btnDev) {
+    devMenu.classList.add('hidden')
+    btnDev.classList.remove('active')
+  }
+})
 
 // ── Progress bar ───────────────────────────────────────────────────────────
 
