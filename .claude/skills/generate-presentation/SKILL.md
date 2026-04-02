@@ -75,7 +75,7 @@ JS pattern (use exactly):
 
   function sendStepState() {
     window.parent.postMessage(
-      { type: 'stepState', canGoBack: step > 0, canGoForward: step < TOTAL }, '*'
+      { type: 'stepState', canGoBack: step > 0, canGoForward: step < TOTAL, currentStep: step }, '*'
     )
   }
 
@@ -83,6 +83,7 @@ JS pattern (use exactly):
 
   window.addEventListener('message', e => {
     if (e.data?.type === 'slideEnter') { step = 0; renderStep(0); sendStepState() }
+    if (e.data?.type === 'stepRestore') { step = Math.max(0, Math.min(TOTAL, e.data.step ?? 0)); renderStep(step); sendStepState() }
     if (e.data?.type === 'stepNext' && step < TOTAL) { step++; renderStep(step); sendStepState() }
     if (e.data?.type === 'stepPrev' && step > 0)    { step--; renderStep(step); sendStepState() }
     if (e.data?.type === 'slideExit') { step = 0 }

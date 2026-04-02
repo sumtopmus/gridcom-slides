@@ -350,6 +350,7 @@ function render() {
 
 window.addEventListener('message', (e) => {
   if (e.data?.type === 'slideEnter') { step = 0; render(); sendStepState() }
+  if (e.data?.type === 'stepRestore') { step = Math.max(0, Math.min(TOTAL, e.data.step ?? 0)); render(); sendStepState() }
   if (e.data?.type === 'stepNext' && step < TOTAL) { step++; render(); sendStepState() }
   if (e.data?.type === 'stepPrev' && step > 0) { step--; render(); sendStepState() }
   if (e.data?.type === 'slideExit') { step = 0; render() }
