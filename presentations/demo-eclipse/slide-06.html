@@ -6,7 +6,7 @@
   <title>Audience question — demo</title>
   <link rel="stylesheet" href="../../themes/eclipse.css" />
   <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
-  <link rel="stylesheet" href="../../shared/styles/audience-question.css" />
+  <link rel="stylesheet" href="../../shared/styles/blocks.css" />
   <style>
 
     .content {
@@ -34,6 +34,34 @@
       padding: 0.1rem 0.4rem;
       font-size: 0.68rem;
     }
+    /* Slide layout: qa block with title that reveals alongside the answer */
+    .qa-slide {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: 2rem;
+      margin-top: 1.25rem;
+    }
+    .qa-slide__title {
+      margin: 0;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      text-align: center;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-0.5rem);
+      transition: opacity 0.24s ease-out, transform 0.28s ease-out, visibility 0s linear 0.3s;
+    }
+    .qa-slide--revealed .qa-slide__title {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      transition-delay: 0s, 0s, 0s;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .qa-slide__title { transition: none; transform: none; }
+    }
   </style>
 </head>
 <body>
@@ -42,17 +70,17 @@
 
   <div class="gc-grid">
   <div class="content">
-    <div class="gc-audience-slide" id="aq-slide">
-      <h2 class="gc-audience-slide__title">Shared audience question</h2>
+    <div class="qa-slide" id="aq-slide">
+      <h2 class="qa-slide__title">Shared audience question</h2>
 
-      <div class="gc-audience" id="aq">
-        <div class="gc-audience__q">
-          <span class="gc-audience__eyebrow">Question</span>
-          <p class="gc-audience__text">You have ranked predictions and binary labels. What does AUROC measure?</p>
+      <div class="gc-block-stack gc-block-stack--qa" id="aq">
+        <div class="gc-block-stack__item gc-block-stack__item--question">
+          <span class="gc-block__label">Question</span>
+          <p class="gc-block__content">You have ranked predictions and binary labels. What does AUROC measure?</p>
         </div>
-        <div class="gc-audience__a" id="aq-answer" aria-hidden="true">
-          <span class="gc-audience__eyebrow">Answer</span>
-          <p class="gc-audience__text">The probability that a random positive ranks above a random negative — the area under the ROC curve.</p>
+        <div class="gc-block-stack__item gc-block-stack__item--answer" id="aq-answer" aria-hidden="true">
+          <span class="gc-block__label">Answer</span>
+          <p class="gc-block__content">The probability that a random positive ranks above a random negative — the area under the ROC curve.</p>
         </div>
       </div>
     </div>
@@ -77,8 +105,8 @@
 
     function render() {
       const revealed = step >= 1
-      root.classList.toggle('gc-audience--revealed', revealed)
-      slideRoot.classList.toggle('gc-audience-slide--revealed', revealed)
+      root.classList.toggle('gc-block-stack--revealed', revealed)
+      slideRoot.classList.toggle('qa-slide--revealed', revealed)
       answerEl.setAttribute('aria-hidden', revealed ? 'false' : 'true')
     }
 

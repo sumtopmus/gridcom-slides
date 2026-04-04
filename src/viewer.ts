@@ -423,6 +423,7 @@ function toggleKbdHint(): void {
   }
 }
 
+btnHelp.addEventListener('mousedown', (e) => e.preventDefault())
 btnHelp.addEventListener('click', toggleKbdHint)
 
 // ── Dev mode ────────────────────────────────────────────────────────────────
@@ -456,14 +457,28 @@ function toggleDevMenu(): void {
   }
 }
 
+// Prevent iframe focus-steal: using mousedown+preventDefault so the click fires on first tap
+btnDev.addEventListener('mousedown', (e) => e.preventDefault())
 btnDev.addEventListener('click', toggleDevMenu)
 applyDevMode()
 
 document.addEventListener('click', (e) => {
   if (devMenu.classList.contains('hidden')) return
-  if (!devMenu.contains(e.target as Node) && e.target !== btnDev) {
+  if (!devMenu.contains(e.target as Node) && !btnDev.contains(e.target as Node)) {
     devMenu.classList.add('hidden')
     btnDev.classList.remove('active')
+  }
+})
+
+// Close menus when focus moves into an iframe (clicks inside iframe don't reach document)
+window.addEventListener('blur', () => {
+  if (!devMenu.classList.contains('hidden')) {
+    devMenu.classList.add('hidden')
+    btnDev.classList.remove('active')
+  }
+  if (!kbdHint.classList.contains('hidden')) {
+    kbdHint.classList.add('hidden')
+    btnHelp.classList.remove('active')
   }
 })
 
