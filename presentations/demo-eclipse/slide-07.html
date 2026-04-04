@@ -6,7 +6,7 @@
   <title>Block Stack — demo</title>
   <link rel="stylesheet" href="../../themes/eclipse.css" />
   <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
-  <link rel="stylesheet" href="../../shared/styles/block-stack.css" />
+  <link rel="stylesheet" href="../../shared/styles/blocks.css" />
   <style>
     .content {
       display: flex;
@@ -36,16 +36,16 @@
 
       <div class="gc-block-stack">
         <div class="gc-block-stack__item">
-          <span class="gc-block-stack__label">Threshold-free</span>
-          <div class="gc-block-stack__content">Evaluates the classifier at every possible decision threshold simultaneously</div>
+          <span class="gc-block__label">Threshold-free</span>
+          <div class="gc-block__content">Evaluates the classifier at every possible decision threshold simultaneously</div>
         </div>
         <div class="gc-block-stack__item">
-          <span class="gc-block-stack__label">Rank-based</span>
-          <div class="gc-block-stack__content">Depends only on the relative ordering of predicted scores, not their absolute values</div>
+          <span class="gc-block__label">Rank-based</span>
+          <div class="gc-block__content">Depends only on the relative ordering of predicted scores, not their absolute values</div>
         </div>
         <div class="gc-block-stack__item">
-          <span class="gc-block-stack__label">Probabilistic</span>
-          <div class="gc-block-stack__content">Equals the probability that a random positive outranks a random negative</div>
+          <span class="gc-block__label">Probabilistic</span>
+          <div class="gc-block__content">Equals the probability that a random positive outranks a random negative</div>
         </div>
       </div>
     </div>
