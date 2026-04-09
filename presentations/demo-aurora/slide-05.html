@@ -278,10 +278,9 @@
   <div class="nav-hint"><kbd>[</kbd> prev step &nbsp; next step <kbd>]</kbd></div>
 
   <script src="../../shared/js/rough.js"></script>
+  <script src="../../shared/js/svg-text.js"></script>
   <script type="module">
     import { datasets } from './datasets.js'
-
-    const SVGNS = 'http://www.w3.org/2000/svg'
 
     const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim()
     const POS = css('--pos'), NEG = css('--neg'), CURVE = css('--theme-accent')
@@ -383,31 +382,13 @@
       drawPR(s)
     }
 
-    /** Helper: create an SVG <text> element */
-    function svgText(x, y, text, { fontSize = 15, fill = '#fff', anchor = 'middle', opacity = 1, transform = null, dy = null, fontWeight = null } = {}) {
-      const el = document.createElementNS(SVGNS, 'text')
-      el.setAttribute('x', x)
-      el.setAttribute('y', y)
-      el.setAttribute('font-size', fontSize)
-      el.setAttribute('fill', fill)
-      el.setAttribute('text-anchor', anchor)
-      if (opacity !== 1) el.setAttribute('opacity', opacity)
-      if (transform) el.setAttribute('transform', transform)
-      if (dy) el.setAttribute('dy', dy)
-      if (fontWeight) el.setAttribute('font-weight', fontWeight)
-      el.textContent = text
-      return el
-    }
-
     function drawPR(s) {
       const svg = document.getElementById('pr-svg')
       const W = svg.clientWidth, H = svg.clientHeight
       if (!W || !H) return
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
 
-      // Clear SVG
-      while (svg.firstChild) svg.removeChild(svg.firstChild)
-
+      svg.replaceChildren()
       const rc = rough.svg(svg)
 
       const ml = 80, mr = 24, mt = 24, mb = 88
@@ -525,7 +506,8 @@
     // ── Init ──────────────────────────────────────────────
     applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
     window.addEventListener('load', () => update(step))
-    new ResizeObserver(() => drawPR(step)).observe(document.getElementById('pr-svg'))
+    let resizeRAF = 0
+    new ResizeObserver(() => { cancelAnimationFrame(resizeRAF); resizeRAF = requestAnimationFrame(() => drawPR(step)) }).observe(document.getElementById('pr-svg'))
   </script>
 </body>
 

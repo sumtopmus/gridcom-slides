@@ -100,6 +100,7 @@
   </div>
 
   <script src="../../shared/js/rough.js"></script>
+  <script src="../../shared/js/svg-text.js"></script>
   <script type="module">
     import { distributions } from './datasets.js'
 
@@ -113,9 +114,6 @@
     }
     const W = 860, H = 400, ml = 50, mr = 22, mt = 22, mb = 52
     const pw = W - ml - mr, ph = H - mt - mb
-
-    const SVGNS = 'http://www.w3.org/2000/svg'
-    const FONT = "'Virgil', cursive"
 
     // Evaluate pdfFn at `steps+1` points over [0,1], normalize to max=1,
     // return closed area path and open line path as SVG strings.
@@ -131,26 +129,12 @@
       }
     }
 
-    function makeText(content, x, y, opts = {}) {
-      const el = document.createElementNS(SVGNS, 'text')
-      el.setAttribute('x', x)
-      el.setAttribute('y', y)
-      el.setAttribute('font-family', FONT)
-      el.setAttribute('font-size', opts.fontSize || '13')
-      el.setAttribute('fill', opts.fill || CHART.tick)
-      if (opts.textAnchor) el.setAttribute('text-anchor', opts.textAnchor)
-      if (opts.transform) el.setAttribute('transform', opts.transform)
-      el.textContent = content
-      return el
-    }
-
     // Track rough.js generated groups so animateIn can reference them
     let negAreaG, negLineG, posAreaG, posLineG
 
     function render(dist) {
       const svg = document.getElementById('chart')
-      // Clear SVG
-      while (svg.firstChild) svg.removeChild(svg.firstChild)
+      svg.replaceChildren()
 
       const rc = rough.svg(svg)
       const posP = makePaths(dist.posPDF)
@@ -223,27 +207,12 @@
       // X-axis labels (0.0 … 1.0)
       for (let i = 0; i <= 5; i++) {
         const x = ml + (i / 5) * pw
-        svg.appendChild(makeText(
-          (i / 5).toFixed(1),
-          x, mt + ph + 20,
-          { textAnchor: 'middle' }
-        ))
+        svg.appendChild(svgText(x, mt + ph + 20, (i / 5).toFixed(1), { fontSize: 13, fill: CHART.tick }))
       }
 
       // Axis labels
-      svg.appendChild(makeText(
-        'Classifier Score',
-        ml + pw / 2, H - 6,
-        { fontSize: '14', fill: CHART.label, textAnchor: 'middle' }
-      ))
-
-      const yLabelX = 13
-      const yLabelY = mt + ph / 2
-      svg.appendChild(makeText(
-        'Density',
-        yLabelX, yLabelY,
-        { fontSize: '14', fill: CHART.label, textAnchor: 'middle', transform: `rotate(-90,${yLabelX},${yLabelY})` }
-      ))
+      svg.appendChild(svgText(ml + pw / 2, H - 6, 'Classifier Score', { fontSize: 14, fill: CHART.label }))
+      svg.appendChild(svgText(13, mt + ph / 2, 'Density', { fontSize: 14, fill: CHART.label, transform: `rotate(-90,13,${mt + ph / 2})` }))
     }
 
     function animateIn() {
