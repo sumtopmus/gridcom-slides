@@ -79,10 +79,28 @@ STRUCTURE (required in every slide):
 - Use .gc-grid for all content layout (see CLAUDE.md Slide Grid Layout section)
 - Every content wrapper: position: relative; z-index: 1
 - Never hardcode colors — use CSS variables only
+- Never override font-family — themes provide the Virgil handwriting font
 - Always handle devMode in the slide script:
     if (e.data?.type === 'devMode') {
       document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
     }
+
+EXCALIDRAW STYLE:
+All slides use an Excalidraw-inspired hand-drawn look. The Virgil font is loaded
+by the theme CSS automatically — do NOT add extra font links or override font-family.
+
+For any programmatic SVG/canvas graphics (charts, diagrams, visualizations),
+use rough.js for a sketchy hand-drawn rendering style:
+  <script src="../../shared/js/rough.js"></script>
+Use the rough.svg() API to draw lines, rectangles, circles, paths:
+  const rc = rough.svg(svgElement)
+  svgElement.appendChild(rc.line(x1, y1, x2, y2, { stroke: color, strokeWidth: 2, roughness: 1.2 }))
+  svgElement.appendChild(rc.rectangle(x, y, w, h, { fill: color, fillStyle: 'hachure' }))
+  svgElement.appendChild(rc.circle(cx, cy, diameter, { stroke: color }))
+  svgElement.appendChild(rc.path(pathData, { stroke: color, fill: 'none' }))
+For text labels inside SVGs, create standard <text> elements with
+font-family="Virgil, cursive" and append them to the SVG.
+Do NOT use innerHTML-based SVG generation — use DOM APIs with rough.js.
 
 THEME TOKENS:
 --theme-bg, --theme-color, --theme-color-secondary, --theme-color-muted,
@@ -236,13 +254,17 @@ Add to <head> — config block MUST come before the script tag:
   <script>
     MathJax = {
       tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
-      chtml: { scale: 1 }
+      chtml: { scale: 1, mtextInheritFont: true }
     }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 
+Also add this CSS so math containers inherit the Virgil handwriting style:
+  mjx-container { font-family: 'Virgil', cursive !important; }
+
 Use CHTML output (tex-chtml.js), not SVG — CHTML inherits the CSS `color` property, so
 formulas automatically pick up --theme-color without extra configuration.
+The mtextInheritFont option makes \text{} blocks use the slide's Virgil font.
 
 Syntax:
 - Inline formula: \( E = mc^2 \)

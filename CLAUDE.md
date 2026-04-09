@@ -125,12 +125,44 @@ Run `npm run dev` and confirm the card appears on the homepage and all slides lo
 
 ---
 
+## Excalidraw Visual Style
+
+All slide content uses an **Excalidraw-inspired hand-drawn aesthetic**:
+
+1. **Font:** The Virgil handwriting font (from the Excalidraw project) is the default body font in every theme. It is loaded via `@font-face` from `shared/fonts/Virgil.woff2`. Do not override `font-family` in slides — the theme provides it.
+
+2. **Graphics:** Use **rough.js** (`shared/js/rough.js`) for all programmatic SVG/canvas graphics (charts, diagrams, shapes). This renders lines, curves, and fills with a sketchy, hand-drawn look. Include it in slides that draw graphics:
+   ```html
+   <script src="../../shared/js/rough.js"></script>
+   ```
+   Then use the SVG API:
+   ```js
+   const rc = rough.svg(svgElement)
+   svgElement.appendChild(rc.line(x1, y1, x2, y2, { stroke: color, strokeWidth: 2 }))
+   svgElement.appendChild(rc.rectangle(x, y, w, h, { fill: color, fillStyle: 'hachure' }))
+   svgElement.appendChild(rc.path(svgPathData, { stroke: color }))
+   ```
+   For text labels inside SVGs, use standard `<text>` elements with `font-family: 'Virgil', cursive`.
+
+3. **LaTeX / MathJax:** Configure MathJax to inherit the Virgil font for text elements:
+   ```js
+   MathJax = {
+     tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+     chtml: { scale: 1, mtextInheritFont: true }
+   }
+   ```
+   Add this CSS so math containers blend with the handwritten style:
+   ```css
+   mjx-container { font-family: 'Virgil', cursive !important; }
+   ```
+
 ## Themes
 
 Reusable slide themes live in `themes/`. Each theme provides:
 
 - CSS design tokens (`--theme-bg`, `--theme-color`, `--theme-accent`, etc.)
 - Animated background (`.bg` + `.grid-lines` layers — place as first children of `<body>`)
+- **Excalidraw-style Virgil handwriting font** as the default body font
 - **Fixed visual appearance** — unaffected by the viewer's dark/light/system interface color mode
 
 | Theme | File | Appearance |
@@ -413,6 +445,8 @@ Use block-based reveal patterns when the message has clear beats (question → a
 | `themes/eclipse.css` | Eclipse slide theme — light gradient (CSS + design tokens) |
 | `shared/styles/slide-grid.css` | `.gc-grid` layout + dev mode red outline visualization |
 | `shared/styles/` | Shared slide component styles (e.g. audience question block) |
+| `shared/fonts/Virgil.woff2` | Excalidraw handwriting font (loaded by themes via `@font-face`) |
+| `shared/js/rough.js` | rough.js library for sketchy hand-drawn SVG/canvas graphics |
 
 ## Slide Lifecycle API
 
