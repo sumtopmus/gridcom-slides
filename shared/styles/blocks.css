@@ -1,0 +1,318 @@
+/*
+ * GRIDCOM — Block components (shared slide components)
+ *
+ * Central stylesheet for all block-based slide components.
+ *
+ * Link after your theme:
+ *   <link rel="stylesheet" href="../../shared/styles/blocks.css" />
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Components in this file
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * Child element classes (shared by gc-block and gc-block-stack__item):
+ *   .gc-block__label    — eyebrow label
+ *   .gc-block__content  — main content / formula
+ *   .gc-block__desc     — optional muted description
+ *
+ * 1. gc-block ── Single standalone block
+ *
+ *      <div class="gc-block">
+ *        <span class="gc-block__label">Label</span>
+ *        <div class="gc-block__content">Content or formula</div>
+ *        <div class="gc-block__desc">Optional description</div>
+ *      </div>
+ *
+ * 2. gc-block-stack ── Stacked multi-block card
+ *
+ *      <div class="gc-block-stack">
+ *        <div class="gc-block-stack__item">
+ *          <span class="gc-block__label">Label</span>
+ *          <div class="gc-block__content">Content / formula</div>
+ *          <div class="gc-block__desc">Optional description</div>
+ *        </div>
+ *        <div class="gc-block-stack__item">…</div>
+ *      </div>
+ *
+ *      Modifiers on the container:
+ *        gc-block-stack--formula   fluid font sizes for typeset math
+ *        gc-block-stack--centered  top-border layout, centered text
+ *
+ *      Modifier on an item:
+ *        gc-block-stack__item--centered  centered variant for one item
+ *
+ * 3. gc-block-stack--qa ── Question / Answer reveal card (2-item stack)
+ *
+ *      <div class="gc-block-stack gc-block-stack--qa">
+ *        <div class="gc-block-stack__item gc-block-stack__item--question">
+ *          <span class="gc-block__label">Question</span>
+ *          <div class="gc-block__content">…</div>
+ *        </div>
+ *        <div class="gc-block-stack__item gc-block-stack__item--answer" aria-hidden="true">
+ *          <span class="gc-block__label">Answer</span>
+ *          <div class="gc-block__content">…</div>
+ *        </div>
+ *      </div>
+ *
+ *      Add gc-block-stack--revealed to the container to reveal the answer.
+ *      Also set aria-hidden="false" on the answer item when revealing.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Design tokens used (set by the active theme)
+ * ─────────────────────────────────────────────────────────────────────────────
+ *   --theme-bg, --theme-color, --theme-color-muted
+ *   --theme-accent, --theme-accent-alt
+ *   --theme-surface, --theme-border
+ *   --pos (orange)   used by --question item
+ *   --neg-a          used by --answer item background
+ */
+
+
+/* =============================================================================
+   1. gc-block — Single standalone block
+   ============================================================================= */
+
+.gc-block {
+  position: relative;
+  padding: 1.5rem 2rem;
+  border: 1px solid var(--theme-border);
+  border-left: none;
+  border-radius: 12px;
+  background: var(--theme-surface);
+  overflow: hidden;
+}
+
+.gc-block::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--theme-accent);
+  pointer-events: none;
+}
+
+/* Shared child element styles — used inside both .gc-block and .gc-block-stack__item */
+
+.gc-block__label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+  color: var(--theme-accent);
+}
+
+.gc-block__content {
+  font-weight: 400;
+  color: var(--theme-color);
+  line-height: 1.5;
+}
+
+.gc-block__desc {
+  font-size: 0.9em;
+  color: var(--theme-color-muted);
+  line-height: 1.2;
+  margin-top: 0.45rem;
+}
+
+
+/* =============================================================================
+   2. gc-block-stack — Stacked multi-block card
+   ============================================================================= */
+
+.gc-block-stack {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--theme-border);
+  border-left: none;
+  border-radius: 12px;
+  overflow: visible;
+  background: var(--theme-surface);
+}
+
+.gc-block-stack__item {
+  position: relative;
+  flex: 1;
+  padding: 1.5rem 2rem;
+}
+
+.gc-block-stack__item::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--theme-accent);
+  pointer-events: none;
+}
+
+.gc-block-stack__item:first-child {
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  overflow: hidden;
+}
+
+.gc-block-stack__item:last-child {
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  overflow: hidden;
+}
+
+.gc-block-stack__item+.gc-block-stack__item {
+  border-top: 1px solid var(--theme-border);
+}
+
+.gc-block-stack__item+.gc-block-stack__item::before {
+  top: -1px;
+}
+
+.gc-block-stack__item:nth-child(even) {
+  background: color-mix(in srgb, var(--theme-accent-alt) 7%, var(--theme-surface));
+}
+
+.gc-block-stack__item:nth-child(even)::before {
+  background: var(--theme-accent-alt);
+}
+
+.gc-block-stack__item:nth-child(even) .gc-block__label {
+  color: var(--theme-accent-alt);
+}
+
+/* ── Modifier: formula ────────────────────────────────────────────────────── */
+/* Fluid font sizes for slides displaying typeset math (MathJax / KaTeX).    */
+
+.gc-block-stack--formula .gc-block__content {
+  font-size: clamp(1.2rem, 2.2vw, 1.55rem);
+  text-align: center;
+}
+
+.gc-block-stack--formula .gc-block__desc {
+  font-size: clamp(1.25rem, 2.5vw, 1.65rem);
+}
+
+/* ── Modifier: centered ───────────────────────────────────────────────────── */
+/* Top-border layout with centered text; accent bar replaced by top border.  */
+
+.gc-block-stack--centered .gc-block-stack__item,
+.gc-block-stack__item--centered {
+  text-align: center;
+  border-top: 4px solid var(--theme-accent);
+  box-shadow: none;
+}
+
+.gc-block-stack--centered .gc-block-stack__item::before,
+.gc-block-stack__item--centered::before {
+  display: none;
+}
+
+.gc-block-stack--centered .gc-block-stack__item:nth-child(even),
+.gc-block-stack__item--centered:nth-child(even) {
+  border-top-color: var(--theme-accent-alt);
+}
+
+.gc-block-stack--centered .gc-block-stack__item:not(:first-child):not(:nth-child(even)),
+.gc-block-stack__item--centered:not(:first-child):not(:nth-child(even)) {
+  border-top: 4px solid var(--theme-accent);
+}
+
+
+/* =============================================================================
+   3. gc-block-stack--qa — Question / Answer reveal card
+   ============================================================================= */
+
+/* ── Container override ───────────────────────────────────────────────────── */
+/* Borders live on items (not the container) so the answer border can fade in */
+/* on reveal without the container framing an empty box beforehand.           */
+
+.gc-block-stack--qa {
+  border: none;
+  overflow: visible;
+  background: transparent;
+}
+
+/* ── Question item — orange (item 1) ─────────────────────────────────────── */
+
+.gc-block-stack__item--question {
+  border: 1px solid var(--theme-border);
+  border-left: none;
+  border-bottom: none;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  background: var(--theme-surface);
+}
+
+/* border-radius on ::before clips the bar to the corner without overflow:hidden */
+.gc-block-stack__item--question::before {
+  background: var(--pos);
+  border-top-left-radius: 12px;
+}
+
+.gc-block-stack__item--question .gc-block__label {
+  color: var(--pos);
+}
+
+.gc-block-stack__item--question .gc-block__content {
+  color: var(--pos);
+  font-weight: 500;
+}
+
+/* ── Answer item — purple (item 2) ───────────────────────────────────────── */
+
+.gc-block-stack__item--answer {
+  background: color-mix(in srgb, var(--neg-a) 75%, var(--theme-surface) 25%);
+  border: 1px solid transparent;
+  border-left: none;
+  border-top: 1px solid var(--theme-border);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-0.8rem);
+  will-change: transform, opacity;
+  transition:
+    opacity 0.28s ease-out,
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.4s,
+    border-color 0.35s ease;
+}
+
+.gc-block-stack__item--answer::before {
+  background: transparent;
+  border-bottom-left-radius: 12px;
+  top: -1px;
+  /* compensate for border-top */
+  transition: background-color 0.35s ease;
+}
+
+.gc-block-stack__item--answer .gc-block__label {
+  color: var(--theme-accent-alt);
+}
+
+.gc-block-stack__item--answer .gc-block__content {
+  color: color-mix(in srgb, var(--theme-accent-alt) 52%, var(--theme-color) 48%);
+  font-weight: 400;
+}
+
+/* ── Revealed state ───────────────────────────────────────────────────────── */
+
+.gc-block-stack--revealed .gc-block-stack__item--answer {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  border-color: color-mix(in srgb, var(--theme-accent-alt) 10%, var(--theme-border) 90%);
+  transition-delay: 0s, 0s, 0s, 0s;
+}
+
+.gc-block-stack--revealed .gc-block-stack__item--answer::before {
+  background: var(--theme-accent-alt);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gc-block-stack__item--answer {
+    transition: none;
+    transform: none;
+  }
+}
