@@ -45,8 +45,6 @@
 
     .title {
       font-size: 2.6rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
     }
 
     /* Dataset switcher styles are shared in ./dataset-switcher.css */
@@ -83,8 +81,6 @@
 
     .list-label {
       font-size: 1.1rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
       color: var(--chart-label);
       text-align: center;
       flex-shrink: 0;
@@ -187,7 +183,6 @@
 
     .slot-sym {
       font-size: 1.15rem;
-      font-weight: 700;
     }
 
     .slot-score {
@@ -282,8 +277,11 @@
 
   <div class="nav-hint"><kbd>[</kbd> prev step &nbsp; next step <kbd>]</kbd></div>
 
+  <script src="../../shared/js/rough.js"></script>
   <script type="module">
     import { datasets } from './datasets.js'
+
+    const SVGNS = 'http://www.w3.org/2000/svg'
 
     const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim()
     const POS = css('--pos'), NEG = css('--neg'), CURVE = css('--theme-accent')
@@ -385,53 +383,79 @@
       drawPR(s)
     }
 
+    /** Helper: create an SVG <text> element */
+    function svgText(x, y, text, { fontSize = 15, fill = '#fff', anchor = 'middle', opacity = 1, transform = null, dy = null, fontWeight = null } = {}) {
+      const el = document.createElementNS(SVGNS, 'text')
+      el.setAttribute('x', x)
+      el.setAttribute('y', y)
+      el.setAttribute('font-size', fontSize)
+      el.setAttribute('fill', fill)
+      el.setAttribute('text-anchor', anchor)
+      if (opacity !== 1) el.setAttribute('opacity', opacity)
+      if (transform) el.setAttribute('transform', transform)
+      if (dy) el.setAttribute('dy', dy)
+      if (fontWeight) el.setAttribute('font-weight', fontWeight)
+      el.textContent = text
+      return el
+    }
+
     function drawPR(s) {
       const svg = document.getElementById('pr-svg')
       const W = svg.clientWidth, H = svg.clientHeight
       if (!W || !H) return
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
 
+      // Clear SVG
+      while (svg.firstChild) svg.removeChild(svg.firstChild)
+
+      const rc = rough.svg(svg)
+
       const ml = 80, mr = 24, mt = 24, mb = 88
       const pw = W - ml - mr, ph = H - mt - mb
       const tx = r => ml + r * pw
       const ty = p => mt + ph - p * ph
 
-      let h = ''
-
-      // Grid + tick labels
+      // Grid lines + tick labels
       for (let i = 0; i <= 5; i++) {
         const v = i / 5, gx = tx(v), gy = ty(v)
-        h += `<line x1="${gx}" y1="${mt}" x2="${gx}" y2="${mt + ph}" stroke="${CHART.grid}" stroke-width="1"/>`
-        h += `<line x1="${ml}" y1="${gy}" x2="${ml + pw}" y2="${gy}" stroke="${CHART.grid}" stroke-width="1"/>`
-        h += `<text x="${gx}" y="${mt + ph + 32}" font-size="15" fill="${CHART.tick}" text-anchor="middle">${v.toFixed(1)}</text>`
-        h += `<text x="${ml - 18}" y="${gy + 5}" font-size="15" fill="${CHART.tick}" text-anchor="end">${v.toFixed(1)}</text>`
+        // Vertical grid line
+        svg.appendChild(rc.line(gx, mt, gx, mt + ph, { stroke: CHART.grid, strokeWidth: 1, roughness: 0.6 }))
+        // Horizontal grid line
+        svg.appendChild(rc.line(ml, gy, ml + pw, gy, { stroke: CHART.grid, strokeWidth: 1, roughness: 0.6 }))
+        // X-axis tick label
+        svg.appendChild(svgText(gx, mt + ph + 32, v.toFixed(1), { fontSize: 15, fill: CHART.tick, anchor: 'middle' }))
+        // Y-axis tick label
+        svg.appendChild(svgText(ml - 18, gy + 5, v.toFixed(1), { fontSize: 15, fill: CHART.tick, anchor: 'end' }))
       }
 
       // Axes
-      h += `<line x1="${ml}" y1="${mt}" x2="${ml}" y2="${mt + ph}" stroke="${CHART.axis}" stroke-width="5"/>`
-      h += `<line x1="${ml}" y1="${mt + ph}" x2="${ml + pw}" y2="${mt + ph}" stroke="${CHART.axis}" stroke-width="5"/>`
-      h += `<text x="${ml + pw / 2}" y="${H - 8}" font-size="24" fill="${CHART.label}" text-anchor="middle">Recall</text>`
-      h += `<text x="18" y="${mt + ph / 2}" font-size="24" fill="${CHART.label}" text-anchor="middle" transform="rotate(-90,18,${mt + ph / 2})">Precision</text>`
+      svg.appendChild(rc.line(ml, mt, ml, mt + ph, { stroke: CHART.axis, strokeWidth: 3, roughness: 0.8 }))
+      svg.appendChild(rc.line(ml, mt + ph, ml + pw, mt + ph, { stroke: CHART.axis, strokeWidth: 3, roughness: 0.8 }))
+
+      // Axis labels
+      svg.appendChild(svgText(ml + pw / 2, H - 8, 'Recall', { fontSize: 24, fill: CHART.label, anchor: 'middle' }))
+      svg.appendChild(svgText(18, mt + ph / 2, 'Precision', { fontSize: 24, fill: CHART.label, anchor: 'middle', transform: `rotate(-90,18,${mt + ph / 2})` }))
 
       // Baseline: random precision = N_POS / N
-      h += `<line x1="${tx(0)}" y1="${ty(baseline)}" x2="${tx(1)}" y2="${ty(baseline)}" stroke="${CHART.ref}" stroke-width="3" stroke-dasharray="9,6"/>`
-      h += `<text x="${tx(0.82)}" y="${ty(baseline) - 9}" font-size="18" fill="${CHART.refLabel}" text-anchor="middle">Random (${baseline.toFixed(2)})</text>`
+      svg.appendChild(rc.line(tx(0), ty(baseline), tx(1), ty(baseline), { stroke: CHART.ref, strokeWidth: 2, roughness: 1, strokeLineDash: [9, 6] }))
+      svg.appendChild(svgText(tx(0.82), ty(baseline) - 9, `Random (${baseline.toFixed(2)})`, { fontSize: 18, fill: CHART.refLabel, anchor: 'middle' }))
 
       if (s > 0) {
         const pts = prPts.slice(0, s + 1)
         const last = pts[pts.length - 1]
 
         // Area fill under PR curve
-        let area = `M ${tx(0)} ${ty(0)}`
-        for (const p of pts) area += ` L ${tx(p.recall)} ${ty(p.precision)}`
-        area += ` L ${tx(last.recall)} ${ty(0)} Z`
-        h += `<path d="${area}" fill="${CHART.area}"/>`
+        let areaPath = `M ${tx(0)} ${ty(0)}`
+        for (const p of pts) areaPath += ` L ${tx(p.recall)} ${ty(p.precision)}`
+        areaPath += ` L ${tx(last.recall)} ${ty(0)} Z`
+        svg.appendChild(rc.path(areaPath, { fill: CHART.area, fillStyle: 'hachure', fillWeight: 1, hachureGap: 6, stroke: 'none', roughness: 0.8 }))
 
         // Curve segments, colored by class
         for (let i = 1; i <= s; i++) {
           const from = prPts[i - 1], to = prPts[i]
           const segCol = sorted[i - 1].label === 1 ? POS : NEG
-          h += `<path d="M ${tx(from.recall)} ${ty(from.precision)} L ${tx(to.recall)} ${ty(to.precision)}" fill="none" stroke="${segCol}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`
+          const segmentPath = `M ${tx(from.recall)} ${ty(from.precision)} L ${tx(to.recall)} ${ty(to.precision)}`
+          svg.appendChild(rc.path(segmentPath, { stroke: segCol, strokeWidth: 2.5, roughness: 0.8, fill: 'none' }))
         }
 
         // Intermediate dots (skip duplicates from vertical-only steps)
@@ -439,35 +463,33 @@
           if (i % 2 === 0 || prPts[i].recall !== prPts[i - 1].recall || prPts[i].precision !== prPts[i - 1].precision) {
             const p = prPts[i]
             const dotCol = sorted[i - 1].label === 1 ? POS : NEG
-            h += `<circle cx="${tx(p.recall)}" cy="${ty(p.precision)}" r="5" fill="${dotCol}" opacity="0.45"/>`
+            svg.appendChild(rc.circle(tx(p.recall), ty(p.precision), 10, { fill: dotCol, stroke: 'none', fillStyle: 'solid', roughness: 0.5 }))
           }
         }
 
         // Current point
         const cur = prPts[s]
         const curCol = sorted[s - 1].label === 1 ? POS : NEG
-        h += `<circle cx="${tx(cur.recall)}" cy="${ty(cur.precision)}" r="8" fill="${curCol}" stroke="${CHART.dotStroke}" stroke-width="2"/>`
+        svg.appendChild(rc.circle(tx(cur.recall), ty(cur.precision), 16, { fill: curCol, stroke: CHART.dotStroke, strokeWidth: 2, roughness: 0.5 }))
 
         // Coordinate label
         if (s < N) {
           const lx = cur.recall > 0.72 ? tx(cur.recall) - 10 : tx(cur.recall) + 10
           const ly = cur.precision > 0.88 ? ty(cur.precision) + 18 : ty(cur.precision) - 12
           const anchor = cur.recall > 0.72 ? 'end' : 'start'
-          h += `<text x="${lx}" y="${ly}" font-size="15" fill="${CURVE}" text-anchor="${anchor}" opacity="0.88">(${cur.recall.toFixed(2)}, ${cur.precision.toFixed(2)})</text>`
+          svg.appendChild(svgText(lx, ly, `(${cur.recall.toFixed(2)}, ${cur.precision.toFixed(2)})`, { fontSize: 15, fill: CURVE, anchor, opacity: 0.88 }))
         }
 
         // Final AUPRC badge
         if (s === N) {
           const cx = tx(0.5), cy = ty(0.18)
-          h += `<rect x="${cx - 120}" y="${cy - 23}" width="240" height="46" rx="8" fill="${CHART.badgeBg}" stroke="${CURVE}" stroke-width="1.8"/>`
-          h += `<text x="${cx}" y="${cy}" dy="0.35em" font-size="24" fill="${CURVE}" font-weight="700" text-anchor="middle">AUPRC = ${prPts[N].auprc.toFixed(3)}</text>`
+          svg.appendChild(rc.rectangle(cx - 120, cy - 23, 240, 46, { fill: CHART.badgeBg, stroke: CURVE, strokeWidth: 1.8, roughness: 1 }))
+          svg.appendChild(svgText(cx, cy, `AUPRC = ${prPts[N].auprc.toFixed(3)}`, { fontSize: 24, fill: CURVE, anchor: 'middle', dy: '0.35em', fontWeight: '700' }))
         }
       } else {
         // Starting dot at (0, 1)
-        h += `<circle cx="${tx(0)}" cy="${ty(1)}" r="8" fill="${CHART.dotIdle}" stroke="${CHART.dotIdle}" stroke-width="2"/>`
+        svg.appendChild(rc.circle(tx(0), ty(1), 16, { fill: CHART.dotIdle, stroke: CHART.dotIdle, strokeWidth: 2, roughness: 0.5 }))
       }
-
-      svg.innerHTML = h
     }
 
     // ── Switcher ──────────────────────────────────────────

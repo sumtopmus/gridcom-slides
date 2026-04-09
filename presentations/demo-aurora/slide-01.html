@@ -28,8 +28,6 @@
 
     .title {
       font-size: 2.6rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
     }
 
     .subtitle {
@@ -101,6 +99,7 @@
   </div>
   </div>
 
+  <script src="../../shared/js/rough.js"></script>
   <script type="module">
     import { distributions } from './datasets.js'
 
@@ -114,6 +113,9 @@
     }
     const W = 860, H = 400, ml = 50, mr = 22, mt = 22, mb = 52
     const pw = W - ml - mr, ph = H - mt - mb
+
+    const SVGNS = 'http://www.w3.org/2000/svg'
+    const FONT = "'Virgil', cursive"
 
     // Evaluate pdfFn at `steps+1` points over [0,1], normalize to max=1,
     // return closed area path and open line path as SVG strings.
@@ -129,98 +131,142 @@
       }
     }
 
+    function makeText(content, x, y, opts = {}) {
+      const el = document.createElementNS(SVGNS, 'text')
+      el.setAttribute('x', x)
+      el.setAttribute('y', y)
+      el.setAttribute('font-family', FONT)
+      el.setAttribute('font-size', opts.fontSize || '13')
+      el.setAttribute('fill', opts.fill || CHART.tick)
+      if (opts.textAnchor) el.setAttribute('text-anchor', opts.textAnchor)
+      if (opts.transform) el.setAttribute('transform', opts.transform)
+      el.textContent = content
+      return el
+    }
+
+    // Track rough.js generated groups so animateIn can reference them
+    let negAreaG, negLineG, posAreaG, posLineG
+
     function render(dist) {
+      const svg = document.getElementById('chart')
+      // Clear SVG
+      while (svg.firstChild) svg.removeChild(svg.firstChild)
+
+      const rc = rough.svg(svg)
       const posP = makePaths(dist.posPDF)
       const negP = makePaths(dist.negPDF)
-      let h = ''
 
       // Horizontal grid lines
       for (let g = 1; g <= 4; g++) {
-        const yy = (mt + ph - (g / 4) * ph).toFixed(1)
-        h += `<line x1="${ml}" y1="${yy}" x2="${W - mr}" y2="${yy}" stroke="${CHART.grid}" stroke-width="1"/>`
+        const yy = mt + ph - (g / 4) * ph
+        svg.appendChild(rc.line(ml, yy, W - mr, yy, {
+          stroke: CHART.grid,
+          strokeWidth: 1,
+          roughness: 0.8,
+        }))
       }
 
-      // Area fills — start hidden for fade-in animation
-      h += `<path id="neg-area" d="${negP.area}" fill="${NEG}" opacity="0"/>`
-      h += `<path id="pos-area" d="${posP.area}" fill="${POS}" opacity="0"/>`
+      // Area fills (hachure for Excalidraw look) — start hidden
+      negAreaG = rc.path(negP.area, {
+        stroke: 'none',
+        fill: NEG,
+        fillStyle: 'hachure',
+        fillWeight: 1.5,
+        hachureGap: 6,
+        roughness: 1,
+      })
+      negAreaG.style.opacity = '0'
+      svg.appendChild(negAreaG)
+
+      posAreaG = rc.path(posP.area, {
+        stroke: 'none',
+        fill: POS,
+        fillStyle: 'hachure',
+        fillWeight: 1.5,
+        hachureGap: 6,
+        roughness: 1,
+      })
+      posAreaG.style.opacity = '0'
+      svg.appendChild(posAreaG)
 
       // Curve strokes — start hidden
-      h += `<path id="neg-line" d="${negP.line}" fill="none" stroke="${NEG}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0"/>`
-      h += `<path id="pos-line" d="${posP.line}" fill="none" stroke="${POS}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0"/>`
+      negLineG = rc.path(negP.line, {
+        stroke: NEG,
+        strokeWidth: 2.5,
+        roughness: 1,
+        fill: 'none',
+      })
+      negLineG.style.opacity = '0'
+      svg.appendChild(negLineG)
 
-      // Axes
-      h += `<line x1="${ml}" y1="${mt}" x2="${ml}" y2="${mt + ph}" stroke="${CHART.axis}" stroke-width="1.5"/>`
-      h += `<line x1="${ml}" y1="${mt + ph}" x2="${W - mr}" y2="${mt + ph}" stroke="${CHART.axis}" stroke-width="1.5"/>`
+      posLineG = rc.path(posP.line, {
+        stroke: POS,
+        strokeWidth: 2.5,
+        roughness: 1,
+        fill: 'none',
+      })
+      posLineG.style.opacity = '0'
+      svg.appendChild(posLineG)
+
+      // Axes (slightly higher roughness for hand-drawn feel)
+      svg.appendChild(rc.line(ml, mt, ml, mt + ph, {
+        stroke: CHART.axis,
+        strokeWidth: 1.5,
+        roughness: 1.2,
+      }))
+      svg.appendChild(rc.line(ml, mt + ph, W - mr, mt + ph, {
+        stroke: CHART.axis,
+        strokeWidth: 1.5,
+        roughness: 1.2,
+      }))
 
       // X-axis labels (0.0 … 1.0)
       for (let i = 0; i <= 5; i++) {
-        const x = (ml + (i / 5) * pw).toFixed(1)
-        h += `<text x="${x}" y="${mt + ph + 20}" font-size="13" fill="${CHART.tick}" text-anchor="middle">${(i / 5).toFixed(1)}</text>`
+        const x = ml + (i / 5) * pw
+        svg.appendChild(makeText(
+          (i / 5).toFixed(1),
+          x, mt + ph + 20,
+          { textAnchor: 'middle' }
+        ))
       }
 
       // Axis labels
-      h += `<text x="${(ml + pw / 2).toFixed(1)}" y="${H - 6}" font-size="14" fill="${CHART.label}" text-anchor="middle">Classifier Score</text>`
-      h += `<text x="13" y="${(mt + ph / 2).toFixed(1)}" font-size="14" fill="${CHART.label}" text-anchor="middle" transform="rotate(-90,13,${(mt + ph / 2).toFixed(1)})">Density</text>`
+      svg.appendChild(makeText(
+        'Classifier Score',
+        ml + pw / 2, H - 6,
+        { fontSize: '14', fill: CHART.label, textAnchor: 'middle' }
+      ))
 
-      document.getElementById('chart').innerHTML = h
+      const yLabelX = 13
+      const yLabelY = mt + ph / 2
+      svg.appendChild(makeText(
+        'Density',
+        yLabelX, yLabelY,
+        { fontSize: '14', fill: CHART.label, textAnchor: 'middle', transform: `rotate(-90,${yLabelX},${yLabelY})` }
+      ))
     }
 
     function animateIn() {
-      const negLine = document.getElementById('neg-line')
-      const posLine = document.getElementById('pos-line')
-      const negArea = document.getElementById('neg-area')
-      const posArea = document.getElementById('pos-area')
-      const svg = document.getElementById('chart')
+      // Staggered fade-in: negative curve first, then positive curve
+      const DUR = '0.6s'
+      const EASE = 'ease-out'
 
-      // Clip rects reveal both line and area left-to-right by x position
-      svg.querySelectorAll('defs.draw-clip').forEach(d => d.remove())
-      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
-      defs.classList.add('draw-clip')
+      // Negative curve — area + line fade in together
+      negAreaG.style.transition = `opacity ${DUR} ${EASE}`
+      negLineG.style.transition = `opacity ${DUR} ${EASE}`
+      // Force reflow so transition triggers from opacity 0
+      negAreaG.getBoundingClientRect()
+      negAreaG.style.opacity = '0.18'
+      negLineG.style.opacity = '0.85'
 
-      function makeClip(id) {
-        const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath')
-        clip.id = id
-        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
-        rect.setAttribute('x', ml)
-        rect.setAttribute('y', mt - 10)
-        rect.setAttribute('width', '0')
-        rect.setAttribute('height', ph + 20)
-        clip.appendChild(rect)
-        defs.appendChild(clip)
-        return rect
-      }
-
-      const negRect = makeClip('neg-clip')
-      const posRect = makeClip('pos-clip')
-      svg.prepend(defs)
-
-      negLine.setAttribute('clip-path', 'url(#neg-clip)')
-      negArea.setAttribute('clip-path', 'url(#neg-clip)')
-      negLine.style.opacity = '0.85'
-      negArea.style.opacity = '0.18'
-
-      posLine.setAttribute('clip-path', 'url(#pos-clip)')
-      posArea.setAttribute('clip-path', 'url(#pos-clip)')
-      posLine.style.opacity = '0.85'
-      posArea.style.opacity = '0.18'
-
-      const DUR = 600
-
-      function drawCurve(clipRect, onDone) {
-        const start = performance.now()
-        function tick(now) {
-          const t = Math.min((now - start) / DUR, 1)
-          const e = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
-          clipRect.setAttribute('width', pw * e)
-          if (t < 1) requestAnimationFrame(tick)
-          else if (onDone) onDone()
-        }
-        requestAnimationFrame(tick)
-      }
-
-      drawCurve(negRect, () => {
-        setTimeout(() => drawCurve(posRect, null), 80)
-      })
+      // Positive curve — staggered by 200ms
+      setTimeout(() => {
+        posAreaG.style.transition = `opacity ${DUR} ${EASE}`
+        posLineG.style.transition = `opacity ${DUR} ${EASE}`
+        posAreaG.getBoundingClientRect()
+        posAreaG.style.opacity = '0.18'
+        posLineG.style.opacity = '0.85'
+      }, 200)
     }
 
     let dsIdx = 0

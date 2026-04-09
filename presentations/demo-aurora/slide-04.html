@@ -45,8 +45,6 @@
 
     .title {
       font-size: 2.6rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
     }
 
     /* Dataset switcher styles are shared in ./dataset-switcher.css */
@@ -83,8 +81,6 @@
 
     .list-label {
       font-size: 1.1rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
       color: var(--chart-label);
       text-align: center;
       flex-shrink: 0;
@@ -187,7 +183,6 @@
 
     .slot-sym {
       font-size: 1.15rem;
-      font-weight: 700;
     }
 
     .slot-score {
@@ -282,6 +277,7 @@
 
   <div class="nav-hint"><kbd>[</kbd> prev step &nbsp; next step <kbd>]</kbd></div>
 
+  <script src="../../shared/js/rough.js"></script>
   <script type="module">
     import { datasets } from './datasets.js'
 
@@ -379,79 +375,101 @@
       drawROC(s)
     }
 
+    function svgText(attrs, content) {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+      for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v)
+      el.textContent = content
+      return el
+    }
+
     function drawROC(s) {
       const svg = document.getElementById('roc-svg')
       const W = svg.clientWidth, H = svg.clientHeight
       if (!W || !H) return
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
 
+      // Clear SVG
+      while (svg.firstChild) svg.removeChild(svg.firstChild)
+
+      const rc = rough.svg(svg)
+
       const ml = 80, mr = 24, mt = 24, mb = 88
       const pw = W - ml - mr, ph = H - mt - mb
       const tx = fpr => ml + fpr * pw
       const ty = tpr => mt + ph - tpr * ph
 
-      let h = ''
-
+      // Grid lines
       for (let i = 0; i <= 5; i++) {
         const v = i / 5, gx = tx(v), gy = ty(v)
-        h += `<line x1="${gx}" y1="${mt}" x2="${gx}" y2="${mt + ph}" stroke="${CHART.grid}" stroke-width="1"/>`
-        h += `<line x1="${ml}" y1="${gy}" x2="${ml + pw}" y2="${gy}" stroke="${CHART.grid}" stroke-width="1"/>`
-        h += `<text x="${gx}" y="${mt + ph + 32}" font-size="15" fill="${CHART.tick}" text-anchor="middle">${v.toFixed(1)}</text>`
-        h += `<text x="${ml - 18}" y="${gy + 5}" font-size="15" fill="${CHART.tick}" text-anchor="end">${v.toFixed(1)}</text>`
+        svg.appendChild(rc.line(gx, mt, gx, mt + ph, { stroke: CHART.grid, strokeWidth: 1, roughness: 0.6 }))
+        svg.appendChild(rc.line(ml, gy, ml + pw, gy, { stroke: CHART.grid, strokeWidth: 1, roughness: 0.6 }))
+        svg.appendChild(svgText({ x: gx, y: mt + ph + 32, 'font-size': '15', fill: CHART.tick, 'text-anchor': 'middle' }, v.toFixed(1)))
+        svg.appendChild(svgText({ x: ml - 18, y: gy + 5, 'font-size': '15', fill: CHART.tick, 'text-anchor': 'end' }, v.toFixed(1)))
       }
 
-      h += `<line x1="${ml}" y1="${mt}" x2="${ml}" y2="${mt + ph}" stroke="${CHART.axis}" stroke-width="5"/>`
-      h += `<line x1="${ml}" y1="${mt + ph}" x2="${ml + pw}" y2="${mt + ph}" stroke="${CHART.axis}" stroke-width="5"/>`
-      h += `<text x="${ml + pw / 2}" y="${H - 8}" font-size="24" fill="${CHART.label}" text-anchor="middle">False Positive Rate (FPR)</text>`
-      h += `<text x="18" y="${mt + ph / 2}" font-size="24" fill="${CHART.label}" text-anchor="middle" transform="rotate(-90,18,${mt + ph / 2})">True Positive Rate (TPR)</text>`
+      // Axes
+      svg.appendChild(rc.line(ml, mt, ml, mt + ph, { stroke: CHART.axis, strokeWidth: 3, roughness: 0.8 }))
+      svg.appendChild(rc.line(ml, mt + ph, ml + pw, mt + ph, { stroke: CHART.axis, strokeWidth: 3, roughness: 0.8 }))
 
+      // Axis labels
+      svg.appendChild(svgText({ x: ml + pw / 2, y: H - 8, 'font-size': '24', fill: CHART.label, 'text-anchor': 'middle' }, 'False Positive Rate (FPR)'))
+      const yLabel = svgText({ x: '18', y: mt + ph / 2, 'font-size': '24', fill: CHART.label, 'text-anchor': 'middle', transform: `rotate(-90,18,${mt + ph / 2})` }, 'True Positive Rate (TPR)')
+      svg.appendChild(yLabel)
+
+      // Diagonal reference line
       const diagAngle = Math.atan2(-ph, pw) * 180 / Math.PI
-      h += `<line x1="${tx(0)}" y1="${ty(0)}" x2="${tx(1)}" y2="${ty(1)}" stroke="${CHART.ref}" stroke-width="3" stroke-dasharray="9,6"/>`
-      h += `<text x="${tx(0.66)}" y="${ty(0.62)}" font-size="18" fill="${CHART.refLabel}" text-anchor="middle" transform="rotate(${diagAngle},${tx(0.66)},${ty(0.62)})">Random (0.50)</text>`
+      svg.appendChild(rc.line(tx(0), ty(0), tx(1), ty(1), { stroke: CHART.ref, strokeWidth: 2, roughness: 1, strokeLineDash: [9, 6] }))
+      svg.appendChild(svgText({ x: tx(0.66), y: ty(0.62), 'font-size': '18', fill: CHART.refLabel, 'text-anchor': 'middle', transform: `rotate(${diagAngle},${tx(0.66)},${ty(0.62)})` }, 'Random (0.50)'))
 
       if (s > 0) {
         const pts = rocPts.slice(0, s + 1)
         const last = pts[pts.length - 1]
-        let area = `M ${tx(0)} ${ty(0)}`
-        for (const p of pts) area += ` L ${tx(p.fpr)} ${ty(p.tpr)}`
-        area += ` L ${tx(last.fpr)} ${ty(0)} Z`
-        h += `<path d="${area}" fill="${CHART.area}"/>`
 
+        // Area fill under ROC curve
+        let areaPath = `M ${tx(0)} ${ty(0)}`
+        for (const p of pts) areaPath += ` L ${tx(p.fpr)} ${ty(p.tpr)}`
+        areaPath += ` L ${tx(last.fpr)} ${ty(0)} Z`
+        svg.appendChild(rc.path(areaPath, { fill: CHART.area, fillStyle: 'hachure', fillWeight: 1, hachureGap: 6, stroke: 'none', roughness: 0.8 }))
+
+        // Colored curve segments
         for (let i = 1; i <= s; i++) {
           const from = rocPts[i - 1], to = rocPts[i]
           const segCol = sorted[i - 1].label === 1 ? POS : NEG
-          h += `<path d="M ${tx(from.fpr)} ${ty(from.tpr)} L ${tx(to.fpr)} ${ty(to.tpr)}" fill="none" stroke="${segCol}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`
+          const segmentPath = `M ${tx(from.fpr)} ${ty(from.tpr)} L ${tx(to.fpr)} ${ty(to.tpr)}`
+          svg.appendChild(rc.path(segmentPath, { stroke: segCol, strokeWidth: 2.5, roughness: 0.8, fill: 'none' }))
         }
 
+        // Intermediate dots
         for (let i = 1; i < s; i++) {
           if (i % 2 === 0 || rocPts[i].fpr !== rocPts[i - 1].fpr || rocPts[i].tpr !== rocPts[i - 1].tpr) {
             const p = rocPts[i]
             const dotCol = sorted[i - 1].label === 1 ? POS : NEG
-            h += `<circle cx="${tx(p.fpr)}" cy="${ty(p.tpr)}" r="5" fill="${dotCol}" opacity="0.45"/>`
+            svg.appendChild(rc.circle(tx(p.fpr), ty(p.tpr), 10, { fill: dotCol, stroke: 'none', fillStyle: 'solid', roughness: 0.5 }))
           }
         }
 
+        // Current point dot
         const cur = rocPts[s]
         const curCol = sorted[s - 1].label === 1 ? POS : NEG
-        h += `<circle cx="${tx(cur.fpr)}" cy="${ty(cur.tpr)}" r="8" fill="${curCol}" stroke="${CHART.dotStroke}" stroke-width="2"/>`
+        svg.appendChild(rc.circle(tx(cur.fpr), ty(cur.tpr), 16, { fill: curCol, stroke: CHART.dotStroke, strokeWidth: 2, roughness: 0.5 }))
 
+        // Coordinate label
         if (s < N) {
           const lx = cur.fpr > 0.72 ? tx(cur.fpr) - 10 : tx(cur.fpr) + 10
           const ly = cur.tpr > 0.88 ? ty(cur.tpr) + 18 : ty(cur.tpr) - 12
           const anchor = cur.fpr > 0.72 ? 'end' : 'start'
-          h += `<text x="${lx}" y="${ly}" font-size="15" fill="${CURVE}" text-anchor="${anchor}" opacity="0.88">(${cur.fpr.toFixed(2)}, ${cur.tpr.toFixed(2)})</text>`
+          svg.appendChild(svgText({ x: lx, y: ly, 'font-size': '15', fill: CURVE, 'text-anchor': anchor, opacity: '0.88' }, `(${cur.fpr.toFixed(2)}, ${cur.tpr.toFixed(2)})`))
         }
 
+        // Final AUROC badge
         if (s === N) {
           const cx = tx(0.5), cy = ty(0.2)
-          h += `<rect x="${cx - 110}" y="${cy - 23}" width="220" height="46" rx="8" fill="${CHART.badgeBg}" stroke="${CURVE}" stroke-width="1.8"/>`
-          h += `<text x="${cx}" y="${cy}" dy="0.35em" font-size="24" fill="${CURVE}" font-weight="700" text-anchor="middle">AUROC = ${rocPts[N].auroc.toFixed(3)}</text>`
+          svg.appendChild(rc.rectangle(cx - 110, cy - 23, 220, 46, { fill: CHART.badgeBg, stroke: CURVE, strokeWidth: 1.8, roughness: 1 }))
+          svg.appendChild(svgText({ x: cx, y: cy, dy: '0.35em', 'font-size': '24', fill: CURVE, 'font-weight': '700', 'text-anchor': 'middle' }, `AUROC = ${rocPts[N].auroc.toFixed(3)}`))
         }
       } else {
-        h += `<circle cx="${tx(0)}" cy="${ty(0)}" r="8" fill="${CHART.dotIdle}" stroke="${CHART.dotIdle}" stroke-width="2"/>`
+        svg.appendChild(rc.circle(tx(0), ty(0), 16, { fill: CHART.dotIdle, stroke: CHART.dotIdle, strokeWidth: 2, roughness: 0.5 }))
       }
-
-      svg.innerHTML = h
     }
 
     // ── Switcher ──────────────────────────────────────────
