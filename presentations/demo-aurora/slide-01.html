@@ -9,14 +9,6 @@
   <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
   <link rel="stylesheet" href="./dataset-switcher.css" />
   <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     .content {
       display: flex;
       flex-direction: column;
@@ -238,14 +230,12 @@
       }, 200)
     }
 
-    let dsIdx = 0
     const swBtns = document.querySelectorAll('.ds-btn')
     const ind = document.querySelector('.ds-indicator')
     const posLabel = document.getElementById('pos-label')
     const negLabel = document.getElementById('neg-label')
 
     function applyIdx(idx, animate = false) {
-      dsIdx = idx
       localStorage.setItem('auroc_dsIdx', idx)
       swBtns.forEach(b => b.classList.toggle('active', +b.dataset.idx === idx))
       ind.style.transition = animate ? 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1)' : 'none'

@@ -9,21 +9,12 @@
   <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
   <link rel="stylesheet" href="./dataset-switcher.css" />
   <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     :root {
       --item-h: 58px;
     }
 
     body {
       overflow: hidden;
-      color: var(--theme-color);
     }
 
     /* ── Header row ── */
@@ -456,7 +447,7 @@
         if (s === N) {
           const cx = tx(0.5), cy = ty(0.2)
           svg.appendChild(rc.rectangle(cx - 110, cy - 23, 220, 46, { fill: CHART.badgeBg, stroke: CURVE, strokeWidth: 1.8, roughness: 1 }))
-          svg.appendChild(svgText(cx, cy, `AUROC = ${rocPts[N].auroc.toFixed(3)}`, { fontSize: 24, fill: CURVE, fontWeight: '700', dy: '0.35em' }))
+          svg.appendChild(svgText(cx, cy, `AUROC = ${rocPts[N].auroc.toFixed(3)}`, { fontSize: 24, fill: CURVE, dy: '0.35em' }))
         }
       } else {
         svg.appendChild(rc.circle(tx(0), ty(0), 16, { fill: CHART.dotIdle, stroke: CHART.dotIdle, strokeWidth: 2, roughness: 0.5 }))
