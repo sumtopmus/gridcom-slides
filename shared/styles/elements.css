@@ -1,0 +1,264 @@
+/*
+ * GRIDCOM — Shared slide elements
+ *
+ * Basic building blocks for slide content. All elements use theme
+ * design tokens (--theme-*) and work with any theme.
+ *
+ * Link after your theme + slide-grid:
+ *   <link rel="stylesheet" href="../../shared/styles/elements.css" />
+ *
+ * ─────────────────────────────────────────────────────────────────
+ * Elements in this file
+ * ─────────────────────────────────────────────────────────────────
+ *
+ *  TEXT
+ *   .gc-slide-title     — centered heading at top of a slide
+ *   .gc-eyebrow         — small uppercase label above a heading
+ *   .gc-subtitle        — muted descriptive text below a heading
+ *   .gc-tag             — small inline category/section label
+ *   .gc-text            — default body text styling
+ *
+ *  LAYOUT
+ *   .gc-divider         — horizontal accent line separator
+ *   .gc-meta            — meta information row (author, date, etc.)
+ *   .gc-meta__item      — single meta entry with optional icon
+ *
+ *  DATA VIZ
+ *   .gc-legend          — chart/data legend container
+ *   .gc-legend__item    — legend entry (swatch + label)
+ *   .gc-legend__swatch  — color swatch box
+ *   .gc-stat            — metric badge (label + value)
+ *   .gc-stat__label     — stat metric name (small, uppercase)
+ *   .gc-stat__value     — stat metric value (large, tabular)
+ *
+ *  CANVAS
+ *   .gc-canvas          — responsive canvas for rough.js charts
+ *   .gc-canvas--fixed   — fixed-size canvas (e.g. 860×400)
+ *
+ *  NAVIGATION
+ *   .gc-nav-hint        — step navigation hint (bottom-right)
+ *
+ * ─────────────────────────────────────────────────────────────────
+ * Design tokens used (set by the active theme)
+ * ─────────────────────────────────────────────────────────────────
+ *   --theme-bg, --theme-color, --theme-color-secondary,
+ *   --theme-color-muted, --theme-accent, --theme-accent-alt,
+ *   --theme-surface, --theme-border
+ */
+
+
+/* =============================================================================
+   TEXT ELEMENTS
+   ============================================================================= */
+
+/* ── Slide title ─────────────────────────────────────────────────────────── */
+/* Centered heading for content slides. Use on <h2> or <div>.               */
+
+.gc-slide-title {
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-align: center;
+  color: var(--theme-color);
+  margin: 0;
+}
+
+/* ── Eyebrow ─────────────────────────────────────────────────────────────── */
+/* Small uppercase label above a heading (category, topic area).            */
+
+.gc-eyebrow {
+  font-size: clamp(0.65rem, 1.1vw, 0.85rem);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--theme-accent);
+}
+
+/* ── Subtitle / description ──────────────────────────────────────────────── */
+/* Muted text below headings or as secondary descriptions.                  */
+
+.gc-subtitle {
+  font-size: clamp(0.9rem, 1.8vw, 1.15rem);
+  color: var(--theme-color-muted);
+  line-height: 1.6;
+}
+
+/* ── Tag ─────────────────────────────────────────────────────────────────── */
+/* Small inline label (e.g. "Sweep threshold from high → low").             */
+
+.gc-tag {
+  font-size: clamp(0.8rem, 1.05vw, 1rem);
+  color: var(--theme-color-muted);
+}
+
+/* ── Body text ───────────────────────────────────────────────────────────── */
+/* Default paragraph styling for readable body text.                        */
+
+.gc-text {
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  color: var(--theme-color-secondary);
+  line-height: 1.6;
+}
+
+
+/* =============================================================================
+   LAYOUT ELEMENTS
+   ============================================================================= */
+
+/* ── Divider ─────────────────────────────────────────────────────────────── */
+/* Horizontal accent line, typically between heading and content.            */
+
+.gc-divider {
+  width: 8vw;
+  max-width: 120px;
+  height: 2px;
+  background: var(--theme-accent);
+  border: none;
+  border-radius: 1px;
+  margin: 2rem auto;
+}
+
+/* ── Meta row ────────────────────────────────────────────────────────────── */
+/* Horizontal row of metadata items (author, date, links).                  */
+
+.gc-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  font-size: clamp(0.85rem, 1.4vw, 1.05rem);
+  color: var(--theme-color-muted);
+}
+
+.gc-meta__item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.gc-meta__item svg {
+  width: 1.2em;
+  height: 1.2em;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.gc-meta__sep {
+  color: var(--theme-border);
+}
+
+.gc-meta a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.gc-meta a:hover {
+  color: var(--theme-accent);
+}
+
+
+/* =============================================================================
+   DATA VISUALIZATION ELEMENTS
+   ============================================================================= */
+
+/* ── Legend ───────────────────────────────────────────────────────────────── */
+/* Horizontal legend for charts. Place below the chart canvas.              */
+
+.gc-legend {
+  display: flex;
+  gap: 2.4rem;
+  align-items: center;
+  font-size: 1rem;
+  color: var(--theme-color-muted);
+}
+
+.gc-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.gc-legend__swatch {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ── Stat badge ──────────────────────────────────────────────────────────── */
+/* Small metric card showing a label and value. Group in a flex row.        */
+
+.gc-stat {
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 8px;
+  padding: 0.38rem 0.8rem;
+  min-width: 6rem;
+}
+
+.gc-stat__label {
+  font-size: 0.58rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--theme-color-muted);
+  margin-bottom: 0.1rem;
+}
+
+.gc-stat__value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* =============================================================================
+   CANVAS
+   ============================================================================= */
+
+/* ── Responsive canvas ───────────────────────────────────────────────────── */
+/* For rough.js / chart canvases that scale with the viewport.              */
+/* Set width via CSS (e.g. clamp()) and aspect-ratio for proportions.       */
+
+.gc-canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+}
+
+/* ── Fixed-size canvas ───────────────────────────────────────────────────── */
+/* Canvas with explicit pixel dimensions (use style="width:Npx;height:Npx") */
+
+.gc-canvas--fixed {
+  display: block;
+  flex-shrink: 0;
+}
+
+
+/* =============================================================================
+   NAVIGATION
+   ============================================================================= */
+
+/* ── Step navigation hint ────────────────────────────────────────────────── */
+/* Small hint in bottom-right showing [ ] step keys for step-based slides.  */
+
+.gc-nav-hint {
+  position: fixed;
+  bottom: 4.8rem;
+  right: 2.8rem;
+  font-size: 0.7rem;
+  color: var(--theme-color-muted);
+  opacity: 0.7;
+  z-index: 100;
+  letter-spacing: 0.03em;
+}
+
+.gc-nav-hint kbd {
+  font-family: inherit;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 4px;
+  padding: 0.1rem 0.42rem;
+  font-size: 0.64rem;
+}

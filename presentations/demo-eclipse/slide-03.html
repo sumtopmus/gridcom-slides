@@ -7,6 +7,7 @@
   <title>AUROC — Scores</title>
   <link rel="stylesheet" href="../../themes/eclipse.css" />
   <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
+  <link rel="stylesheet" href="../../shared/styles/elements.css" />
   <link rel="stylesheet" href="./dataset-switcher.css" />
   <style>
     *,
@@ -40,21 +41,9 @@
       transform-origin: top center;
     }
 
-    .title {
-      font-size: clamp(2rem, 2.6vw, 2.6rem);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-    }
-
-    .subtitle {
-      font-size: clamp(0.88rem, 1.2vw, 1.05rem);
-      color: var(--theme-color-muted);
-      margin-top: 0.35rem;
-    }
-
-    .header {
-      text-align: center;
-    }
+    .gc-slide-title { font-size: clamp(2rem, 2.6vw, 2.6rem); }
+    .gc-subtitle { font-size: clamp(0.88rem, 1.2vw, 1.05rem); margin-top: 0.35rem; }
+    .header { text-align: center; }
 
     .tables {
       display: flex;
@@ -124,8 +113,8 @@
   <div class="content-frame">
     <div class="content" id="content">
     <div class="header">
-      <div class="title">Classifier Scores</div>
-      <div class="subtitle">All 100 samples ranked by score — higher score = model is more confident the sample is
+      <div class="gc-slide-title">Classifier Scores</div>
+      <div class="gc-subtitle">All 100 samples ranked by score — higher score = model is more confident the sample is
         positive</div>
     </div>
     <div class="tables" id="tables"></div>

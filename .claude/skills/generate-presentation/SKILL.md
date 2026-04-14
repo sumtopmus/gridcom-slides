@@ -75,11 +75,31 @@ Every slide must be a complete <!DOCTYPE html> document.
 STRUCTURE (required in every slide):
 - <link rel="stylesheet" href="../../themes/<theme>.css" /> in <head>
 - <link rel="stylesheet" href="../../shared/styles/slide-grid.css" /> after the theme link
+- <link rel="stylesheet" href="../../shared/styles/elements.css" /> after slide-grid
 - <div class="bg"></div> and <div class="grid-lines"></div> as the FIRST TWO children of <body>
 - Use .gc-grid for all content layout (see CLAUDE.md Slide Grid Layout section)
 - Every content wrapper: position: relative; z-index: 1
 - Never hardcode colors — use CSS variables only
-- Never override font-family — themes provide the Virgil handwriting font
+- Never override font-family — themes provide the font
+
+SHARED ELEMENT CLASSES (from elements.css — use instead of ad-hoc CSS):
+Text:
+- .gc-slide-title — centered slide heading (h2). Override font-size if needed.
+- .gc-eyebrow — small uppercase label above headings (accent color)
+- .gc-subtitle — muted description text below headings
+- .gc-tag — small inline category/section label
+- .gc-text — default body text styling
+Layout:
+- .gc-divider — horizontal accent line separator
+- .gc-meta / .gc-meta__item / .gc-meta__sep — meta row (author, date)
+Data viz:
+- .gc-legend / .gc-legend__item / .gc-legend__swatch — chart legend
+- .gc-stat / .gc-stat__label / .gc-stat__value — metric badge
+Canvas:
+- .gc-canvas — responsive canvas (100% width, 16:9 aspect)
+- .gc-canvas--fixed — fixed-size canvas (set width/height via style)
+Navigation:
+- .gc-nav-hint — step navigation hint (bottom-right corner)
 - Always handle devMode in the slide script:
     if (e.data?.type === 'devMode') {
       document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)

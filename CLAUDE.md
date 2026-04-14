@@ -268,6 +268,182 @@ Every slide should be structured using one or more `.gc-grid` layers (from `shar
 
 Grid children have `pointer-events: auto` and `min-width/height: 0` set automatically.
 
+## Slide Elements (`shared/styles/elements.css`)
+
+Reusable building blocks for slide content. Link after your theme + slide-grid:
+
+```html
+<link rel="stylesheet" href="../../shared/styles/elements.css" />
+```
+
+All elements use `--theme-*` tokens and work with every theme.
+
+### Text elements
+
+| Class | Element | Purpose |
+| ----- | ------- | ------- |
+| `.gc-slide-title` | `<h2>` or `<div>` | Centered slide heading (700 weight, clamp 1.5–2.4rem) |
+| `.gc-eyebrow` | `<p>` or `<span>` | Small uppercase label above a heading (accent color, 0.2em tracking) |
+| `.gc-subtitle` | `<p>` or `<div>` | Muted descriptive text below headings |
+| `.gc-tag` | `<div>` or `<span>` | Small inline section/category label (muted) |
+| `.gc-text` | `<p>` | Default body text (secondary color, 1.6 line-height) |
+
+```html
+<p class="gc-eyebrow">Category · Subcategory</p>
+<h2 class="gc-slide-title">Slide Heading</h2>
+<p class="gc-subtitle">A short description below the heading.</p>
+```
+
+Override `font-size` on `.gc-slide-title` when the shared default doesn't fit (e.g. title slides use 10vw).
+
+### Layout elements
+
+| Class | Purpose |
+| ----- | ------- |
+| `.gc-divider` | Horizontal accent line (2px, `--theme-accent`, centered, 8vw wide) |
+| `.gc-meta` | Meta row (flex, centered, muted — author, date, links) |
+| `.gc-meta__item` | Single meta entry with optional SVG icon |
+| `.gc-meta__sep` | Dot/separator between meta items |
+
+```html
+<div class="gc-divider"></div>
+<div class="gc-meta">
+  <span class="gc-meta__item"><svg>…</svg> <a href="…">author</a></span>
+  <span class="gc-meta__sep">·</span>
+  <span class="gc-meta__item"><svg>…</svg> Jan 1, 2026</span>
+</div>
+```
+
+### Data visualization elements
+
+| Class | Purpose |
+| ----- | ------- |
+| `.gc-legend` | Horizontal chart legend container |
+| `.gc-legend__item` | Legend entry (swatch + label, flex row) |
+| `.gc-legend__swatch` | 15×15px color swatch (set `background` via inline style) |
+| `.gc-stat` | Metric badge card (`--theme-surface` bg, border, 8px radius) |
+| `.gc-stat__label` | Stat label (tiny uppercase, muted) |
+| `.gc-stat__value` | Stat value (tabular-nums, 600 weight) |
+
+```html
+<div class="gc-legend">
+  <div class="gc-legend__item">
+    <div class="gc-legend__swatch" style="background:var(--pos)"></div>
+    <span>Positives</span>
+  </div>
+</div>
+
+<div class="gc-stat">
+  <div class="gc-stat__label">AUROC</div>
+  <div class="gc-stat__value" style="color:var(--theme-accent)">0.873</div>
+</div>
+```
+
+### Canvas for plotting
+
+| Class | Purpose |
+| ----- | ------- |
+| `.gc-canvas` | Responsive canvas (width 100%, aspect-ratio 16/9) |
+| `.gc-canvas--fixed` | Fixed-size canvas (set explicit `width`/`height` via style) |
+
+Use with the `setupCanvas` HiDPI pattern and `rough.canvas()`:
+
+```html
+<canvas id="chart" class="gc-canvas"></canvas>
+<!-- or fixed: -->
+<canvas id="chart" class="gc-canvas--fixed" style="width:860px;height:400px"></canvas>
+```
+
+```js
+function setupCanvas(canvas) {
+  const dpr = window.devicePixelRatio || 1
+  const w = canvas.clientWidth, h = canvas.clientHeight
+  canvas.width = w * dpr; canvas.height = h * dpr
+  const ctx = canvas.getContext('2d')
+  ctx.scale(dpr, dpr)
+  return { ctx, w, h }
+}
+```
+
+For text on canvas, use `canvasText()` from `shared/js/canvas-text.js` (reads font from theme automatically).
+
+### Block components (`shared/styles/blocks.css`)
+
+| Class | Purpose |
+| ----- | ------- |
+| `.gc-block` | Single standalone block with left accent bar |
+| `.gc-block__label` | Eyebrow label inside a block |
+| `.gc-block__content` | Main content area of a block |
+| `.gc-block__desc` | Optional muted description |
+| `.gc-block-stack` | Multi-block stacked card (dividers between items) |
+| `.gc-block-stack__item` | Individual item in a stack |
+| `.gc-block-stack--formula` | Modifier: fluid math font sizes |
+| `.gc-block-stack--centered` | Modifier: top-border layout, centered |
+| `.gc-block-stack--qa` | Q&A variant: question + answer reveal |
+| `.gc-block-stack__item--question` | Question item (orange/`--pos` accent) |
+| `.gc-block-stack__item--answer` | Answer item (hidden until revealed) |
+| `.gc-block-stack--revealed` | Add to container to reveal the answer |
+
+```html
+<link rel="stylesheet" href="../../shared/styles/blocks.css" />
+
+<!-- Single block -->
+<div class="gc-block">
+  <span class="gc-block__label">Definition</span>
+  <div class="gc-block__content">Main text content</div>
+  <div class="gc-block__desc">Optional description</div>
+</div>
+
+<!-- Stacked blocks -->
+<div class="gc-block-stack">
+  <div class="gc-block-stack__item">
+    <span class="gc-block__label">Label</span>
+    <div class="gc-block__content">Content</div>
+  </div>
+  <div class="gc-block-stack__item">…</div>
+</div>
+
+<!-- Q&A block -->
+<div class="gc-block-stack gc-block-stack--qa" id="qa">
+  <div class="gc-block-stack__item gc-block-stack__item--question">
+    <span class="gc-block__label">Question</span>
+    <p class="gc-block__content">What is…?</p>
+  </div>
+  <div class="gc-block-stack__item gc-block-stack__item--answer" aria-hidden="true">
+    <span class="gc-block__label">Answer</span>
+    <p class="gc-block__content">It is…</p>
+  </div>
+</div>
+```
+
+### Step reveal (`shared/styles/step-reveal.css`)
+
+| Class | Purpose |
+| ----- | ------- |
+| `.gc-step-item` | Hidden block that reserves layout space (no reflow on reveal) |
+| `.gc-step-item--visible` | Add to reveal the block (drop-in from above) |
+
+### Navigation hint
+
+| Class | Purpose |
+| ----- | ------- |
+| `.gc-nav-hint` | Fixed bottom-right hint for step-based slides |
+
+```html
+<div class="gc-nav-hint"><kbd>[</kbd> prev step &nbsp; next step <kbd>]</kbd></div>
+```
+
+### Typical link order in a slide
+
+```html
+<link rel="stylesheet" href="../../themes/aurora.css" />
+<link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
+<link rel="stylesheet" href="../../shared/styles/elements.css" />
+<!-- optional: -->
+<link rel="stylesheet" href="../../shared/styles/blocks.css" />
+<link rel="stylesheet" href="../../shared/styles/step-reveal.css" />
+```
+
 ## Dev Mode
 
 A **Dev Mode** toggle is available on both the homepage and the viewer via the grid-inspect button (bottom-right, next to the `?` help button). In Dev Mode:
@@ -464,7 +640,9 @@ Use block-based reveal patterns when the message has clear beats (question → a
 | `themes/eclipse.css` | Eclipse slide theme — light gradient, Inter font |
 | `themes/rough.css` | Rough slide theme — dark gradient, Virgil handwriting font |
 | `shared/styles/slide-grid.css` | `.gc-grid` layout + dev mode red outline visualization |
-| `shared/styles/` | Shared slide component styles (e.g. audience question block) |
+| `shared/styles/elements.css` | Shared slide elements: titles, legends, stats, canvas, nav hints |
+| `shared/styles/blocks.css` | Block components: `.gc-block`, `.gc-block-stack`, Q&A blocks |
+| `shared/styles/step-reveal.css` | `.gc-step-item` progressive reveal without layout shift |
 | `shared/fonts/Virgil.woff2` | Excalidraw handwriting font (loaded by themes via `@font-face`) |
 | `shared/js/rough.js` | rough.js library for sketchy hand-drawn SVG/canvas graphics |
 | `shared/js/canvas-text.js` | `canvasText(ctx, x, y, text, opts)` — Virgil text on canvas (preferred) |

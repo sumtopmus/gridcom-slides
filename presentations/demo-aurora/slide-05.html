@@ -7,6 +7,7 @@
   <title>AUROC — PR Curve</title>
   <link rel="stylesheet" href="../../themes/aurora.css" />
   <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
+  <link rel="stylesheet" href="../../shared/styles/elements.css" />
   <link rel="stylesheet" href="./dataset-switcher.css" />
   <style>
     :root {
@@ -28,17 +29,8 @@
       text-align: center;
     }
 
-    .tag {
-      font-size: 1.05rem;
-      color: var(--theme-color-muted);
-      margin-bottom: 0.35rem;
-    }
-
-    .title {
-      font-size: 2.6rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-    }
+    .gc-tag { margin-bottom: 0.35rem; }
+    .gc-slide-title { font-size: 2.6rem; }
 
     /* Dataset switcher styles are shared in ./dataset-switcher.css */
 
@@ -47,28 +39,6 @@
       gap: 0.7rem;
       align-items: center;
       justify-content: flex-end;
-    }
-
-    .stat {
-      background: var(--theme-surface);
-      border: 1px solid var(--theme-border);
-      border-radius: 8px;
-      padding: 0.38rem 0.8rem;
-      min-width: 6rem;
-    }
-
-    .stat-label {
-      font-size: 0.58rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--theme-color-muted);
-      margin-bottom: 0.1rem;
-    }
-
-    .stat-value {
-      font-size: 0.95rem;
-      font-weight: 600;
-      font-variant-numeric: tabular-nums;
     }
 
 
@@ -209,26 +179,6 @@
       overflow: visible;
     }
 
-    /* ── Nav hint ── */
-    .nav-hint {
-      position: fixed;
-      bottom: 4.8rem;
-      right: 2.8rem;
-      font-size: 0.7rem;
-      color: var(--theme-color-muted);
-      opacity: 0.7;
-      z-index: 100;
-      letter-spacing: 0.03em;
-    }
-
-    .nav-hint kbd {
-      font-family: inherit;
-      background: var(--theme-surface);
-      border: 1px solid var(--theme-border);
-      border-radius: 4px;
-      padding: 0.1rem 0.42rem;
-      font-size: 0.64rem;
-    }
   </style>
 </head>
 
@@ -252,8 +202,8 @@
     style="--gc-cols: max-content auto 1fr; --gc-rows: auto auto 1fr; --gc-padding: 1.5rem clamp(4rem, 10vw, 9rem) 2.2rem clamp(7rem, 16vw, 15rem); --gc-gap: 0.9rem clamp(1.2rem, 3vw, 2.6rem)">
     <div class="top" style="grid-column: 1 / 4; grid-row: 1">
       <div class="top-title">
-        <div class="tag">Sweep threshold from high → low</div>
-        <div class="title">PR Curve Construction</div>
+        <div class="gc-tag">Sweep threshold from high → low</div>
+        <div class="gc-slide-title">PR Curve Construction</div>
       </div>
     </div>
     <div class="stats" id="stats" style="grid-column: 2; grid-row: 2"></div>
@@ -271,7 +221,7 @@
     </div>
   </div>
 
-  <div class="nav-hint"><kbd>[</kbd> prev step &nbsp; next step <kbd>]</kbd></div>
+  <div class="gc-nav-hint"><kbd>[</kbd> prev step &nbsp; next step <kbd>]</kbd></div>
 
   <script src="../../shared/js/rough.js"></script>
   <script src="../../shared/js/canvas-text.js"></script>
@@ -369,10 +319,10 @@
 
       const pt = prPts[s]
       document.getElementById('stats').innerHTML = `
-        <div class="stat"><div class="stat-label">Step</div><div class="stat-value">${s}&thinsp;/&thinsp;${N}</div></div>
-        <div class="stat"><div class="stat-label">Recall</div><div class="stat-value" style="color:${POS}">${pt.recall.toFixed(2)}</div></div>
-        <div class="stat"><div class="stat-label">Precision</div><div class="stat-value" style="color:${NEG}">${s === 0 ? '—' : pt.precision.toFixed(2)}</div></div>
-        <div class="stat"><div class="stat-label">AUPRC</div><div class="stat-value" style="color:${CURVE}">${s === 0 ? '—' : pt.auprc.toFixed(3)}</div></div>
+        <div class="gc-stat"><div class="gc-stat__label">Step</div><div class="gc-stat__value">${s}&thinsp;/&thinsp;${N}</div></div>
+        <div class="gc-stat"><div class="gc-stat__label">Recall</div><div class="gc-stat__value" style="color:${POS}">${pt.recall.toFixed(2)}</div></div>
+        <div class="gc-stat"><div class="gc-stat__label">Precision</div><div class="gc-stat__value" style="color:${NEG}">${s === 0 ? '—' : pt.precision.toFixed(2)}</div></div>
+        <div class="gc-stat"><div class="gc-stat__label">AUPRC</div><div class="gc-stat__value" style="color:${CURVE}">${s === 0 ? '—' : pt.auprc.toFixed(3)}</div></div>
       `
 
       drawPR(s)

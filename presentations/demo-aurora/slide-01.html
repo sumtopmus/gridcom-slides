@@ -7,6 +7,7 @@
   <title>AUROC — Distribution</title>
   <link rel="stylesheet" href="../../themes/aurora.css" />
   <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
+  <link rel="stylesheet" href="../../shared/styles/elements.css" />
   <link rel="stylesheet" href="./dataset-switcher.css" />
   <style>
     .content {
@@ -18,41 +19,9 @@
       padding: 2.5rem;
     }
 
-    .title {
-      font-size: 2.6rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-    }
-
-    .subtitle {
-      font-size: 1.1rem;
-      color: var(--theme-color-muted);
-      margin-top: 0.4rem;
-    }
-
-    .header {
-      text-align: center;
-    }
-
-    .legend {
-      display: flex;
-      gap: 2.4rem;
-      align-items: center;
-      font-size: 1rem;
-      color: var(--theme-color-muted);
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-
-    .legend-swatch {
-      width: 15px;
-      height: 15px;
-      border-radius: 3px;
-    }
+    .gc-slide-title { font-size: 2.6rem; }
+    .gc-subtitle { margin-top: 0.4rem; }
+    .header { text-align: center; }
 
     /* Dataset switcher styles are shared in ./dataset-switcher.css */
   </style>
@@ -76,17 +45,17 @@
   <div class="gc-grid">
   <div class="content">
     <div class="header">
-      <div class="title">Score Distribution</div>
-      <div class="subtitle">How positive and negative scores are distributed across the [0, 1] range</div>
+      <div class="gc-slide-title">Score Distribution</div>
+      <div class="gc-subtitle">How positive and negative scores are distributed across the [0, 1] range</div>
     </div>
-    <canvas id="chart" style="width:860px;height:400px;flex-shrink:0"></canvas>
-    <div class="legend">
-      <div class="legend-item">
-        <div class="legend-swatch" style="background:var(--pos)"></div>
+    <canvas id="chart" class="gc-canvas--fixed" style="width:860px;height:400px"></canvas>
+    <div class="gc-legend">
+      <div class="gc-legend__item">
+        <div class="gc-legend__swatch" style="background:var(--pos)"></div>
         <span id="pos-label">Positives (50 samples)</span>
       </div>
-      <div class="legend-item">
-        <div class="legend-swatch" style="background:var(--neg)"></div>
+      <div class="gc-legend__item">
+        <div class="gc-legend__swatch" style="background:var(--neg)"></div>
         <span id="neg-label">Negatives (50 samples)</span>
       </div>
     </div>

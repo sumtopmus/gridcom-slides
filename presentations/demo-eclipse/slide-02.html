@@ -7,6 +7,7 @@
   <title>AUROC — Dataset</title>
   <link rel="stylesheet" href="../../themes/eclipse.css" />
   <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
+  <link rel="stylesheet" href="../../shared/styles/elements.css" />
   <link rel="stylesheet" href="./dataset-switcher.css" />
   <style>
     *,
@@ -26,21 +27,9 @@
       padding: 2rem 2.5rem;
     }
 
-    .title {
-      font-size: 2.6rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-    }
-
-    .subtitle {
-      font-size: 1.05rem;
-      color: var(--theme-color-muted);
-      margin-top: 0.35rem;
-    }
-
-    .header {
-      text-align: center;
-    }
+    .gc-slide-title { font-size: 2.6rem; }
+    .gc-subtitle { margin-top: 0.35rem; }
+    .header { text-align: center; }
 
     .grid {
       display: grid;
@@ -99,19 +88,7 @@
       opacity: 1;
     }
 
-    .legend {
-      display: flex;
-      gap: 2.5rem;
-      align-items: center;
-      font-size: 1rem;
-      color: var(--theme-color-muted);
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
+    .gc-legend { gap: 2.5rem; }
 
     .legend-sym {
       width: 22px;
@@ -147,16 +124,16 @@
   <div class="gc-grid">
   <div class="content">
     <div class="header">
-      <div class="title">The Datasets</div>
-      <div class="subtitle">100 labeled samples — the classifier has assigned each a score ∈ [0, 1]</div>
+      <div class="gc-slide-title">The Datasets</div>
+      <div class="gc-subtitle">100 labeled samples — the classifier has assigned each a score ∈ [0, 1]</div>
     </div>
     <div class="grid" id="grid"></div>
-    <div class="legend">
-      <div class="legend-item">
+    <div class="gc-legend">
+      <div class="gc-legend__item">
         <div class="legend-sym" style="border-color:var(--pos);color:var(--pos)">●</div>
         <span>Positive class (50 samples)</span>
       </div>
-      <div class="legend-item">
+      <div class="gc-legend__item">
         <div class="legend-sym" style="border-color:var(--neg);color:var(--neg)">×</div>
         <span>Negative class (50 samples)</span>
       </div>

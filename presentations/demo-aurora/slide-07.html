@@ -6,6 +6,7 @@
   <title>Block Stack — demo</title>
   <link rel="stylesheet" href="../../themes/aurora.css" />
   <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
+  <link rel="stylesheet" href="../../shared/styles/elements.css" />
   <link rel="stylesheet" href="../../shared/styles/blocks.css" />
   <style>
     .content {
@@ -17,13 +18,7 @@
       padding: 3rem 12vw;
     }
 
-    .slide-title {
-      font-size: clamp(1.6rem, 2.8vw, 2.4rem);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      text-align: center;
-      color: var(--theme-color);
-    }
+    .gc-slide-title { font-size: clamp(1.6rem, 2.8vw, 2.4rem); }
   </style>
 </head>
 <body>
@@ -32,7 +27,7 @@
 
   <div class="gc-grid">
     <div class="content">
-      <div class="slide-title">Block Stack</div>
+      <div class="gc-slide-title">Block Stack</div>
 
       <div class="gc-block-stack">
         <div class="gc-block-stack__item">

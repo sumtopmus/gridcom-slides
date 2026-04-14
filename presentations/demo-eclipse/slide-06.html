@@ -6,6 +6,7 @@
   <title>Audience question — demo</title>
   <link rel="stylesheet" href="../../themes/eclipse.css" />
   <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
+  <link rel="stylesheet" href="../../shared/styles/elements.css" />
   <link rel="stylesheet" href="../../shared/styles/blocks.css" />
   <style>
 
@@ -16,24 +17,6 @@
       padding: 3rem;
     }
 
-    .nav-hint {
-      position: fixed;
-      bottom: 2.5rem;
-      right: 2rem;
-      font-size: 0.75rem;
-      color: var(--theme-color-muted);
-      opacity: 0.75;
-      z-index: 100;
-    }
-
-    .nav-hint kbd {
-      font-family: inherit;
-      background: var(--theme-surface);
-      border: 1px solid var(--theme-border);
-      border-radius: 4px;
-      padding: 0.1rem 0.4rem;
-      font-size: 0.68rem;
-    }
     /* Slide layout: qa block with title that reveals alongside the answer */
     .qa-slide {
       display: flex;
@@ -44,9 +27,6 @@
     }
     .qa-slide__title {
       margin: 0;
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      font-weight: 700;
-      letter-spacing: -0.03em;
       text-align: center;
       opacity: 0;
       visibility: hidden;
@@ -71,7 +51,7 @@
   <div class="gc-grid">
   <div class="content">
     <div class="qa-slide" id="aq-slide">
-      <h2 class="qa-slide__title">Shared audience question</h2>
+      <h2 class="gc-slide-title qa-slide__title">Shared audience question</h2>
 
       <div class="gc-block-stack gc-block-stack--qa" id="aq">
         <div class="gc-block-stack__item gc-block-stack__item--question">
@@ -87,7 +67,7 @@
   </div>
   </div>
 
-  <div class="nav-hint"><kbd>Space</kbd> reveal · <kbd>[</kbd> <kbd>]</kbd> steps</div>
+  <div class="gc-nav-hint"><kbd>Space</kbd> reveal · <kbd>[</kbd> <kbd>]</kbd> steps</div>
 
   <script>
     const slideRoot = document.getElementById('aq-slide')
