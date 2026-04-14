@@ -131,18 +131,37 @@ All slide content uses an **Excalidraw-inspired hand-drawn aesthetic**:
 
 1. **Font:** The Virgil handwriting font (from the Excalidraw project) is the default body font in every theme. It is loaded via `@font-face` from `shared/fonts/Virgil.woff2`. Do not override `font-family` in slides — the theme provides it.
 
-2. **Graphics:** Use **rough.js** (`shared/js/rough.js`) for all programmatic SVG/canvas graphics (charts, diagrams, shapes). This renders lines, curves, and fills with a sketchy, hand-drawn look. Include it in slides that draw graphics:
+2. **Graphics:** Use **rough.js** (`shared/js/rough.js`) for all programmatic graphics (charts, diagrams, shapes). This renders lines, curves, and fills with a sketchy, hand-drawn look. Include it in slides that draw graphics:
    ```html
    <script src="../../shared/js/rough.js"></script>
    ```
-   Then use the SVG API:
-   ```js
-   const rc = rough.svg(svgElement)
-   svgElement.appendChild(rc.line(x1, y1, x2, y2, { stroke: color, strokeWidth: 2 }))
-   svgElement.appendChild(rc.rectangle(x, y, w, h, { fill: color, fillStyle: 'hachure' }))
-   svgElement.appendChild(rc.path(svgPathData, { stroke: color }))
+   **Prefer canvas rendering** for smoother animation and better performance on frequent redraws:
+   ```html
+   <script src="../../shared/js/canvas-text.js"></script>
    ```
-   For text labels inside SVGs, use standard `<text>` elements with `font-family: 'Virgil', cursive`.
+   ```js
+   // HiDPI setup (inline in each slide)
+   function setupCanvas(canvas) {
+     const dpr = window.devicePixelRatio || 1
+     const w = canvas.clientWidth, h = canvas.clientHeight
+     canvas.width = w * dpr; canvas.height = h * dpr
+     const ctx = canvas.getContext('2d')
+     ctx.scale(dpr, dpr)
+     return { ctx, w, h }
+   }
+   // Draw with rough.canvas — calls draw directly, no DOM elements
+   const rc = rough.canvas(canvasElement, { options: { seed: 1 } })
+   rc.line(x1, y1, x2, y2, { stroke: color, strokeWidth: 2, seed: 1 })
+   rc.rectangle(x, y, w, h, { fill: color, fillStyle: 'hachure', seed: 2 })
+   rc.path(svgPathData, { stroke: color, seed: 3 })
+   // Use fixed seed values per element to prevent jitter on redraw
+   ```
+   For text labels on canvas, use the shared `canvasText` helper:
+   ```js
+   canvasText(ctx, x, y, 'Label', { fontSize: 15, fill: color, anchor: 'middle' })
+   ```
+
+   **SVG rendering** is also available via `rough.svg()` and `shared/js/svg-text.js` for static graphics that don't need frequent redraws.
 
 3. **LaTeX / MathJax:** Configure MathJax to inherit the Virgil font for text elements:
    ```js
@@ -447,6 +466,8 @@ Use block-based reveal patterns when the message has clear beats (question → a
 | `shared/styles/` | Shared slide component styles (e.g. audience question block) |
 | `shared/fonts/Virgil.woff2` | Excalidraw handwriting font (loaded by themes via `@font-face`) |
 | `shared/js/rough.js` | rough.js library for sketchy hand-drawn SVG/canvas graphics |
+| `shared/js/canvas-text.js` | `canvasText(ctx, x, y, text, opts)` — Virgil text on canvas (preferred) |
+| `shared/js/svg-text.js` | `svgText(x, y, text, opts)` — Virgil text as SVG `<text>` elements |
 
 ## Slide Lifecycle API
 

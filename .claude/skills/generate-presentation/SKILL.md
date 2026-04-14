@@ -89,18 +89,31 @@ EXCALIDRAW STYLE:
 All slides use an Excalidraw-inspired hand-drawn look. The Virgil font is loaded
 by the theme CSS automatically — do NOT add extra font links or override font-family.
 
-For any programmatic SVG/canvas graphics (charts, diagrams, visualizations),
-use rough.js for a sketchy hand-drawn rendering style:
+For any programmatic graphics (charts, diagrams, visualizations),
+use rough.js with CANVAS rendering for a sketchy hand-drawn style:
   <script src="../../shared/js/rough.js"></script>
-Use the rough.svg() API to draw lines, rectangles, circles, paths:
-  const rc = rough.svg(svgElement)
-  svgElement.appendChild(rc.line(x1, y1, x2, y2, { stroke: color, strokeWidth: 2, roughness: 1.2 }))
-  svgElement.appendChild(rc.rectangle(x, y, w, h, { fill: color, fillStyle: 'hachure' }))
-  svgElement.appendChild(rc.circle(cx, cy, diameter, { stroke: color }))
-  svgElement.appendChild(rc.path(pathData, { stroke: color, fill: 'none' }))
-For text labels inside SVGs, create standard <text> elements with
-font-family="Virgil, cursive" and append them to the SVG.
-Do NOT use innerHTML-based SVG generation — use DOM APIs with rough.js.
+  <script src="../../shared/js/canvas-text.js"></script>
+Use a <canvas> element (not <svg>) and the rough.canvas() API:
+  function setupCanvas(canvas) {
+    const dpr = window.devicePixelRatio || 1
+    const w = canvas.clientWidth, h = canvas.clientHeight
+    canvas.width = w * dpr; canvas.height = h * dpr
+    const ctx = canvas.getContext('2d')
+    ctx.scale(dpr, dpr)
+    return { ctx, w, h }
+  }
+  const { ctx, w: W, h: H } = setupCanvas(canvas)
+  const rc = rough.canvas(canvas, { options: { seed: 1 } })
+  rc.line(x1, y1, x2, y2, { stroke: color, strokeWidth: 2, roughness: 1.2, seed: 1 })
+  rc.rectangle(x, y, w, h, { fill: color, fillStyle: 'hachure', seed: 2 })
+  rc.circle(cx, cy, diameter, { stroke: color, seed: 3 })
+  rc.path(pathData, { stroke: color, fill: 'none', seed: 4 })
+Canvas rough.js draws directly — no return value, no appendChild needed.
+Always pass a fixed `seed` per element to prevent sketch jitter on redraw.
+For text labels, use the canvasText helper:
+  canvasText(ctx, x, y, 'Label', { fontSize: 15, fill: color, anchor: 'middle' })
+For rotated text (e.g. Y-axis labels):
+  canvasText(ctx, x, y, 'Label', { transform: `rotate(-90,${x},${y})` })
 
 THEME TOKENS:
 --theme-bg, --theme-color, --theme-color-secondary, --theme-color-muted,

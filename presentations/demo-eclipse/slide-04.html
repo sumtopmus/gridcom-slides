@@ -196,12 +196,11 @@
       min-width: 0;
     }
 
-    #roc-svg {
+    #roc-canvas {
       width: clamp(560px, 74vh, 860px);
       aspect-ratio: 1;
       height: auto;
       display: block;
-      overflow: visible;
     }
 
     /* ── Nav hint ── */
@@ -262,14 +261,14 @@
       </div>
     </div>
     <div class="plot-panel" style="grid-column: 2; grid-row: 3">
-      <svg id="roc-svg"></svg>
+      <canvas id="roc-canvas"></canvas>
     </div>
   </div>
 
   <div class="nav-hint"><kbd>[</kbd> prev step &nbsp; next step <kbd>]</kbd></div>
 
   <script src="../../shared/js/rough.js"></script>
-  <script src="../../shared/js/svg-text.js"></script>
+  <script src="../../shared/js/canvas-text.js"></script>
   <script type="module">
     import { datasets } from './datasets.js'
 

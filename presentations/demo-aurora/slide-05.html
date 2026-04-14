@@ -196,7 +196,7 @@
       min-width: 0;
     }
 
-    #pr-svg {
+    #pr-canvas {
       width: clamp(560px, 74vh, 860px);
       aspect-ratio: 1;
       height: auto;
@@ -262,14 +262,14 @@
       </div>
     </div>
     <div class="plot-panel" style="grid-column: 2; grid-row: 3">
-      <svg id="pr-svg"></svg>
+      <canvas id="pr-canvas" style="width: clamp(560px, 74vh, 860px); aspect-ratio: 1; height: auto; display: block; overflow: visible;"></canvas>
     </div>
   </div>
 
   <div class="nav-hint"><kbd>[</kbd> prev step &nbsp; next step <kbd>]</kbd></div>
 
   <script src="../../shared/js/rough.js"></script>
-  <script src="../../shared/js/svg-text.js"></script>
+  <script src="../../shared/js/canvas-text.js"></script>
   <script type="module">
     import { datasets } from './datasets.js'
 
@@ -373,14 +373,22 @@
       drawPR(s)
     }
 
-    function drawPR(s) {
-      const svg = document.getElementById('pr-svg')
-      const W = svg.clientWidth, H = svg.clientHeight
-      if (!W || !H) return
-      svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
+    function setupCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1
+      const w = canvas.clientWidth, h = canvas.clientHeight
+      canvas.width = w * dpr
+      canvas.height = h * dpr
+      const ctx = canvas.getContext('2d')
+      ctx.scale(dpr, dpr)
+      return { ctx, w, h }
+    }
 
-      svg.replaceChildren()
-      const rc = rough.svg(svg)
+    function drawPR(s) {
+      const canvas = document.getElementById('pr-canvas')
+      const { ctx, w: W, h: H } = setupCanvas(canvas)
+      if (!W || !H) return
+
+      const rc = rough.canvas(canvas, { options: { seed: 1 } })
 
       const ml = 80, mr = 24, mt = 24, mb = 88
       const pw = W - ml - mr, ph = H - mt - mb
@@ -391,26 +399,26 @@
       for (let i = 0; i <= 5; i++) {
         const v = i / 5, gx = tx(v), gy = ty(v)
         // Vertical grid line
-        svg.appendChild(rc.line(gx, mt, gx, mt + ph, { stroke: CHART.grid, strokeWidth: 1, roughness: 0.6 }))
+        rc.line(gx, mt, gx, mt + ph, { stroke: CHART.grid, strokeWidth: 1, roughness: 0.6, seed: 1 })
         // Horizontal grid line
-        svg.appendChild(rc.line(ml, gy, ml + pw, gy, { stroke: CHART.grid, strokeWidth: 1, roughness: 0.6 }))
+        rc.line(ml, gy, ml + pw, gy, { stroke: CHART.grid, strokeWidth: 1, roughness: 0.6, seed: 1 })
         // X-axis tick label
-        svg.appendChild(svgText(gx, mt + ph + 32, v.toFixed(1), { fontSize: 15, fill: CHART.tick, anchor: 'middle' }))
+        canvasText(ctx, gx, mt + ph + 32, v.toFixed(1), { fontSize: 15, fill: CHART.tick, anchor: 'middle' })
         // Y-axis tick label
-        svg.appendChild(svgText(ml - 18, gy + 5, v.toFixed(1), { fontSize: 15, fill: CHART.tick, anchor: 'end' }))
+        canvasText(ctx, ml - 18, gy + 5, v.toFixed(1), { fontSize: 15, fill: CHART.tick, anchor: 'end' })
       }
 
       // Axes
-      svg.appendChild(rc.line(ml, mt, ml, mt + ph, { stroke: CHART.axis, strokeWidth: 3, roughness: 0.8 }))
-      svg.appendChild(rc.line(ml, mt + ph, ml + pw, mt + ph, { stroke: CHART.axis, strokeWidth: 3, roughness: 0.8 }))
+      rc.line(ml, mt, ml, mt + ph, { stroke: CHART.axis, strokeWidth: 3, roughness: 0.8, seed: 1 })
+      rc.line(ml, mt + ph, ml + pw, mt + ph, { stroke: CHART.axis, strokeWidth: 3, roughness: 0.8, seed: 1 })
 
       // Axis labels
-      svg.appendChild(svgText(ml + pw / 2, H - 8, 'Recall', { fontSize: 24, fill: CHART.label, anchor: 'middle' }))
-      svg.appendChild(svgText(18, mt + ph / 2, 'Precision', { fontSize: 24, fill: CHART.label, anchor: 'middle', transform: `rotate(-90,18,${mt + ph / 2})` }))
+      canvasText(ctx, ml + pw / 2, H - 8, 'Recall', { fontSize: 24, fill: CHART.label, anchor: 'middle' })
+      canvasText(ctx, 18, mt + ph / 2, 'Precision', { fontSize: 24, fill: CHART.label, anchor: 'middle', transform: `rotate(-90,18,${mt + ph / 2})` })
 
       // Baseline: random precision = N_POS / N
-      svg.appendChild(rc.line(tx(0), ty(baseline), tx(1), ty(baseline), { stroke: CHART.ref, strokeWidth: 2, roughness: 1, strokeLineDash: [9, 6] }))
-      svg.appendChild(svgText(tx(0.82), ty(baseline) - 9, `Random (${baseline.toFixed(2)})`, { fontSize: 18, fill: CHART.refLabel, anchor: 'middle' }))
+      rc.line(tx(0), ty(baseline), tx(1), ty(baseline), { stroke: CHART.ref, strokeWidth: 2, roughness: 1, strokeLineDash: [9, 6], seed: 1 })
+      canvasText(ctx, tx(0.82), ty(baseline) - 9, `Random (${baseline.toFixed(2)})`, { fontSize: 18, fill: CHART.refLabel, anchor: 'middle' })
 
       if (s > 0) {
         const pts = prPts.slice(0, s + 1)
@@ -420,14 +428,14 @@
         let areaPath = `M ${tx(0)} ${ty(0)}`
         for (const p of pts) areaPath += ` L ${tx(p.recall)} ${ty(p.precision)}`
         areaPath += ` L ${tx(last.recall)} ${ty(0)} Z`
-        svg.appendChild(rc.path(areaPath, { fill: CHART.area, fillStyle: 'hachure', fillWeight: 1, hachureGap: 6, stroke: 'none', roughness: 0.8 }))
+        rc.path(areaPath, { fill: CHART.area, fillStyle: 'hachure', fillWeight: 1, hachureGap: 6, stroke: 'none', roughness: 0.8, seed: 1 })
 
         // Curve segments, colored by class
         for (let i = 1; i <= s; i++) {
           const from = prPts[i - 1], to = prPts[i]
           const segCol = sorted[i - 1].label === 1 ? POS : NEG
           const segmentPath = `M ${tx(from.recall)} ${ty(from.precision)} L ${tx(to.recall)} ${ty(to.precision)}`
-          svg.appendChild(rc.path(segmentPath, { stroke: segCol, strokeWidth: 2.5, roughness: 0.8, fill: 'none' }))
+          rc.path(segmentPath, { stroke: segCol, strokeWidth: 2.5, roughness: 0.8, fill: 'none', seed: 1 })
         }
 
         // Intermediate dots (skip duplicates from vertical-only steps)
@@ -435,32 +443,32 @@
           if (i % 2 === 0 || prPts[i].recall !== prPts[i - 1].recall || prPts[i].precision !== prPts[i - 1].precision) {
             const p = prPts[i]
             const dotCol = sorted[i - 1].label === 1 ? POS : NEG
-            svg.appendChild(rc.circle(tx(p.recall), ty(p.precision), 10, { fill: dotCol, stroke: 'none', fillStyle: 'solid', roughness: 0.5 }))
+            rc.circle(tx(p.recall), ty(p.precision), 10, { fill: dotCol, stroke: 'none', fillStyle: 'solid', roughness: 0.5, seed: 1 })
           }
         }
 
         // Current point
         const cur = prPts[s]
         const curCol = sorted[s - 1].label === 1 ? POS : NEG
-        svg.appendChild(rc.circle(tx(cur.recall), ty(cur.precision), 16, { fill: curCol, stroke: CHART.dotStroke, strokeWidth: 2, roughness: 0.5 }))
+        rc.circle(tx(cur.recall), ty(cur.precision), 16, { fill: curCol, stroke: CHART.dotStroke, strokeWidth: 2, roughness: 0.5, seed: 1 })
 
         // Coordinate label
         if (s < N) {
           const lx = cur.recall > 0.72 ? tx(cur.recall) - 10 : tx(cur.recall) + 10
           const ly = cur.precision > 0.88 ? ty(cur.precision) + 18 : ty(cur.precision) - 12
           const anchor = cur.recall > 0.72 ? 'end' : 'start'
-          svg.appendChild(svgText(lx, ly, `(${cur.recall.toFixed(2)}, ${cur.precision.toFixed(2)})`, { fontSize: 15, fill: CURVE, anchor, opacity: 0.88 }))
+          canvasText(ctx, lx, ly, `(${cur.recall.toFixed(2)}, ${cur.precision.toFixed(2)})`, { fontSize: 15, fill: CURVE, anchor, opacity: 0.88 })
         }
 
         // Final AUPRC badge
         if (s === N) {
           const cx = tx(0.5), cy = ty(0.18)
-          svg.appendChild(rc.rectangle(cx - 120, cy - 23, 240, 46, { fill: CHART.badgeBg, stroke: CURVE, strokeWidth: 1.8, roughness: 1 }))
-          svg.appendChild(svgText(cx, cy, `AUPRC = ${prPts[N].auprc.toFixed(3)}`, { fontSize: 24, fill: CURVE, anchor: 'middle', dy: '0.35em' }))
+          rc.rectangle(cx - 120, cy - 23, 240, 46, { fill: CHART.badgeBg, stroke: CURVE, strokeWidth: 1.8, roughness: 1, seed: 1 })
+          canvasText(ctx, cx, cy, `AUPRC = ${prPts[N].auprc.toFixed(3)}`, { fontSize: 24, fill: CURVE, anchor: 'middle', dy: '0.35em' })
         }
       } else {
         // Starting dot at (0, 1)
-        svg.appendChild(rc.circle(tx(0), ty(1), 16, { fill: CHART.dotIdle, stroke: CHART.dotIdle, strokeWidth: 2, roughness: 0.5 }))
+        rc.circle(tx(0), ty(1), 16, { fill: CHART.dotIdle, stroke: CHART.dotIdle, strokeWidth: 2, roughness: 0.5, seed: 1 })
       }
     }
 
@@ -498,7 +506,7 @@
     applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
     window.addEventListener('load', () => update(step))
     let resizeRAF = 0
-    new ResizeObserver(() => { cancelAnimationFrame(resizeRAF); resizeRAF = requestAnimationFrame(() => drawPR(step)) }).observe(document.getElementById('pr-svg'))
+    new ResizeObserver(() => { cancelAnimationFrame(resizeRAF); resizeRAF = requestAnimationFrame(() => drawPR(step)) }).observe(document.getElementById('pr-canvas'))
   </script>
 </body>
 

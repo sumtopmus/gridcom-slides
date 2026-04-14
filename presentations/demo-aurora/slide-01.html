@@ -77,7 +77,7 @@
       <div class="title">Score Distribution</div>
       <div class="subtitle">How positive and negative scores are distributed across the [0, 1] range</div>
     </div>
-    <svg id="chart" width="860" height="400" style="overflow:visible;flex-shrink:0"></svg>
+    <canvas id="chart" style="width:860px;height:400px;flex-shrink:0"></canvas>
     <div class="legend">
       <div class="legend-item">
         <div class="legend-swatch" style="background:var(--pos)"></div>
@@ -92,7 +92,7 @@
   </div>
 
   <script src="../../shared/js/rough.js"></script>
-  <script src="../../shared/js/svg-text.js"></script>
+  <script src="../../shared/js/canvas-text.js"></script>
   <script type="module">
     import { distributions } from './datasets.js'
 
@@ -107,8 +107,18 @@
     const W = 860, H = 400, ml = 50, mr = 22, mt = 22, mb = 52
     const pw = W - ml - mr, ph = H - mt - mb
 
+    function setupCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1
+      const w = canvas.clientWidth, h = canvas.clientHeight
+      canvas.width = w * dpr
+      canvas.height = h * dpr
+      const ctx = canvas.getContext('2d')
+      ctx.scale(dpr, dpr)
+      return { ctx, w, h }
+    }
+
     // Evaluate pdfFn at `steps+1` points over [0,1], normalize to max=1,
-    // return closed area path and open line path as SVG strings.
+    // return closed area path and open line path as SVG-style path strings.
     function makePaths(pdfFn, steps = 300) {
       const ys = Array.from({ length: steps + 1 }, (_, i) => pdfFn(i / steps))
       const maxY = Math.max(...ys)
@@ -121,113 +131,101 @@
       }
     }
 
-    // Track rough.js generated groups so animateIn can reference them
-    let negAreaG, negLineG, posAreaG, posLineG
+    // Animation state — opacity per layer
+    const layers = { negArea: 0, negLine: 0, posArea: 0, posLine: 0 }
+    const targets = { negArea: 0, negLine: 0, posArea: 0, posLine: 0 }
+    let animating = false
+    let currentPaths = null
 
-    function render(dist) {
-      const svg = document.getElementById('chart')
-      svg.replaceChildren()
-
-      const rc = rough.svg(svg)
-      const posP = makePaths(dist.posPDF)
-      const negP = makePaths(dist.negPDF)
+    function render() {
+      const canvas = document.getElementById('chart')
+      const { ctx } = setupCanvas(canvas)
+      const rc = rough.canvas(canvas, { options: { seed: 1 } })
 
       // Horizontal grid lines
       for (let g = 1; g <= 4; g++) {
         const yy = mt + ph - (g / 4) * ph
-        svg.appendChild(rc.line(ml, yy, W - mr, yy, {
-          stroke: CHART.grid,
-          strokeWidth: 1,
-          roughness: 0.8,
-        }))
+        rc.line(ml, yy, W - mr, yy, { stroke: CHART.grid, strokeWidth: 1, roughness: 0.8, seed: 1 })
       }
 
-      // Area fills (hachure for Excalidraw look) — start hidden
-      negAreaG = rc.path(negP.area, {
-        stroke: 'none',
-        fill: NEG,
-        fillStyle: 'hachure',
-        fillWeight: 1.5,
-        hachureGap: 6,
-        roughness: 1,
-      })
-      negAreaG.style.opacity = '0'
-      svg.appendChild(negAreaG)
+      if (currentPaths) {
+        const { negP, posP } = currentPaths
 
-      posAreaG = rc.path(posP.area, {
-        stroke: 'none',
-        fill: POS,
-        fillStyle: 'hachure',
-        fillWeight: 1.5,
-        hachureGap: 6,
-        roughness: 1,
-      })
-      posAreaG.style.opacity = '0'
-      svg.appendChild(posAreaG)
+        // Negative area fill (hachure)
+        if (layers.negArea > 0.005) {
+          ctx.globalAlpha = layers.negArea
+          rc.path(negP.area, { stroke: 'none', fill: NEG, fillStyle: 'hachure', fillWeight: 1.5, hachureGap: 6, roughness: 1, seed: 10 })
+        }
 
-      // Curve strokes — start hidden
-      negLineG = rc.path(negP.line, {
-        stroke: NEG,
-        strokeWidth: 2.5,
-        roughness: 1,
-        fill: 'none',
-      })
-      negLineG.style.opacity = '0'
-      svg.appendChild(negLineG)
+        // Positive area fill (hachure)
+        if (layers.posArea > 0.005) {
+          ctx.globalAlpha = layers.posArea
+          rc.path(posP.area, { stroke: 'none', fill: POS, fillStyle: 'hachure', fillWeight: 1.5, hachureGap: 6, roughness: 1, seed: 20 })
+        }
 
-      posLineG = rc.path(posP.line, {
-        stroke: POS,
-        strokeWidth: 2.5,
-        roughness: 1,
-        fill: 'none',
-      })
-      posLineG.style.opacity = '0'
-      svg.appendChild(posLineG)
+        // Negative curve stroke
+        if (layers.negLine > 0.005) {
+          ctx.globalAlpha = layers.negLine
+          rc.path(negP.line, { stroke: NEG, strokeWidth: 2.5, roughness: 1, fill: 'none', seed: 30 })
+        }
 
-      // Axes (slightly higher roughness for hand-drawn feel)
-      svg.appendChild(rc.line(ml, mt, ml, mt + ph, {
-        stroke: CHART.axis,
-        strokeWidth: 1.5,
-        roughness: 1.2,
-      }))
-      svg.appendChild(rc.line(ml, mt + ph, W - mr, mt + ph, {
-        stroke: CHART.axis,
-        strokeWidth: 1.5,
-        roughness: 1.2,
-      }))
+        // Positive curve stroke
+        if (layers.posLine > 0.005) {
+          ctx.globalAlpha = layers.posLine
+          rc.path(posP.line, { stroke: POS, strokeWidth: 2.5, roughness: 1, fill: 'none', seed: 40 })
+        }
 
-      // X-axis labels (0.0 … 1.0)
+        ctx.globalAlpha = 1
+      }
+
+      // Axes (drawn on top at full opacity)
+      rc.line(ml, mt, ml, mt + ph, { stroke: CHART.axis, strokeWidth: 1.5, roughness: 1.2, seed: 50 })
+      rc.line(ml, mt + ph, W - mr, mt + ph, { stroke: CHART.axis, strokeWidth: 1.5, roughness: 1.2, seed: 51 })
+
+      // X-axis tick labels
       for (let i = 0; i <= 5; i++) {
         const x = ml + (i / 5) * pw
-        svg.appendChild(svgText(x, mt + ph + 20, (i / 5).toFixed(1), { fontSize: 13, fill: CHART.tick }))
+        canvasText(ctx, x, mt + ph + 20, (i / 5).toFixed(1), { fontSize: 13, fill: CHART.tick })
       }
 
       // Axis labels
-      svg.appendChild(svgText(ml + pw / 2, H - 6, 'Classifier Score', { fontSize: 14, fill: CHART.label }))
-      svg.appendChild(svgText(13, mt + ph / 2, 'Density', { fontSize: 14, fill: CHART.label, transform: `rotate(-90,13,${mt + ph / 2})` }))
+      canvasText(ctx, ml + pw / 2, H - 6, 'Classifier Score', { fontSize: 14, fill: CHART.label })
+      canvasText(ctx, 13, mt + ph / 2, 'Density', { fontSize: 14, fill: CHART.label, transform: `rotate(-90,13,${mt + ph / 2})` })
     }
 
     function animateIn() {
-      // Staggered fade-in: negative curve first, then positive curve
-      const DUR = '0.6s'
-      const EASE = 'ease-out'
+      // Reset all layers to 0
+      for (const k in layers) layers[k] = 0
 
-      // Negative curve — area + line fade in together
-      negAreaG.style.transition = `opacity ${DUR} ${EASE}`
-      negLineG.style.transition = `opacity ${DUR} ${EASE}`
-      // Force reflow so transition triggers from opacity 0
-      negAreaG.getBoundingClientRect()
-      negAreaG.style.opacity = '0.18'
-      negLineG.style.opacity = '0.85'
+      // Set targets — neg first
+      targets.negArea = 0.18
+      targets.negLine = 0.85
+      targets.posArea = 0
+      targets.posLine = 0
 
-      // Positive curve — staggered by 200ms
+      // Stagger positive curves by 200ms
       setTimeout(() => {
-        posAreaG.style.transition = `opacity ${DUR} ${EASE}`
-        posLineG.style.transition = `opacity ${DUR} ${EASE}`
-        posAreaG.getBoundingClientRect()
-        posAreaG.style.opacity = '0.18'
-        posLineG.style.opacity = '0.85'
+        targets.posArea = 0.18
+        targets.posLine = 0.85
       }, 200)
+
+      if (!animating) { animating = true; tick() }
+    }
+
+    function tick() {
+      let done = true
+      for (const k in layers) {
+        const diff = targets[k] - layers[k]
+        if (Math.abs(diff) > 0.005) {
+          layers[k] += diff * 0.12
+          done = false
+        } else {
+          layers[k] = targets[k]
+        }
+      }
+      render()
+      if (!done) requestAnimationFrame(tick)
+      else animating = false
     }
 
     const swBtns = document.querySelectorAll('.ds-btn')
@@ -241,7 +239,7 @@
       ind.style.transition = animate ? 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1)' : 'none'
       ind.style.transform = `translateX(calc(${idx} * (2rem + 0.3rem)))`
       const dist = distributions[idx]
-      render(dist)
+      currentPaths = { negP: makePaths(dist.negPDF), posP: makePaths(dist.posPDF) }
       posLabel.textContent = `Positives (${dist.posCount} samples)`
       negLabel.textContent = `Negatives (${dist.negCount} samples)`
       animateIn()
