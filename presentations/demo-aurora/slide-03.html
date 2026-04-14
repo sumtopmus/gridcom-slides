@@ -9,6 +9,14 @@
   <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
   <link rel="stylesheet" href="./dataset-switcher.css" />
   <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       overflow: hidden;
     }
@@ -34,6 +42,8 @@
 
     .title {
       font-size: clamp(2rem, 2.6vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
     }
 
     .subtitle {

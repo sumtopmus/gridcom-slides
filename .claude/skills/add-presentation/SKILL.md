@@ -27,7 +27,7 @@ If the trigger message didn't contain enough context to form a confident suggest
 Based on the confirmed description, suggest 3–4 tags and ask the user to confirm or adjust.
 
 **Turn 4 — Theme**
-Ask: **Aurora** (always dark — deep background, indigo/violet) or **Eclipse** (always light — bright background, soft indigo/violet)?
+Ask: **Aurora** (always dark — deep background, indigo/violet), **Eclipse** (always light — bright background, soft indigo/violet), or **Rough** (Excalidraw hand-drawn — dark background, Virgil handwriting font)?
 
 **Turn 5 — Date**
 Propose today's date from context (ISO `YYYY-MM-DD`). Ask to confirm or override.

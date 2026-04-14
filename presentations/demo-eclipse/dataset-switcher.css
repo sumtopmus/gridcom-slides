@@ -25,6 +25,7 @@
   background: transparent;
   color: var(--theme-color-muted);
   font-size: 0.82rem;
+  font-weight: 700;
   line-height: 1;
   font-family: inherit;
   cursor: pointer;

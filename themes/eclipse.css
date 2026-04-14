@@ -12,16 +12,6 @@
  *   <!-- content must have position: relative so it stacks above the layers -->
  */
 
-/* ── Excalidraw handwriting font ──────────────────────────────────────────── */
-
-@font-face {
-  font-family: 'Virgil';
-  src: url('../shared/fonts/Virgil.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* ── Design tokens ────────────────────────────────────────────────────────── */
 
 html {
@@ -71,7 +61,7 @@ html, body {
 body {
   background: var(--theme-bg);
   color: var(--theme-color);
-  font-family: 'Virgil', cursive, system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   position: relative;
 }
 
@@ -109,12 +99,7 @@ h1, h2 {
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
-  letter-spacing: -0.01em;
 }
 
 h1 { background-image: linear-gradient(135deg, #09090b 30%, #52525b); }
 h2 { background-image: linear-gradient(135deg, #09090b 40%, #52525b); }
-
-/* ── SVG text inherits Virgil font ───────────────────────────────────────── */
-
-svg text { font-family: 'Virgil', cursive, system-ui, sans-serif; }

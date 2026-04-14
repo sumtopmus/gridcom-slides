@@ -39,7 +39,7 @@ Set at minimum:
 
 - `id` — must exactly match the folder name
 - `title` — human-readable title shown on the homepage card
-- `theme` — `"aurora"` or `"eclipse"`
+- `theme` — `"aurora"`, `"eclipse"`, or `"rough"`
 - `slides` — array of slide objects with at least `file`
 
 Fill in `author` and `date` (ISO format `YYYY-MM-DD`) if the user provided them. Leave optional fields out rather than leaving placeholder values.
@@ -127,9 +127,9 @@ Run `npm run dev` and confirm the card appears on the homepage and all slides lo
 
 ## Excalidraw Visual Style
 
-All slide content uses an **Excalidraw-inspired hand-drawn aesthetic**:
+The **rough** theme provides an Excalidraw-inspired hand-drawn aesthetic. When using it:
 
-1. **Font:** The Virgil handwriting font (from the Excalidraw project) is the default body font in every theme. It is loaded via `@font-face` from `shared/fonts/Virgil.woff2`. Do not override `font-family` in slides — the theme provides it.
+1. **Font:** The Virgil handwriting font (from the Excalidraw project) is the default body font in the rough theme. It is loaded via `@font-face` from `shared/fonts/Virgil.woff2`. Do not override `font-family` in slides — the theme provides it.
 
 2. **Graphics:** Use **rough.js** (`shared/js/rough.js`) for all programmatic graphics (charts, diagrams, shapes). This renders lines, curves, and fills with a sketchy, hand-drawn look. Include it in slides that draw graphics:
    ```html
@@ -181,13 +181,13 @@ Reusable slide themes live in `themes/`. Each theme provides:
 
 - CSS design tokens (`--theme-bg`, `--theme-color`, `--theme-accent`, etc.)
 - Animated background (`.bg` + `.grid-lines` layers — place as first children of `<body>`)
-- **Excalidraw-style Virgil handwriting font** as the default body font
 - **Fixed visual appearance** — unaffected by the viewer's dark/light/system interface color mode
 
 | Theme | File | Appearance |
 | ----- | ---- | ---------- |
 | `aurora` | `themes/aurora.css` | Always dark — deep background, indigo/violet gradient |
 | `eclipse` | `themes/eclipse.css` | Always light — bright background, soft indigo/violet gradient |
+| `rough` | `themes/rough.css` | Excalidraw hand-drawn — dark background, Virgil handwriting font |
 
 > **Presentation themes vs. interface color mode:** The viewer's dark/light/system toggle only changes the viewer chrome (control bar, overlays). It has no effect on the slide content — a presentation's look is determined solely by the theme declared in `presentation.json`.
 
@@ -460,8 +460,9 @@ Use block-based reveal patterns when the message has clear beats (question → a
 | `presentations/demo-aurora/` | Demo presentation using the Aurora theme |
 | `presentations/demo-eclipse/` | Demo presentation using the Eclipse theme |
 | `presentations/_template/` | Starter template |
-| `themes/aurora.css` | Aurora slide theme — dark gradient (CSS + design tokens) |
-| `themes/eclipse.css` | Eclipse slide theme — light gradient (CSS + design tokens) |
+| `themes/aurora.css` | Aurora slide theme — dark gradient, Inter font |
+| `themes/eclipse.css` | Eclipse slide theme — light gradient, Inter font |
+| `themes/rough.css` | Rough slide theme — dark gradient, Virgil handwriting font |
 | `shared/styles/slide-grid.css` | `.gc-grid` layout + dev mode red outline visualization |
 | `shared/styles/` | Shared slide component styles (e.g. audience question block) |
 | `shared/fonts/Virgil.woff2` | Excalidraw handwriting font (loaded by themes via `@font-face`) |

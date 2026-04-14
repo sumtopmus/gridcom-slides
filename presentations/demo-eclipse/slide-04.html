@@ -36,6 +36,8 @@
 
     .title {
       font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
     }
 
     /* Dataset switcher styles are shared in ./dataset-switcher.css */
@@ -72,6 +74,8 @@
 
     .list-label {
       font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
       color: var(--chart-label);
       text-align: center;
       flex-shrink: 0;
@@ -174,6 +178,7 @@
 
     .slot-sym {
       font-size: 1.15rem;
+      font-weight: 700;
     }
 
     .slot-score {
@@ -294,6 +299,16 @@
 
     const emptySlot = () => '<div class="slot-item empty"><span class="slot-rank"></span><div class="slot-core"><span class="slot-sym"></span><span class="slot-score"></span><span class="slot-dir"></span></div><span></span></div>'
 
+    function setupCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1
+      const w = canvas.clientWidth, h = canvas.clientHeight
+      canvas.width = w * dpr
+      canvas.height = h * dpr
+      const ctx = canvas.getContext('2d')
+      ctx.scale(dpr, dpr)
+      return { ctx, w, h }
+    }
+
     // ── Per-dataset state ──────────────────────────────────
     let sorted, N_POS, N_NEG, N, rocPts
     let step = 0
@@ -367,13 +382,11 @@
     }
 
     function drawROC(s) {
-      const svg = document.getElementById('roc-svg')
-      const W = svg.clientWidth, H = svg.clientHeight
+      const canvas = document.getElementById('roc-canvas')
+      const { ctx, w: W, h: H } = setupCanvas(canvas)
       if (!W || !H) return
-      svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
 
-      svg.replaceChildren()
-      const rc = rough.svg(svg)
+      const rc = rough.canvas(canvas, { options: { seed: 1 } })
 
       const ml = 80, mr = 24, mt = 24, mb = 88
       const pw = W - ml - mr, ph = H - mt - mb
@@ -383,24 +396,24 @@
       // Grid lines + tick labels
       for (let i = 0; i <= 5; i++) {
         const v = i / 5, gx = tx(v), gy = ty(v)
-        svg.appendChild(rc.line(gx, mt, gx, mt + ph, { stroke: CHART.grid, strokeWidth: 1, roughness: 0.6 }))
-        svg.appendChild(rc.line(ml, gy, ml + pw, gy, { stroke: CHART.grid, strokeWidth: 1, roughness: 0.6 }))
-        svg.appendChild(svgText(gx, mt + ph + 32, v.toFixed(1), { fontSize: 15, fill: CHART.tick }))
-        svg.appendChild(svgText(ml - 18, gy + 5, v.toFixed(1), { fontSize: 15, fill: CHART.tick, anchor: 'end' }))
+        rc.line(gx, mt, gx, mt + ph, { stroke: CHART.grid, strokeWidth: 1, roughness: 0.6, seed: 1 })
+        rc.line(ml, gy, ml + pw, gy, { stroke: CHART.grid, strokeWidth: 1, roughness: 0.6, seed: 1 })
+        canvasText(ctx, gx, mt + ph + 32, v.toFixed(1), { fontSize: 15, fill: CHART.tick })
+        canvasText(ctx, ml - 18, gy + 5, v.toFixed(1), { fontSize: 15, fill: CHART.tick, anchor: 'end' })
       }
 
       // Axes
-      svg.appendChild(rc.line(ml, mt, ml, mt + ph, { stroke: CHART.axis, strokeWidth: 3, roughness: 0.8 }))
-      svg.appendChild(rc.line(ml, mt + ph, ml + pw, mt + ph, { stroke: CHART.axis, strokeWidth: 3, roughness: 0.8 }))
+      rc.line(ml, mt, ml, mt + ph, { stroke: CHART.axis, strokeWidth: 3, roughness: 0.8, seed: 1 })
+      rc.line(ml, mt + ph, ml + pw, mt + ph, { stroke: CHART.axis, strokeWidth: 3, roughness: 0.8, seed: 1 })
 
       // Axis labels
-      svg.appendChild(svgText(ml + pw / 2, H - 8, 'False Positive Rate (FPR)', { fontSize: 24, fill: CHART.label }))
-      svg.appendChild(svgText(18, mt + ph / 2, 'True Positive Rate (TPR)', { fontSize: 24, fill: CHART.label, transform: `rotate(-90,18,${mt + ph / 2})` }))
+      canvasText(ctx, ml + pw / 2, H - 8, 'False Positive Rate (FPR)', { fontSize: 24, fill: CHART.label })
+      canvasText(ctx, 18, mt + ph / 2, 'True Positive Rate (TPR)', { fontSize: 24, fill: CHART.label, transform: `rotate(-90,18,${mt + ph / 2})` })
 
       // Diagonal reference line
-      svg.appendChild(rc.line(tx(0), ty(0), tx(1), ty(1), { stroke: CHART.ref, strokeWidth: 2, roughness: 1, strokeLineDash: [9, 6] }))
+      rc.line(tx(0), ty(0), tx(1), ty(1), { stroke: CHART.ref, strokeWidth: 2, roughness: 1, strokeLineDash: [9, 6], seed: 1 })
       const refAngle = Math.atan2(-ph, pw) * 180 / Math.PI
-      svg.appendChild(svgText(tx(0.66), ty(0.62), 'Random (0.50)', { fontSize: 18, fill: CHART.refLabel, transform: `rotate(${refAngle},${tx(0.66)},${ty(0.62)})` }))
+      canvasText(ctx, tx(0.66), ty(0.62), 'Random (0.50)', { fontSize: 18, fill: CHART.refLabel, transform: `rotate(${refAngle},${tx(0.66)},${ty(0.62)})` })
 
       if (s > 0) {
         const pts = rocPts.slice(0, s + 1)
@@ -410,14 +423,14 @@
         let areaPath = `M ${tx(0)} ${ty(0)}`
         for (const p of pts) areaPath += ` L ${tx(p.fpr)} ${ty(p.tpr)}`
         areaPath += ` L ${tx(last.fpr)} ${ty(0)} Z`
-        svg.appendChild(rc.path(areaPath, { fill: CHART.area, fillStyle: 'hachure', fillWeight: 1, hachureGap: 6, stroke: 'none', roughness: 0.8 }))
+        rc.path(areaPath, { fill: CHART.area, fillStyle: 'hachure', fillWeight: 1, hachureGap: 6, stroke: 'none', roughness: 0.8, seed: 1 })
 
         // Colored curve segments
         for (let i = 1; i <= s; i++) {
           const from = rocPts[i - 1], to = rocPts[i]
           const segCol = sorted[i - 1].label === 1 ? POS : NEG
           const segmentPath = `M ${tx(from.fpr)} ${ty(from.tpr)} L ${tx(to.fpr)} ${ty(to.tpr)}`
-          svg.appendChild(rc.path(segmentPath, { stroke: segCol, strokeWidth: 2.5, roughness: 0.8, fill: 'none' }))
+          rc.path(segmentPath, { stroke: segCol, strokeWidth: 2.5, roughness: 0.8, fill: 'none', seed: 1 })
         }
 
         // Intermediate dots
@@ -425,31 +438,31 @@
           if (i % 2 === 0 || rocPts[i].fpr !== rocPts[i - 1].fpr || rocPts[i].tpr !== rocPts[i - 1].tpr) {
             const p = rocPts[i]
             const dotCol = sorted[i - 1].label === 1 ? POS : NEG
-            svg.appendChild(rc.circle(tx(p.fpr), ty(p.tpr), 10, { fill: dotCol, stroke: 'none', fillStyle: 'solid', roughness: 0.5 }))
+            rc.circle(tx(p.fpr), ty(p.tpr), 10, { fill: dotCol, stroke: 'none', fillStyle: 'solid', roughness: 0.5, seed: 1 })
           }
         }
 
         // Current point dot
         const cur = rocPts[s]
         const curCol = sorted[s - 1].label === 1 ? POS : NEG
-        svg.appendChild(rc.circle(tx(cur.fpr), ty(cur.tpr), 16, { fill: curCol, stroke: CHART.dotStroke, strokeWidth: 2, roughness: 0.5 }))
+        rc.circle(tx(cur.fpr), ty(cur.tpr), 16, { fill: curCol, stroke: CHART.dotStroke, strokeWidth: 2, roughness: 0.5, seed: 1 })
 
         // Coordinate label
         if (s < N) {
           const lx = cur.fpr > 0.72 ? tx(cur.fpr) - 10 : tx(cur.fpr) + 10
           const ly = cur.tpr > 0.88 ? ty(cur.tpr) + 18 : ty(cur.tpr) - 12
           const anchor = cur.fpr > 0.72 ? 'end' : 'start'
-          svg.appendChild(svgText(lx, ly, `(${cur.fpr.toFixed(2)}, ${cur.tpr.toFixed(2)})`, { fontSize: 15, fill: CURVE, anchor, opacity: 0.88 }))
+          canvasText(ctx, lx, ly, `(${cur.fpr.toFixed(2)}, ${cur.tpr.toFixed(2)})`, { fontSize: 15, fill: CURVE, anchor, opacity: 0.88 })
         }
 
         // Final AUROC badge
         if (s === N) {
           const cx = tx(0.5), cy = ty(0.2)
-          svg.appendChild(rc.rectangle(cx - 110, cy - 23, 220, 46, { fill: CHART.badgeBg, stroke: CURVE, strokeWidth: 1.8, roughness: 1 }))
-          svg.appendChild(svgText(cx, cy, `AUROC = ${rocPts[N].auroc.toFixed(3)}`, { fontSize: 24, fill: CURVE, dy: '0.35em' }))
+          rc.rectangle(cx - 110, cy - 23, 220, 46, { fill: CHART.badgeBg, stroke: CURVE, strokeWidth: 1.8, roughness: 1, seed: 1 })
+          canvasText(ctx, cx, cy, `AUROC = ${rocPts[N].auroc.toFixed(3)}`, { fontSize: 24, fill: CURVE, dy: '0.35em' })
         }
       } else {
-        svg.appendChild(rc.circle(tx(0), ty(0), 16, { fill: CHART.dotIdle, stroke: CHART.dotIdle, strokeWidth: 2, roughness: 0.5 }))
+        rc.circle(tx(0), ty(0), 16, { fill: CHART.dotIdle, stroke: CHART.dotIdle, strokeWidth: 2, roughness: 0.5, seed: 1 })
       }
     }
 
@@ -487,7 +500,7 @@
     applyIdx(parseInt(localStorage.getItem('auroc_dsIdx') ?? '0'))
     window.addEventListener('load', () => update(step))
     let resizeRAF = 0
-    new ResizeObserver(() => { cancelAnimationFrame(resizeRAF); resizeRAF = requestAnimationFrame(() => drawROC(step)) }).observe(document.getElementById('roc-svg'))
+    new ResizeObserver(() => { cancelAnimationFrame(resizeRAF); resizeRAF = requestAnimationFrame(() => drawROC(step)) }).observe(document.getElementById('roc-canvas'))
   </script>
 </body>
 
