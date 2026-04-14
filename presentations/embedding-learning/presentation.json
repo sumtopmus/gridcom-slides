@@ -1,0 +1,72 @@
+{
+  "id": "embedding-learning",
+  "title": "Embedding Learning",
+  "description": "From co-occurrence counts to multimodal shared spaces",
+  "author": "Oleksandr",
+  "authorUrl": "https://github.com/sumtopmus",
+  "date": "2026-04-09",
+  "tags": [
+    "machine-learning",
+    "embeddings",
+    "deep-learning",
+    "NLP"
+  ],
+  "theme": "aurora",
+  "slides": [
+    {
+      "file": "slide-01.html",
+      "title": "Embedding Learning",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-02.html",
+      "title": "A Brief History of Embeddings",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-03.html",
+      "title": "What Is an Embedding?",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-04.html",
+      "title": "The Embedding Toolkit",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-05.html",
+      "title": "Contrastive Learning",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-06.html",
+      "title": "Encoder Architectures",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-07.html",
+      "title": "Component vs. Standalone Embeddings",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-08.html",
+      "title": "The Two-Tower Architecture",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-09.html",
+      "title": "Multimodal Shared Spaces",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-10.html",
+      "title": "Applications in Production",
+      "transition": "fade"
+    },
+    {
+      "file": "slide-11.html",
+      "title": "Key Takeaways",
+      "transition": "fade"
+    }
+  ]
+}

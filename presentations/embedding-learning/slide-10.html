@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Applications in Production</title>
+  <link rel="stylesheet" href="../../themes/aurora.css" />
+  <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
+  <style>
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 3rem 12vw;
+      gap: 1.5rem;
+      overflow: hidden;
+    }
+
+    h2 {
+      font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin: 0;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      flex: 1 1 auto;
+      min-height: 0;
+      align-content: center;
+    }
+
+    .app-card {
+      background: var(--theme-surface);
+      border: 1px solid var(--theme-border);
+      border-radius: 12px;
+      padding: 1.5rem 1.5rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-1rem);
+      transition:
+        opacity 0.4s ease,
+        transform 0.4s ease,
+        visibility 0s linear 0.4s;
+    }
+
+    .app-card--visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      transition-delay: 0s, 0s, 0s;
+    }
+
+    .app-card--visible:nth-child(even) {
+      transition-delay: 0.08s, 0.08s, 0s;
+    }
+
+    .app-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--theme-accent), var(--theme-accent-alt));
+      border-radius: 12px 12px 0 0;
+    }
+
+    .app-card__header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .app-card__icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      color: var(--theme-accent);
+    }
+
+    .app-card__title {
+      font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+      font-weight: 700;
+      color: var(--theme-color);
+      line-height: 1.2;
+      margin: 0;
+    }
+
+    .app-card__desc {
+      font-size: clamp(0.75rem, 1.4vw, 0.88rem);
+      color: var(--theme-color-secondary);
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .nav-hint {
+      position: fixed;
+      bottom: 2.5rem;
+      right: 2rem;
+      font-size: 0.75rem;
+      color: var(--theme-color-muted);
+      opacity: 0.75;
+      z-index: 100;
+    }
+
+    .nav-hint kbd {
+      font-family: inherit;
+      background: var(--theme-surface);
+      border: 1px solid var(--theme-border);
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      font-size: 0.68rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .app-card { transition: none; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="gc-grid">
+    <div class="content">
+      <h2>Applications in Production</h2>
+
+      <div class="card-grid">
+        <div class="app-card" data-step-index="1">
+          <div class="app-card__header">
+            <svg class="app-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"/>
+              <line x1="16.5" y1="16.5" x2="21" y2="21"/>
+              <rect x="2" y="18" width="5" height="4" rx="1"/>
+            </svg>
+            <h3 class="app-card__title">Semantic Search &amp; RAG</h3>
+          </div>
+          <p class="app-card__desc">Embed corpus into vector DB, query by meaning, retrieve nearest docs, feed to LLM for grounded generation. The dominant embedding application today.</p>
+        </div>
+
+        <div class="app-card" data-step-index="2">
+          <div class="app-card__header">
+            <svg class="app-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="7" r="4"/>
+              <path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>
+              <path d="M17 14l3-1.5L22 14"/>
+              <path d="M17 18l3 1.5L22 18"/>
+            </svg>
+            <h3 class="app-card__title">Recommendation Systems</h3>
+          </div>
+          <p class="app-card__desc">YouTube, Spotify, Amazon: two-tower models generate user &amp; item embeddings. ANN search over millions of candidates in milliseconds.</p>
+        </div>
+
+        <div class="app-card" data-step-index="3">
+          <div class="app-card__header">
+            <svg class="app-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="10" r="6"/>
+              <circle cx="10" cy="9" r="1" fill="currentColor" stroke="none"/>
+              <circle cx="14" cy="9" r="1" fill="currentColor" stroke="none"/>
+              <path d="M9.5 12.5a3 3 0 0 0 5 0"/>
+              <path d="M6 16v2a6 6 0 0 0 12 0v-2"/>
+            </svg>
+            <h3 class="app-card__title">Face Recognition</h3>
+          </div>
+          <p class="app-card__desc">FaceNet: CNN + triplet loss maps faces to 128-d space. Same person clusters tightly regardless of angle, lighting, or age.</p>
+        </div>
+
+        <div class="app-card" data-step-index="4">
+          <div class="app-card__header">
+            <svg class="app-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L3 7v6c0 5.25 3.75 10.15 9 11.25C17.25 23.15 21 18.25 21 13V7l-9-5z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <circle cx="12" cy="16" r="0.5" fill="currentColor"/>
+            </svg>
+            <h3 class="app-card__title">Anomaly &amp; Fraud Detection</h3>
+          </div>
+          <p class="app-card__desc">Normal behavior clusters tightly in embedding space. Anomalies appear as distant outliers &mdash; adapts to new patterns without hand-crafted rules.</p>
+        </div>
+
+        <div class="app-card" data-step-index="5">
+          <div class="app-card__header">
+            <svg class="app-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <circle cx="5" cy="6" r="2"/>
+              <circle cx="19" cy="6" r="2"/>
+              <circle cx="5" cy="18" r="2"/>
+              <circle cx="19" cy="18" r="2"/>
+              <line x1="7" y1="6" x2="9.5" y2="10"/>
+              <line x1="17" y1="6" x2="14.5" y2="10"/>
+              <line x1="7" y1="18" x2="9.5" y2="14"/>
+              <line x1="17" y1="18" x2="14.5" y2="14"/>
+            </svg>
+            <h3 class="app-card__title">Drug Discovery</h3>
+          </div>
+          <p class="app-card__desc">Molecular embeddings via GNNs enable similarity search over billions of compounds. Promising candidates found in hours, not months.</p>
+        </div>
+
+        <div class="app-card" data-step-index="6">
+          <div class="app-card__header">
+            <svg class="app-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 7 4 4 8 4"/>
+              <polyline points="20 7 20 4 16 4"/>
+              <polyline points="4 17 4 20 8 20"/>
+              <polyline points="20 17 20 20 16 20"/>
+              <line x1="9" y1="10" x2="15" y2="10"/>
+              <line x1="9" y1="14" x2="13" y2="14"/>
+            </svg>
+            <h3 class="app-card__title">Code Intelligence</h3>
+          </div>
+          <p class="app-card__desc">Copilot retrieval, semantic code search, clone detection. Syntactically different but functionally equivalent code maps to nearby vectors.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-hint"><kbd>Space</kbd> next row &middot; <kbd>[</kbd> <kbd>]</kbd> steps</div>
+
+  <script>
+    const items = [...document.querySelectorAll('.app-card')]
+    const TOTAL = 6
+    let step = 0
+
+    function render() {
+      items.forEach(el => {
+        const revealAt = Number(el.dataset.stepIndex || 0)
+        const visible = step >= revealAt && revealAt > 0
+        el.classList.toggle('app-card--visible', visible)
+        el.setAttribute('aria-hidden', visible ? 'false' : 'true')
+      })
+    }
+
+    function sendStepState() {
+      window.parent.postMessage(
+        { type: 'stepState', canGoBack: step > 0, canGoForward: step < TOTAL, currentStep: step },
+        '*'
+      )
+    }
+
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === 'slideEnter') { step = 0; render(); sendStepState() }
+      if (e.data?.type === 'stepRestore') { step = Math.max(0, Math.min(TOTAL, e.data.step ?? 0)); render(); sendStepState() }
+      if (e.data?.type === 'stepNext' && step < TOTAL) { step++; render(); sendStepState() }
+      if (e.data?.type === 'stepPrev' && step > 0) { step--; render(); sendStepState() }
+      if (e.data?.type === 'slideExit') { step = 0; render() }
+      if (e.data?.type === 'devMode') {
+        document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
+      }
+    })
+  </script>
+</body>
+</html>

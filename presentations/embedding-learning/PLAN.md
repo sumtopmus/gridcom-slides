@@ -32,39 +32,8 @@ Source files: `.context/attachments/fig1.svg` through `fig5.svg`
 
 ---
 
-## Slide 2 — What Is an Embedding?
+## Slide 2 — A Brief History of Embeddings
 **File:** `slide-02.html`
-**Transition:** fade
-**Type:** step-based (3 steps)
-**Layout:** two-column, title visible at top
-
-The core concept: a mapping f: X → R^d that converts discrete inputs into dense continuous vectors where geometry encodes semantics.
-
-- Step 0 (initial): Left column shows a one-hot sparse vector visualization — a tall column of mostly-zero cells with a single highlighted 1. Label: "One-hot: dim = |V|, no similarity". Right column is empty/reserved.
-- Step 1: Right column reveals a dense vector visualization — a short, colorful bar of continuous values. Label: "Embedding: dim = d, geometry = meaning". An arrow connects the sparse to the dense with "learned projection" label.
-- Step 2: Below both columns, reveal the **fig2.svg** diagram showing word vectors in a 2D embedding space (the bike example), illustrating that nearby vectors = similar meaning. Caption: "Similar items cluster together in embedding space."
-
----
-
-## Slide 3 — The Embedding Toolkit
-**File:** `slide-03.html`
-**Transition:** fade
-**Type:** step-based (4 steps)
-**Layout:** centered single column, title visible at top
-
-What you can do once data lives in a vector space.
-
-- Step 0 (initial): Heading "Once you have embeddings, you unlock..." with an empty grid of 6 capability cards (reserved space, not yet visible).
-- Step 1: Reveal first row of 3 cards — **Similarity & Retrieval** (cosine similarity icon, "Find semantically similar items"), **Clustering** (cluster icon, "Discover natural groupings"), **Classification** (label icon, "Transfer learned structure to new tasks").
-- Step 2: Reveal second row of 3 cards — **Recommendation** (user-item icon, "Embed users and items in the same space"), **Anomaly Detection** (outlier icon, "Points far from any cluster are outliers"), **Analogical Reasoning** (king−man+woman≈queen formula).
-- Step 3: Reveal the **fig3.svg** diagram below the cards as a summary visualization of embedding tasks.
-
-Each card should use `--theme-surface` background with `--theme-border`, accent-colored icon area, and concise 1-line description.
-
----
-
-## Slide 4 — A Brief History of Embeddings
-**File:** `slide-04.html`
 **Transition:** fade
 **Type:** step-based (4 steps)
 **Layout:** full-width, title visible at top. **fig1.svg** displayed as a large centered diagram with step-based era highlights.
@@ -77,6 +46,37 @@ An animated timeline showing the evolution of embedding methods, anchored by the
 - Step 3: Highlight **Multimodal Era (2021+)**. Caption: CLIP, ImageBind, CLAP. "Images, text, audio in ONE shared vector space." Cross-modal search, zero-shot classification.
 
 Each step highlights the relevant portion of fig1.svg (via CSS opacity/filter on surrounding elements) and updates the caption below.
+
+---
+
+## Slide 3 — What Is an Embedding?
+**File:** `slide-03.html`
+**Transition:** fade
+**Type:** step-based (3 steps)
+**Layout:** two-column, title visible at top
+
+The core concept: a mapping f: X → R^d that converts discrete inputs into dense continuous vectors where geometry encodes semantics.
+
+- Step 0 (initial): Left column shows a one-hot sparse vector visualization — a tall column of mostly-zero cells with a single highlighted 1. Label: "One-hot: dim = |V|, no similarity". Right column is empty/reserved.
+- Step 1: Right column reveals a dense vector visualization — a short, colorful bar of continuous values. Label: "Embedding: dim = d, geometry = meaning". An arrow connects the sparse to the dense with "learned projection" label.
+- Step 2: Below both columns, reveal the **fig2.svg** diagram showing word vectors in a 2D embedding space (the bike example), illustrating that nearby vectors = similar meaning. Caption: "Similar items cluster together in embedding space."
+
+---
+
+## Slide 4 — The Embedding Toolkit
+**File:** `slide-04.html`
+**Transition:** fade
+**Type:** step-based (4 steps)
+**Layout:** centered single column, title visible at top
+
+What you can do once data lives in a vector space.
+
+- Step 0 (initial): Heading "Once you have embeddings, you unlock..." with an empty grid of 6 capability cards (reserved space, not yet visible).
+- Step 1: Reveal first row of 3 cards — **Similarity & Retrieval** (cosine similarity icon, "Find semantically similar items"), **Clustering** (cluster icon, "Discover natural groupings"), **Classification** (label icon, "Transfer learned structure to new tasks").
+- Step 2: Reveal second row of 3 cards — **Recommendation** (user-item icon, "Embed users and items in the same space"), **Anomaly Detection** (outlier icon, "Points far from any cluster are outliers"), **Analogical Reasoning** (king−man+woman≈queen formula).
+- Step 3: Reveal the **fig3.svg** diagram below the cards as a summary visualization of embedding tasks.
+
+Each card should use `--theme-surface` background with `--theme-border`, accent-colored icon area, and concise 1-line description.
 
 ---
 

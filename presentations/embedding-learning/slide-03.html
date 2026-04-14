@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What Is an Embedding?</title>
+  <link rel="stylesheet" href="../../themes/aurora.css" />
+  <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
+  <link rel="stylesheet" href="../../shared/styles/blocks.css" />
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+      chtml: { scale: 1 }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <style>
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 8vw;
+      gap: 2rem;
+    }
+
+    h2 {
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      text-align: center;
+      margin: 0;
+    }
+
+    .columns {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 3rem;
+      width: 100%;
+      align-items: center;
+    }
+
+    .gc-block__content ul {
+      margin: 0;
+      padding-left: 1.2em;
+    }
+
+    .gc-block__content li + li {
+      margin-top: 0.5rem;
+    }
+
+    .gc-block__content {
+      font-size: 1.2rem;
+      color: var(--theme-color-muted);
+    }
+
+    .figure-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .figure-area img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="gc-grid">
+  <div class="content">
+
+    <h2>What Is an Embedding?</h2>
+
+    <div class="columns">
+      <div style="display:flex; flex-direction:column; gap:4rem;">
+        <div class="gc-block">
+          <span class="gc-block__label">Classical encoding</span>
+          <div class="gc-block__content">
+            <ul>
+              <li>High-dimensional <strong>one-hot vectors</strong></li>
+              <li>Two words are always equidistant</li>
+              <li><strong>No notion of similarity</strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="gc-block">
+          <span class="gc-block__label">Dense Embedding</span>
+          <div class="gc-block__content">
+            <ul>
+              <li>Embedding: \( f: X \to \mathbb{R}^d \)</li>
+              <li><strong>Low-dimensional vectors</strong></li>
+              <li>Every dimension carries information</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="gc-block">
+          <span class="gc-block__label">Geometry = Meaning</span>
+          <div class="gc-block__content">
+            <ul>
+              <li><strong>Distances</strong> measure semantic closeness</li>
+              <li><strong>Directions</strong> encode relationships</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="figure-area">
+        <img src="assets/fig2.svg" alt="Word vectors in 2D embedding space — similar items cluster together" />
+      </div>
+    </div>
+
+  </div>
+  </div>
+
+  <script>
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === 'slideEnter') {
+        // no steps — static slide
+      }
+      if (e.data?.type === 'slideExit') {
+        // nothing to reset
+      }
+      if (e.data?.type === 'devMode') {
+        document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
+      }
+    })
+  </script>
+</body>
+</html>

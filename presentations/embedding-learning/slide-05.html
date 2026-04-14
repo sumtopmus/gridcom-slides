@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contrastive Learning</title>
+  <link rel="stylesheet" href="../../themes/aurora.css" />
+  <link rel="stylesheet" href="../../shared/styles/slide-grid.css" />
+  <link rel="stylesheet" href="../../shared/styles/blocks.css" />
+  <script>
+    MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, chtml: { scale: 1 } }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <style>
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 6vw;
+      gap: 2rem;
+    }
+
+    h2 {
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      text-align: center;
+      margin: 0;
+    }
+
+    .columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr auto;
+      gap: 1.2rem 4vw;
+      width: max-content;
+      max-width: 100%;
+      align-items: start;
+    }
+
+    .top-left {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .top-right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .bottom-left,
+    .bottom-right {
+      align-self: stretch;
+    }
+
+    .bottom-left .gc-block,
+    .bottom-right .gc-block {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Triplet diagram (static) ── */
+    .triplet-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+
+    .tc {
+      position: relative;
+      width: 320px;
+      height: 180px;
+      flex-shrink: 0;
+    }
+
+    /* dots */
+    .tc-dot {
+      position: absolute;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .tc-anchor {
+      left: 210px;
+      top: 92px;
+      width: 22px;
+      height: 22px;
+      background: #818cf8;
+      box-shadow: 0 0 0 5px #818cf81a, 0 0 0 10px #818cf80d, 0 0 22px #818cf860;
+    }
+
+    .tc-positive {
+      left: 58px;
+      top: 34px;
+      width: 16px;
+      height: 16px;
+      background: #4ade80;
+      box-shadow: 0 0 0 4px #4ade801a, 0 0 0 8px #4ade800d, 0 0 16px #4ade8055;
+    }
+
+    .tc-negative {
+      left: 292px;
+      top: 152px;
+      width: 16px;
+      height: 16px;
+      background: #f87171;
+      box-shadow: 0 0 0 4px #f871711a, 0 0 0 8px #f871710d, 0 0 16px #f8717155;
+    }
+
+    /* dot labels */
+    .tc-dot-label {
+      position: absolute;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      letter-spacing: 0.01em;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .tc-anchor .tc-dot-label {
+      top: 26px;
+      color: #a5b4fc;
+    }
+
+    .tc-positive .tc-dot-label {
+      top: -19px;
+      color: #4ade80;
+    }
+
+    .tc-negative .tc-dot-label {
+      top: 21px;
+      color: #f87171;
+    }
+
+    /* ── force arrows: children of anchor, origin at anchor center ──
+       anchor 22px → center offset: left 11px, top 10px (for 2px line) */
+
+    .tc-arrow {
+      position: absolute;
+      left: 11px;
+      top: 10px;
+      height: 2px;
+      transform-origin: left center;
+      z-index: -1;
+    }
+
+    .tc-arrow::after {
+      content: '';
+      position: absolute;
+      right: -8px;
+      top: -5px;
+      border: 5px solid transparent;
+    }
+
+    /* attract arrow: anchor → positive
+       positive(58,34), anchor(210,92): dx=-152, dy=-58 → angle=-159° */
+    .tc-attract {
+      width: 132px;
+      background: linear-gradient(to right, #4ade8000 8%, #4ade80bb);
+      transform: rotate(-159deg);
+    }
+
+    .tc-attract::after {
+      border-left-color: #4ade80cc;
+    }
+
+    /* repel arrow: anchor → away from negative
+       negative(58,152), anchor(210,92): away=(152,-60) → angle=-21° */
+    .tc-repel {
+      width: 64px;
+      background: linear-gradient(to right, #f8717100 8%, #f87171bb);
+      transform: rotate(-144deg);
+    }
+
+    .tc-repel::after {
+      border-left-color: #f87171cc;
+    }
+
+    /* arrow labels — positioned relative to anchor */
+    .tc-arrow-label {
+      position: absolute;
+      font-size: 9px;
+      font-weight: 700;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .tc-attract-label {
+      left: -96px;
+      top: -52px;
+      color: #4ade80;
+    }
+
+    .tc-repel-label {
+      left: -30px;
+      top: -42px;
+      color: #f87171;
+    }
+
+    /* Batch matrix */
+    .bm-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--theme-color-secondary);
+      text-align: center;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.01em;
+    }
+
+    .bm-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .bm-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .bm-axis-label {
+      font-size: 0.7rem;
+      color: var(--theme-color-muted);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .bm-axis-y {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+
+    .bm-legend {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      margin-top: 0.55rem;
+      font-size: 0.72rem;
+      color: var(--theme-color-muted);
+    }
+
+    .bm-swatch {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .bm-swatch--pos {
+      background: rgba(74, 222, 128, 0.55);
+      box-shadow: 0 0 5px rgba(74, 222, 128, 0.4);
+    }
+
+    .bm-swatch--neg {
+      background: rgba(248, 113, 113, 0.25);
+    }
+
+    .bm-legend span {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .batch-matrix {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      gap: 3px;
+      width: 260px;
+      height: 260px;
+    }
+
+    .batch-cell {
+      border-radius: 3px;
+    }
+
+    .batch-cell.pos {
+      background: rgba(74, 222, 128, 0.55);
+      box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+    }
+
+    .batch-cell.neg {
+      background: rgba(248, 113, 113, 0.25);
+    }
+
+    /* Tau visualization */
+    .tau-vis {
+      display: flex;
+      align-items: center;
+      gap: 1.4rem;
+      margin-top: 0.6rem;
+    }
+
+    .tau-vis svg {
+      flex-shrink: 0;
+    }
+
+    .tau-labels {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .tau-label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .tau-swatch {
+      width: 14px;
+      height: 3px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="gc-grid">
+    <div class="content">
+      <h2>Contrastive Learning</h2>
+
+      <div class="columns">
+        <!-- TOP LEFT: Triplet Loss + diagram -->
+        <div class="top-left">
+          <div class="gc-block">
+            <span class="gc-block__label">Triplet Loss</span>
+            <div class="gc-block__content">
+              \[ \mathcal{L} = \max\!\big(0,\; d(a,p) - d(a,n) + \text{margin}\big) \]
+            </div>
+          </div>
+
+          <div class="triplet-diagram">
+            <div class="tc">
+              <div class="tc-dot tc-positive">
+                <span class="tc-dot-label">positive</span>
+              </div>
+              <div class="tc-dot tc-negative">
+                <span class="tc-dot-label">negative</span>
+              </div>
+              <div class="tc-dot tc-anchor">
+                <span class="tc-dot-label">anchor</span>
+                <div class="tc-arrow tc-attract"></div>
+                <span class="tc-arrow-label tc-attract-label">attract</span>
+                <div class="tc-arrow tc-repel"></div>
+                <span class="tc-arrow-label tc-repel-label">repel</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOP RIGHT: Batch matrix -->
+        <div class="top-right">
+          <div class="bm-title">Pairwise similarity matrix (batch of N)</div>
+          <div class="bm-wrap">
+            <div class="bm-axis-label bm-axis-y">augmented view B</div>
+            <div class="bm-inner">
+              <div class="bm-axis-label bm-axis-x">augmented view A</div>
+              <div class="batch-matrix" id="batch-matrix"></div>
+            </div>
+          </div>
+          <div class="bm-legend">
+            <span class="bm-swatch bm-swatch--pos"></span><span>positive pair (same image)</span>
+            <span class="bm-swatch bm-swatch--neg"></span><span>negative pair (different image)</span>
+          </div>
+        </div>
+
+        <!-- BOTTOM LEFT: InfoNCE block -->
+        <div class="bottom-left">
+          <div class="gc-block">
+            <span class="gc-block__label">InfoNCE / NT-Xent Loss</span>
+            <div class="gc-block__content">
+              \[ \mathcal{L} = -\log \frac{e^{\text{sim}(a,p)/\tau}}{\sum_i
+              e^{\text{sim}(a,n_i)/\tau}} \]
+            </div>
+            <div class="gc-block__desc">
+              <ul style="margin:0; padding-left:1.2em; display:flex; flex-direction:column; gap:0.5em;">
+                <li>Softmax over all pairwise similarities in the batch</li>
+                <li>Every other sample becomes a negative automatically</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTTOM RIGHT: Key Insight block -->
+        <div class="bottom-right">
+          <div class="gc-block">
+            <span class="gc-block__label">Key Insight</span>
+            <div class="gc-block__desc">
+              <ul style="margin:1rem 0; padding-left:1.2em; display:flex; flex-direction:column; gap:0.5em;">
+                <li>Temperature \(\tau\) controls sharpness: Small &#964;
+                  <ul style="margin:0.5em 0 0 0; padding-left:1.2em; display:flex; flex-direction:column; gap:0.6em;">
+                    <li>Small \(\tau\) &#8594; sharp, peaked</li>
+                    <li>Large \(\tau\) &#8594; soft, spread</li>
+                  </ul>
+                </li>
+                <li>Batch size matters enormously &#8212; SimCLR used 4096&#8211;8192</li>
+                <li>Hard negative mining is the single largest factor in quality</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+      // Build batch matrix
+      (function () {
+        var grid = document.getElementById('batch-matrix')
+        for (var r = 0; r < 8; r++) {
+          for (var c = 0; c < 8; c++) {
+            var cell = document.createElement('div')
+            cell.className = 'batch-cell ' + (r === c ? 'pos' : 'neg')
+            grid.appendChild(cell)
+          }
+        }
+      })()
+
+    window.addEventListener('message', function (e) {
+      if (e.data && e.data.type === 'slideEnter') { }
+      if (e.data && e.data.type === 'slideExit') { }
+      if (e.data && e.data.type === 'devMode') {
+        document.documentElement.classList.toggle('gc-dev', !!e.data.enabled)
+      }
+    })
+  </script>
+</body>
+
+</html>
